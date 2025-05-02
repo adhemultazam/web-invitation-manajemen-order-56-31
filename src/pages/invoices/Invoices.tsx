@@ -12,6 +12,58 @@ const mockVendors: Vendor[] = [
   { id: "v2", name: "Reseller Premium", code: "PREM", commission: 15 },
 ];
 
+// Mock orders with client names that match what's in the MonthlyOrders component
+const mockOrders = [
+  {
+    id: "123",
+    clientName: "Rizki & Putri",
+    orderDate: "2025-04-15",
+    amount: 350000,
+    vendor: "Vendor Utama",
+    vendorId: "v1",
+  },
+  {
+    id: "124", 
+    clientName: "Kartika & Rendra",
+    orderDate: "2025-04-20",
+    amount: 400000,
+    vendor: "Vendor Utama",
+    vendorId: "v1",
+  },
+  {
+    id: "125",
+    clientName: "Budi & Anisa",
+    orderDate: "2025-04-10",
+    amount: 250000,
+    vendor: "Reseller Premium",
+    vendorId: "v2",
+  },
+  {
+    id: "126",
+    clientName: "Ahmad & Wati",
+    orderDate: "2025-04-12",
+    amount: 300000,
+    vendor: "Reseller Premium",
+    vendorId: "v2",
+  },
+  {
+    id: "127",
+    clientName: "Andi & Sinta",
+    orderDate: "2025-04-18",
+    amount: 350000,
+    vendor: "Reseller Premium",
+    vendorId: "v2",
+  },
+  {
+    id: "120",
+    clientName: "Dewi & Rendi",
+    orderDate: "2025-03-10",
+    amount: 400000,
+    vendor: "Vendor Utama",
+    vendorId: "v1",
+  },
+];
+
 // Mock data for invoices - Updated to match existing vendors and use client names from orders
 const mockInvoices: Invoice[] = [
   {
@@ -74,7 +126,35 @@ export default function Invoices() {
     console.log("Syncing order changes with invoice data");
     
     // For this mock implementation, we'll just show a toast message
-    toast.info("Invoice data telah disinkronisasi dengan data pesanan terbaru");
+    toast.success("Invoice data telah disinkronisasi dengan data pesanan terbaru");
+    
+    // Simulate synchronizing data by updating client names if needed
+    const updatedInvoices = invoices.map(invoice => {
+      const updatedOrders = invoice.orders.map(order => {
+        // Find the corresponding order in mockOrders
+        const matchingOrder = mockOrders.find(o => o.id === order.orderId);
+        if (matchingOrder) {
+          return {
+            ...order,
+            clientName: matchingOrder.clientName,
+            orderDate: matchingOrder.orderDate,
+            amount: matchingOrder.amount
+          };
+        }
+        return order;
+      });
+      
+      // Recalculate total based on possibly updated amounts
+      const totalAmount = updatedOrders.reduce((sum, order) => sum + order.amount, 0);
+      
+      return {
+        ...invoice,
+        orders: updatedOrders,
+        totalAmount
+      };
+    });
+    
+    setInvoices(updatedInvoices);
   };
   
   // Call syncOrderChanges when component mounts

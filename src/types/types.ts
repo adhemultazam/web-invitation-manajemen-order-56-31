@@ -89,3 +89,15 @@ export interface BankAccount {
   accountNumber: string;
   accountHolderName: string;
 }
+
+// Authentication types
+export interface User {
+  username: string;
+  name: string;
+  role: 'admin';
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+}

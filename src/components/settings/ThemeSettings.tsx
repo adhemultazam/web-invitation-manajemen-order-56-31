@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -69,7 +68,7 @@ const initialThemes: Theme[] = [
   }
 ];
 
-// Mock packages for category selection
+// Mock packages for category selection - Removed the Gold package as requested
 const initialPackages: Package[] = [
   {
     id: "1",
@@ -84,13 +83,6 @@ const initialPackages: Package[] = [
     price: 250000,
     description: "Paket premium dengan fitur tambahan.",
     features: ["3 halaman", "Gallery foto tanpa batas", "Durasi 3 bulan", "Peta lokasi"]
-  },
-  {
-    id: "3",
-    name: "Gold",
-    price: 350000,
-    description: "Paket gold dengan semua fitur premium.",
-    features: ["5 halaman", "Gallery foto tanpa batas", "Durasi 6 bulan", "Peta lokasi", "RSVP"]
   }
 ];
 

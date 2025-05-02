@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Invoice, Vendor } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,8 +19,28 @@ interface InvoiceViewModalProps {
   onClose: () => void;
 }
 
+// Default invoice settings
+const defaultInvoiceSettings = {
+  brandName: "Undangan Digital",
+  businessAddress: "Jl. Pemuda No. 123, Surabaya",
+  contactEmail: "contact@undangandigital.com",
+  contactPhone: "+62 812 3456 7890",
+  bankName: "BCA",
+  bankAccountNumber: "1234567890",
+  accountHolderName: "PT Undangan Digital Indonesia",
+};
+
 export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const [invoiceSettings, setInvoiceSettings] = useState(defaultInvoiceSettings);
+  
+  useEffect(() => {
+    // Load invoice settings from localStorage if available
+    const savedSettings = localStorage.getItem("invoiceSettings");
+    if (savedSettings) {
+      setInvoiceSettings(JSON.parse(savedSettings));
+    }
+  }, []);
   
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("id-ID", {
@@ -63,9 +83,10 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
             {/* Header */}
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-bold text-wedding-primary">UNDANGAN DIGITAL</h2>
-                <p className="text-sm text-muted-foreground">Jl. Pemuda No. 123, Surabaya</p>
-                <p className="text-sm text-muted-foreground">contact@undangandigital.com</p>
+                <h2 className="text-2xl font-bold text-wedding-primary">{invoiceSettings.brandName}</h2>
+                <p className="text-sm text-muted-foreground">{invoiceSettings.businessAddress}</p>
+                <p className="text-sm text-muted-foreground">{invoiceSettings.contactEmail}</p>
+                <p className="text-sm text-muted-foreground">{invoiceSettings.contactPhone}</p>
               </div>
               <div className="text-right">
                 <h3 className="text-xl font-semibold">INVOICE</h3>
@@ -142,7 +163,7 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
             {/* Footer */}
             <div className="mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
               <p>Terima kasih atas kerja sama Anda.</p>
-              <p className="mt-1">Pembayaran dapat dilakukan melalui transfer ke rekening BCA 1234567890 a.n. Undangan Digital</p>
+              <p className="mt-1">Pembayaran dapat dilakukan melalui transfer ke rekening {invoiceSettings.bankName} {invoiceSettings.bankAccountNumber} a.n. {invoiceSettings.accountHolderName}</p>
             </div>
           </div>
         </div>

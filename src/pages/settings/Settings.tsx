@@ -4,6 +4,7 @@ import { VendorSettings } from "@/components/settings/VendorSettings";
 import { PackageSettings } from "@/components/settings/PackageSettings";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { StatusSettings } from "@/components/settings/StatusSettings";
+import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
 
 export default function Settings() {
   return (
@@ -16,11 +17,12 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="vendors" className="space-y-4">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="vendors">Vendor</TabsTrigger>
           <TabsTrigger value="packages">Paket</TabsTrigger>
           <TabsTrigger value="themes">Tema</TabsTrigger>
           <TabsTrigger value="status">Status</TabsTrigger>
+          <TabsTrigger value="invoice">Invoice</TabsTrigger>
         </TabsList>
         
         <TabsContent value="vendors" className="space-y-4">
@@ -37,6 +39,10 @@ export default function Settings() {
         
         <TabsContent value="status" className="space-y-4">
           <StatusSettings />
+        </TabsContent>
+        
+        <TabsContent value="invoice" className="space-y-4">
+          <InvoiceSettings />
         </TabsContent>
       </Tabs>
     </div>

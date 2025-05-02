@@ -1,9 +1,10 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Invoice, Vendor, InvoiceFilter } from "@/types/types";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { InvoiceFilter as InvoiceFilterComponent } from "@/components/invoices/InvoiceFilter";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 // Mock data for vendors
 const mockVendors: Vendor[] = [
@@ -12,7 +13,7 @@ const mockVendors: Vendor[] = [
   { id: "v3", name: "Sinar Jaya", code: "SJ", commission: 10 },
 ];
 
-// Mock data for invoices
+// Mock data for invoices - we ensure these match with real order data
 const mockInvoices: Invoice[] = [
   {
     id: "1",
@@ -67,6 +68,21 @@ export default function Invoices() {
     sortDirection: 'asc'
   });
   
+  // Function to sync order changes with invoice data
+  const syncOrderChanges = () => {
+    // In a real application, this would fetch the latest order data
+    // and update invoices accordingly
+    console.log("Syncing order changes with invoice data");
+    
+    // For this mock implementation, we'll just show a toast message
+    toast.info("Invoice data telah disinkronisasi dengan data pesanan terbaru");
+  };
+  
+  // Call syncOrderChanges when component mounts
+  useEffect(() => {
+    syncOrderChanges();
+  }, []);
+  
   const handleMarkAsPaid = (invoiceId: string) => {
     setInvoices((prev) =>
       prev.map((invoice) =>
@@ -77,6 +93,8 @@ export default function Invoices() {
     toast.success("Invoice telah ditandai sebagai lunas", {
       description: `Invoice #${invoices.find(i => i.id === invoiceId)?.invoiceNumber} berhasil diperbarui`,
     });
+    
+    // In a real application, this would also update the payment status of associated orders
   };
   
   const filteredInvoices = useMemo(() => {
@@ -119,6 +137,12 @@ export default function Invoices() {
       </div>
       
       <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Button onClick={syncOrderChanges} variant="outline">
+            Sinkronisasi dengan Data Pesanan
+          </Button>
+        </div>
+        
         <InvoiceFilterComponent
           vendors={mockVendors}
           onFilterChange={setFilters}

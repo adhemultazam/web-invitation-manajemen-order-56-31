@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface OrderTableProps {
   orders: Order[];
@@ -38,6 +39,7 @@ interface OrderTableProps {
 
 export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder }: OrderTableProps) {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -84,10 +86,8 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
         return 'bg-green-500';
       case 'pending':
         return 'bg-amber-500';
-      case 'belum bayar':
-        return 'bg-red-500';
       default:
-        return 'bg-gray-500';
+        return 'bg-red-500';
     }
   };
 
@@ -166,6 +166,164 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     }, 500);
   };
 
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {orders.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground border rounded-md">
+            Tidak ada data pesanan
+          </div>
+        ) : (
+          orders.map((order) => (
+            <div key={order.id} className="bg-white border rounded-md p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-sm">{order.customerName}</div>
+                  <Link to={order.clientUrl || `/order/${order.id}`} className="text-wedding-primary font-semibold">
+                    {order.clientName}
+                  </Link>
+                </div>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Link to={order.clientUrl || `/order/${order.id}`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Link to={`/order/${order.id}/edit`}>
+                      <Edit className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs">Tgl Pesan</div>
+                  <div className="font-mono text-xs">{formatDate(order.orderDate)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Tgl Acara</div>
+                  <div className="font-mono text-xs">{formatDate(order.eventDate)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Countdown</div>
+                  <div className={`font-mono text-xs ${isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}`}>
+                    {order.countdownDays} hari
+                  </div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Vendor</div>
+                  <Select 
+                    value={order.vendor}
+                    onValueChange={(value) => handleVendorChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="animate-pulse">Menyimpan...</span>
+                        ) : (
+                          order.vendor
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map((vendor) => (
+                        <SelectItem key={vendor} value={vendor}>
+                          {vendor}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs">Paket</div>
+                  <div className="text-sm">{order.package}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Tema</div>
+                  <Select 
+                    value={order.theme}
+                    onValueChange={(value) => handleThemeChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="animate-pulse">Menyimpan...</span>
+                        ) : (
+                          order.theme
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themes.map((theme) => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-muted-foreground text-xs">Pembayaran</div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-0 h-6"
+                    onClick={() => togglePaymentStatus(order)}
+                  >
+                    <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                      {updatingOrders.has(order.id) ? (
+                        <span className="animate-pulse">Menyimpan...</span>
+                      ) : (
+                        order.paymentStatus
+                      )}
+                    </Badge>
+                  </Button>
+                  <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Status</div>
+                  <Select 
+                    value={order.workStatus}
+                    onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 px-3 w-full">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="animate-pulse">Menyimpan...</span>
+                        ) : (
+                          <Badge className={getStatusColor(order.workStatus)}>
+                            {order.workStatus}
+                          </Badge>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workStatuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          <Badge className={getStatusColor(status)}>
+                            {status}
+                          </Badge>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
@@ -206,12 +364,10 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                   </span>
                 </TableCell>
                 <TableCell className="font-medium">
-                  <Link to={`/order/${order.id}`} className="hover:underline text-wedding-primary">
-                    {order.customerName}
-                  </Link>
+                  {order.customerName}
                 </TableCell>
                 <TableCell>
-                  <Link to={`/order/${order.id}`} className="text-wedding-primary hover:underline">
+                  <Link to={order.clientUrl || `/order/${order.id}`} className="text-wedding-primary hover:underline">
                     {order.clientName}
                   </Link>
                 </TableCell>
@@ -356,7 +512,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 <TableCell>
                   <div className="flex space-x-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={`/order/${order.id}`}>
+                      <Link to={order.clientUrl || `/order/${order.id}`}>
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>

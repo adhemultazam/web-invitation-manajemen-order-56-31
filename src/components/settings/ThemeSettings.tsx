@@ -25,8 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { Theme } from "@/types/types";
+import { useState, useEffect } from "react";
+import { Theme, Package } from "@/types/types";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 // Mock data for themes
@@ -41,7 +41,7 @@ const initialThemes: Theme[] = [
     id: "2",
     name: "Floral Pink",
     thumbnail: "https://placehold.co/200x280/ffb6c1/ffffff?text=Floral+Pink",
-    category: "Standard"
+    category: "Basic"
   },
   {
     id: "3",
@@ -53,14 +53,38 @@ const initialThemes: Theme[] = [
     id: "4",
     name: "Minimalist",
     thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Minimalist",
-    category: "Standard"
+    category: "Basic"
   }
 ];
 
-const categories = ["Standard", "Premium", "Custom"];
+// Mock packages for category selection
+const initialPackages: Package[] = [
+  {
+    id: "1",
+    name: "Basic",
+    price: 150000,
+    description: "Paket basic untuk undangan digital sederhana.",
+    features: ["1 halaman", "Maksimal 10 foto", "Durasi 1 bulan"]
+  },
+  {
+    id: "2",
+    name: "Premium",
+    price: 250000,
+    description: "Paket premium dengan fitur tambahan.",
+    features: ["3 halaman", "Gallery foto tanpa batas", "Durasi 3 bulan", "Peta lokasi"]
+  },
+  {
+    id: "3",
+    name: "Gold",
+    price: 350000,
+    description: "Paket gold dengan semua fitur premium.",
+    features: ["5 halaman", "Gallery foto tanpa batas", "Durasi 6 bulan", "Peta lokasi", "RSVP"]
+  }
+];
 
 export function ThemeSettings() {
   const [themes, setThemes] = useState<Theme[]>(initialThemes);
+  const [packages, setPackages] = useState<Package[]>(initialPackages);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<Theme | null>(null);
   const [formData, setFormData] = useState({
@@ -68,6 +92,9 @@ export function ThemeSettings() {
     thumbnail: "",
     category: ""
   });
+
+  // Get unique package names for categories
+  const packageCategories = packages.map(pkg => pkg.name);
 
   const handleOpenDialog = (theme?: Theme) => {
     if (theme) {
@@ -82,7 +109,7 @@ export function ThemeSettings() {
       setFormData({
         name: "",
         thumbnail: "",
-        category: ""
+        category: packageCategories[0] || ""
       });
     }
     setIsDialogOpen(true);
@@ -195,16 +222,16 @@ export function ThemeSettings() {
                   )}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="category">Kategori</Label>
+                  <Label htmlFor="category">Kategori Paket</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => handleChange(value, "category")}
                   >
                     <SelectTrigger id="category">
-                      <SelectValue placeholder="Pilih kategori" />
+                      <SelectValue placeholder="Pilih kategori paket" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {packageCategories.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>

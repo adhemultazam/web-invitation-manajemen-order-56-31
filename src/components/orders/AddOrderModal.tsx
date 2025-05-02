@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { Order } from "@/types/types";
+import { useState, useEffect } from "react";
+import { Order, Theme } from "@/types/types";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 
@@ -30,16 +30,45 @@ interface AddOrderModalProps {
   workStatuses: string[];
 }
 
+// Mock themes data
+const mockThemes = [
+  {
+    id: "1",
+    name: "Elegant Gold",
+    thumbnail: "https://placehold.co/200x280/e9d985/ffffff?text=Elegant+Gold",
+    category: "Premium"
+  },
+  {
+    id: "2",
+    name: "Floral Pink",
+    thumbnail: "https://placehold.co/200x280/ffb6c1/ffffff?text=Floral+Pink",
+    category: "Basic"
+  },
+  {
+    id: "3",
+    name: "Rustic Wood",
+    thumbnail: "https://placehold.co/200x280/8b4513/ffffff?text=Rustic+Wood",
+    category: "Premium"
+  },
+  {
+    id: "4",
+    name: "Minimalist",
+    thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Minimalist",
+    category: "Basic"
+  }
+];
+
 export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses }: AddOrderModalProps) {
   const [formData, setFormData] = useState({
     orderDate: new Date().toISOString().split("T")[0],
     eventDate: "",
     customerName: "",
     clientName: "",
+    clientUrl: "",
     vendor: vendors[0] || "",
     package: "Basic",
-    theme: "Minimalis",
-    paymentStatus: "Belum Bayar" as "Lunas" | "Pending" | "Belum Bayar",
+    theme: mockThemes[0]?.name || "Minimalis",
+    paymentStatus: "Pending" as "Lunas" | "Pending",
     paymentAmount: 0,
     workStatus: workStatuses[0] || "",
     postPermission: false,
@@ -48,7 +77,9 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     bonuses: [] as string[]
   });
 
+  const [themes, setThemes] = useState<Theme[]>(mockThemes);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newFeature, setNewFeature] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -84,6 +115,23 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     return diffDays > 0 ? diffDays : 0;
   };
 
+  const handleAddFeature = (type: 'addons' | 'bonuses') => {
+    if (newFeature.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        [type]: [...prev[type], newFeature.trim()]
+      }));
+      setNewFeature("");
+    }
+  };
+
+  const handleRemoveFeature = (index: number, type: 'addons' | 'bonuses') => {
+    setFormData((prev) => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -111,10 +159,11 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       eventDate: "",
       customerName: "",
       clientName: "",
+      clientUrl: "",
       vendor: vendors[0] || "",
       package: "Basic",
-      theme: "Minimalis",
-      paymentStatus: "Belum Bayar",
+      theme: mockThemes[0]?.name || "",
+      paymentStatus: "Pending",
       paymentAmount: 0,
       workStatus: workStatuses[0] || "",
       postPermission: false,
@@ -127,7 +176,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Tambah Pesanan Baru</DialogTitle>
           <DialogDescription>
@@ -136,7 +185,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="orderDate">Tanggal Pesan</Label>
               <Input
@@ -162,7 +211,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="customerName">Nama Pemesan</Label>
               <Input
@@ -186,8 +235,22 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
               />
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="clientUrl">URL Undangan</Label>
+            <Input
+              id="clientUrl"
+              name="clientUrl"
+              value={formData.clientUrl}
+              onChange={handleChange}
+              placeholder="Contoh: https://nikahdigital.com/budi-ani"
+            />
+            <p className="text-xs text-muted-foreground">
+              URL ini akan digunakan ketika nama klien atau ikon mata diklik
+            </p>
+          </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="vendor">Vendor</Label>
               <Select 
@@ -225,16 +288,24 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="theme">Tema</Label>
-              <Input
-                id="theme"
-                name="theme"
+              <Select 
                 value={formData.theme}
-                onChange={handleChange}
-                placeholder="Contoh: Floral Pink"
-              />
+                onValueChange={(value) => handleSelectChange("theme", value)}
+              >
+                <SelectTrigger id="theme">
+                  <SelectValue placeholder="Pilih tema" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themes.map((theme) => (
+                    <SelectItem key={theme.id} value={theme.name}>
+                      {theme.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">
@@ -251,12 +322,12 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="paymentStatus">Status Pembayaran</Label>
               <Select 
                 value={formData.paymentStatus}
-                onValueChange={(value) => handleSelectChange("paymentStatus", value as "Lunas" | "Pending" | "Belum Bayar")}
+                onValueChange={(value) => handleSelectChange("paymentStatus", value as "Lunas" | "Pending")}
               >
                 <SelectTrigger id="paymentStatus">
                   <SelectValue placeholder="Pilih status" />
@@ -264,7 +335,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                 <SelectContent>
                   <SelectItem value="Lunas">Lunas</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Belum Bayar">Belum Bayar</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -287,6 +357,88 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Addons</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Tambahkan addon"
+                value={newFeature}
+                onChange={(e) => setNewFeature(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleAddFeature('addons')}
+              >
+                Tambah
+              </Button>
+            </div>
+            <ul className="space-y-2 mt-2">
+              {formData.addons.map((addon, index) => (
+                <li
+                  key={index}
+                  className="flex items-center justify-between bg-muted p-2 rounded-md"
+                >
+                  <span>{addon}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveFeature(index, 'addons')}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                  </Button>
+                </li>
+              ))}
+              {formData.addons.length === 0 && (
+                <li className="text-muted-foreground text-sm">
+                  Belum ada addons yang ditambahkan
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Bonus</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Tambahkan bonus"
+                value={newFeature}
+                onChange={(e) => setNewFeature(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleAddFeature('bonuses')}
+              >
+                Tambah
+              </Button>
+            </div>
+            <ul className="space-y-2 mt-2">
+              {formData.bonuses.map((bonus, index) => (
+                <li
+                  key={index}
+                  className="flex items-center justify-between bg-muted p-2 rounded-md"
+                >
+                  <span>{bonus}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveFeature(index, 'bonuses')}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                  </Button>
+                </li>
+              ))}
+              {formData.bonuses.length === 0 && (
+                <li className="text-muted-foreground text-sm">
+                  Belum ada bonus yang ditambahkan
+                </li>
+              )}
+            </ul>
           </div>
           
           <div className="space-y-2">

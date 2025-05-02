@@ -1,4 +1,3 @@
-
 export interface Order {
   id: string;
   orderDate: string;
@@ -16,6 +15,7 @@ export interface Order {
   workStatus: string;
   postPermission: boolean;
   notes: string;
+  clientUrl?: string; // Added clientUrl property as optional
 }
 
 export interface Vendor {

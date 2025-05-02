@@ -35,7 +35,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 240 66% 64%;
     --sidebar-foreground: 0 0% 100%;
@@ -45,6 +45,9 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 240 63% 70%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    --wedding-primary: 240 66% 64%;
+    --wedding-light: 240 66% 95%;
   }
 
   .dark {
@@ -104,5 +107,26 @@
 
   .font-inter {
     font-family: 'Inter', sans-serif;
+  }
+  
+  /* Mobile bottom navigation bar */
+  .mobile-navbar {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center px-2 py-2 z-50;
+  }
+  
+  .mobile-navbar-item {
+    @apply flex flex-col items-center justify-center w-full py-1 px-2;
+  }
+  
+  .mobile-navbar-item.active {
+    @apply text-wedding-primary;
+  }
+  
+  .mobile-navbar-icon {
+    @apply h-5 w-5 mb-1;
+  }
+  
+  .mobile-navbar-label {
+    @apply text-xs font-medium;
   }
 }

@@ -235,20 +235,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
               />
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="clientUrl">URL Undangan</Label>
-            <Input
-              id="clientUrl"
-              name="clientUrl"
-              value={formData.clientUrl}
-              onChange={handleChange}
-              placeholder="Contoh: https://nikahdigital.com/budi-ani"
-            />
-            <p className="text-xs text-muted-foreground">
-              URL ini akan digunakan ketika nama klien atau ikon mata diklik
-            </p>
-          </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -450,6 +436,20 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
               onChange={handleChange}
               placeholder="Catatan tambahan tentang pesanan ini"
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="clientUrl">URL Undangan</Label>
+            <Input
+              id="clientUrl"
+              name="clientUrl"
+              value={formData.clientUrl}
+              onChange={handleChange}
+              placeholder="Contoh: https://nikahdigital.com/budi-ani"
+            />
+            <p className="text-xs text-muted-foreground">
+              URL ini akan digunakan ketika nama klien atau ikon mata diklik
+            </p>
           </div>
           
           <DialogFooter>

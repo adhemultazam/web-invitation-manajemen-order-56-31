@@ -13,7 +13,8 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
   CalendarDays, 
-  Settings, 
+  Settings,
+  PackageIcon
 } from "lucide-react";
 
 const months = [
@@ -35,15 +36,17 @@ export function AppSidebar() {
   const location = useLocation();
   
   return (
-    <Sidebar>
+    <Sidebar className="border-r">
       <SidebarContent>
-        <div className="px-3 py-4">
-          <h1 className="text-xl font-bold text-center text-white mb-2">
-            Undangan Digital
-          </h1>
-          <p className="text-xs text-center text-white/80">
-            Manajemen Pesanan
-          </p>
+        <div className="px-4 py-5">
+          <div className="bg-wedding-light rounded-xl p-4 shadow-sm border border-wedding-primary/10 mb-4">
+            <h1 className="text-xl font-bold text-center text-wedding-primary">
+              Undangan Digital
+            </h1>
+            <p className="text-xs text-center text-gray-600 mt-1">
+              Manajemen Pesanan
+            </p>
+          </div>
         </div>
         
         <SidebarGroup>
@@ -54,7 +57,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/" 
-                    className={`${location.pathname === "/" ? "bg-sidebar-accent" : ""}`}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/" ? "bg-wedding-light text-wedding-primary font-medium" : "hover:bg-gray-100"}`}
                   >
                     <LayoutDashboard size={20} />
                     <span>Dashboard</span>
@@ -66,7 +69,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/pengaturan" 
-                    className={`${location.pathname === "/pengaturan" ? "bg-sidebar-accent" : ""}`}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/pengaturan" ? "bg-wedding-light text-wedding-primary font-medium" : "hover:bg-gray-100"}`}
                   >
                     <Settings size={20} />
                     <span>Pengaturan</span>
@@ -86,7 +89,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <Link 
                       to={month.path} 
-                      className={`${location.pathname === month.path ? "bg-sidebar-accent" : ""}`}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === month.path ? "bg-wedding-light text-wedding-primary font-medium" : "hover:bg-gray-100"}`}
                     >
                       <CalendarDays size={20} />
                       <span>{month.name}</span>

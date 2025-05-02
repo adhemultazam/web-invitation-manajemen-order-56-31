@@ -4,6 +4,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileNavbar } from "./MobileNavbar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,8 +17,8 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        <main className="flex-1 overflow-auto pb-16 md:pb-0">
+          <div className="p-4 md:p-6 w-full mx-auto">
             {isMobile && (
               <div className="mb-4">
                 <SidebarTrigger />
@@ -25,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
             )}
             {children}
           </div>
+          {isMobile && <MobileNavbar />}
         </main>
       </div>
       <Toaster />

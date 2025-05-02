@@ -105,7 +105,6 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
               <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="Lunas">Lunas</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Belum Bayar">Belum Bayar</SelectItem>
             </SelectContent>
           </Select>
         </div>

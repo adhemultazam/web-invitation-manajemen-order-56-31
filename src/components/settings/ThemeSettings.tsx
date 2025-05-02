@@ -28,6 +28,7 @@ import {
 import { useState, useEffect } from "react";
 import { Theme, Package } from "@/types/types";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 // Mock data for themes
 const initialThemes: Theme[] = [
@@ -92,9 +93,15 @@ export function ThemeSettings() {
     thumbnail: "",
     category: ""
   });
+  const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
 
   // Get unique package names for categories
   const packageCategories = packages.map(pkg => pkg.name);
+
+  useEffect(() => {
+    // This would be a good place to fetch the list of packages from an API
+    setAvailablePackages(packages);
+  }, [packages]);
 
   const handleOpenDialog = (theme?: Theme) => {
     if (theme) {
@@ -144,6 +151,9 @@ export function ThemeSettings() {
           t.id === currentTheme.id ? { ...t, ...formData } : t
         )
       );
+      toast.success("Tema berhasil diperbarui", {
+        description: `Tema: ${formData.name}`
+      });
     } else {
       // Add new theme
       const newTheme: Theme = {
@@ -151,13 +161,28 @@ export function ThemeSettings() {
         ...formData
       };
       setThemes((prev) => [...prev, newTheme]);
+      toast.success("Tema baru berhasil ditambahkan", {
+        description: `Tema: ${formData.name}`
+      });
     }
 
     setIsDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {
+    const themeToDelete = themes.find(theme => theme.id === id);
     setThemes((prev) => prev.filter((theme) => theme.id !== id));
+    
+    if (themeToDelete) {
+      toast.success("Tema berhasil dihapus", {
+        description: `Tema: ${themeToDelete.name}`
+      });
+    }
+  };
+
+  // Get the package details for a given package name
+  const getPackageDetails = (packageName: string): Package | undefined => {
+    return packages.find(pkg => pkg.name === packageName);
   };
 
   return (
@@ -238,6 +263,25 @@ export function ThemeSettings() {
                       ))}
                     </SelectContent>
                   </Select>
+                  
+                  {formData.category && getPackageDetails(formData.category) && (
+                    <div className="mt-2 p-3 bg-muted rounded-md">
+                      <p className="text-sm font-medium">Detail Paket:</p>
+                      <div className="mt-1 space-y-1 text-sm">
+                        <p className="font-semibold">{getPackageDetails(formData.category)?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Intl.NumberFormat("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                            minimumFractionDigits: 0,
+                          }).format(getPackageDetails(formData.category)?.price || 0)}
+                        </p>
+                        <p className="text-xs">
+                          {getPackageDetails(formData.category)?.description}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <DialogFooter>
@@ -252,43 +296,57 @@ export function ThemeSettings() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {themes.map((theme) => (
-            <Card key={theme.id} className="overflow-hidden">
-              <div className="relative h-40">
-                <img
-                  src={theme.thumbnail}
-                  alt={theme.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 right-2 flex space-x-1">
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleOpenDialog(theme)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleDelete(theme.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+          {themes.map((theme) => {
+            const packageDetails = getPackageDetails(theme.category);
+            
+            return (
+              <Card key={theme.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="relative h-40">
+                  <img
+                    src={theme.thumbnail}
+                    alt={theme.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2 flex space-x-1">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white"
+                      onClick={() => handleOpenDialog(theme)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white"
+                      onClick={() => handleDelete(theme.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium">{theme.name}</h3>
-                <div className="mt-1">
-                  <span className="text-xs px-2 py-1 rounded-full bg-wedding-light text-wedding-primary">
-                    {theme.category}
-                  </span>
+                <div className="p-3">
+                  <h3 className="font-medium">{theme.name}</h3>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-wedding-light text-wedding-primary">
+                      {theme.category}
+                    </span>
+                    
+                    {packageDetails && (
+                      <span className="text-xs text-muted-foreground">
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                          minimumFractionDigits: 0,
+                        }).format(packageDetails.price)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
           
           {themes.length === 0 && (
             <div className="col-span-full flex items-center justify-center p-8 border rounded-lg border-dashed">

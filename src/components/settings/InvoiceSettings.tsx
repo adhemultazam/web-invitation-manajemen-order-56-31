@@ -11,9 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
+import { BankAccount } from "@/types/types";
+import { Plus, Trash2 } from "lucide-react";
 
 // Default invoice settings
 const defaultInvoiceSettings = {
@@ -21,9 +23,14 @@ const defaultInvoiceSettings = {
   businessAddress: "Jl. Pemuda No. 123, Surabaya",
   contactEmail: "contact@undangandigital.com",
   contactPhone: "+62 812 3456 7890",
-  bankName: "BCA",
-  bankAccountNumber: "1234567890",
-  accountHolderName: "PT Undangan Digital Indonesia",
+  bankAccounts: [
+    {
+      id: "1",
+      bankName: "BCA",
+      accountNumber: "1234567890",
+      accountHolderName: "PT Undangan Digital Indonesia",
+    }
+  ]
 };
 
 // Type for our invoice settings
@@ -32,9 +39,7 @@ interface InvoiceSettingsType {
   businessAddress: string;
   contactEmail: string;
   contactPhone: string;
-  bankName: string;
-  bankAccountNumber: string;
-  accountHolderName: string;
+  bankAccounts: BankAccount[];
 }
 
 export function InvoiceSettings() {
@@ -46,6 +51,11 @@ export function InvoiceSettings() {
   
   const form = useForm<InvoiceSettingsType>({
     defaultValues: invoiceSettings,
+  });
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "bankAccounts",
   });
   
   // Update form values when invoiceSettings change
@@ -144,52 +154,86 @@ export function InvoiceSettings() {
             </div>
             
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informasi Pembayaran</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Informasi Rekening Bank</h3>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => append({ 
+                    id: Date.now().toString(), 
+                    bankName: "", 
+                    accountNumber: "", 
+                    accountHolderName: "" 
+                  })}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Tambah Rekening
+                </Button>
+              </div>
               <Separator />
               
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="bankName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Bank</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="BCA" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="bankAccountNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Rekening</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="1234567890" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="accountHolderName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama Pemilik Rekening</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="PT Undangan Digital Indonesia" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {fields.map((field, index) => (
+                <div key={field.id} className="space-y-4 p-4 border rounded-md">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Rekening {index + 1}</h4>
+                    {fields.length > 1 && (
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name={`bankAccounts.${index}.bankName`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nama Bank</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="BCA" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name={`bankAccounts.${index}.accountNumber`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nomor Rekening</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="1234567890" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name={`bankAccounts.${index}.accountHolderName`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nama Pemilik Rekening</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="PT Undangan Digital Indonesia" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
             </div>
             
             <Button type="submit" className="mt-4">

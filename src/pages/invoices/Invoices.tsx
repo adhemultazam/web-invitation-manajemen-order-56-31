@@ -6,14 +6,13 @@ import { InvoiceFilter as InvoiceFilterComponent } from "@/components/invoices/I
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-// Mock data for vendors
+// Mock data for vendors - We now use the same vendors as in VendorSettings
 const mockVendors: Vendor[] = [
-  { id: "v1", name: "Vendor Utama", code: "VU", commission: 15 },
-  { id: "v2", name: "Rahmat Digital", code: "RD", commission: 12 },
-  { id: "v3", name: "Sinar Jaya", code: "SJ", commission: 10 },
+  { id: "v1", name: "Vendor Utama", code: "MAIN", commission: 10 },
+  { id: "v2", name: "Reseller Premium", code: "PREM", commission: 15 },
 ];
 
-// Mock data for invoices - we ensure these match with real order data
+// Mock data for invoices - Updated to match existing vendors and use client names from orders
 const mockInvoices: Invoice[] = [
   {
     id: "1",
@@ -23,8 +22,8 @@ const mockInvoices: Invoice[] = [
     dateIssued: "2025-04-25",
     dueDate: "2025-05-10",
     orders: [
-      { orderId: "123", clientName: "Rizki", orderDate: "2025-04-15", amount: 350000 },
-      { orderId: "124", clientName: "Rendra", orderDate: "2025-04-20", amount: 400000 },
+      { orderId: "123", clientName: "Rizki & Putri", orderDate: "2025-04-15", amount: 350000 },
+      { orderId: "124", clientName: "Kartika & Rendra", orderDate: "2025-04-20", amount: 400000 },
     ],
     status: "Unpaid",
     totalAmount: 750000,
@@ -32,14 +31,14 @@ const mockInvoices: Invoice[] = [
   {
     id: "2",
     invoiceNumber: "INV-2025-002",
-    vendor: "Rahmat Digital",
+    vendor: "Reseller Premium",
     vendorId: "v2",
     dateIssued: "2025-04-20",
     dueDate: "2025-05-05",
     orders: [
-      { orderId: "125", clientName: "Budi", orderDate: "2025-04-10", amount: 250000 },
-      { orderId: "126", clientName: "Wati", orderDate: "2025-04-12", amount: 300000 },
-      { orderId: "127", clientName: "Sinta", orderDate: "2025-04-18", amount: 350000 },
+      { orderId: "125", clientName: "Budi & Anisa", orderDate: "2025-04-10", amount: 250000 },
+      { orderId: "126", clientName: "Ahmad & Wati", orderDate: "2025-04-12", amount: 300000 },
+      { orderId: "127", clientName: "Andi & Sinta", orderDate: "2025-04-18", amount: 350000 },
     ],
     status: "Unpaid",
     totalAmount: 900000,
@@ -47,12 +46,12 @@ const mockInvoices: Invoice[] = [
   {
     id: "3",
     invoiceNumber: "INV-2025-003",
-    vendor: "Sinar Jaya",
-    vendorId: "v3",
+    vendor: "Vendor Utama",
+    vendorId: "v1",
     dateIssued: "2025-03-15",
     dueDate: "2025-03-30",
     orders: [
-      { orderId: "120", clientName: "Dewi", orderDate: "2025-03-10", amount: 400000 },
+      { orderId: "120", clientName: "Dewi & Rendi", orderDate: "2025-03-10", amount: 400000 },
     ],
     status: "Paid",
     totalAmount: 400000,

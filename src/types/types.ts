@@ -82,3 +82,10 @@ export interface InvoiceFilter {
   sortBy?: 'dueDate' | 'amount';
   sortDirection?: 'asc' | 'desc';
 }
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+}

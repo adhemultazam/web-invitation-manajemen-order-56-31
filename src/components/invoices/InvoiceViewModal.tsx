@@ -1,6 +1,6 @@
 
 import { useRef, useEffect, useState } from "react";
-import { Invoice, Vendor } from "@/types/types";
+import { Invoice, Vendor, BankAccount } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,9 +25,14 @@ const defaultInvoiceSettings = {
   businessAddress: "Jl. Pemuda No. 123, Surabaya",
   contactEmail: "contact@undangandigital.com",
   contactPhone: "+62 812 3456 7890",
-  bankName: "BCA",
-  bankAccountNumber: "1234567890",
-  accountHolderName: "PT Undangan Digital Indonesia",
+  bankAccounts: [
+    {
+      id: "1",
+      bankName: "BCA",
+      accountNumber: "1234567890",
+      accountHolderName: "PT Undangan Digital Indonesia",
+    }
+  ]
 };
 
 export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalProps) {
@@ -160,10 +165,17 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
               </div>
             </div>
             
-            {/* Footer */}
+            {/* Footer - Bank Information */}
             <div className="mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
               <p>Terima kasih atas kerja sama Anda.</p>
-              <p className="mt-1">Pembayaran dapat dilakukan melalui transfer ke rekening {invoiceSettings.bankName} {invoiceSettings.bankAccountNumber} a.n. {invoiceSettings.accountHolderName}</p>
+              <p className="mt-1">Pembayaran dapat dilakukan melalui transfer ke:</p>
+              <div className="mt-2 space-y-1">
+                {invoiceSettings.bankAccounts?.map((account, index) => (
+                  <p key={account.id || index}>
+                    {account.bankName} {account.accountNumber} a.n. {account.accountHolderName}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </div>

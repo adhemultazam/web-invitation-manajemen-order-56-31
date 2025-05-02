@@ -14,7 +14,8 @@ import {
   LayoutDashboard, 
   CalendarDays, 
   Settings,
-  PackageIcon
+  PackageIcon,
+  FileText
 } from "lucide-react";
 
 const months = [
@@ -61,6 +62,18 @@ export function AppSidebar() {
                   >
                     <LayoutDashboard size={20} />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link 
+                    to="/invoices" 
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/invoices" ? "bg-wedding-light text-wedding-primary font-medium" : "hover:bg-gray-100"}`}
+                  >
+                    <FileText size={20} />
+                    <span>Invoice</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

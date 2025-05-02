@@ -1,3 +1,4 @@
+
 export interface Order {
   id: string;
   orderDate: string;
@@ -55,3 +56,29 @@ export type ChartData = {
   name: string;
   value: number;
 }[];
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  vendor: string;
+  vendorId: string;
+  dateIssued: string;
+  dueDate: string;
+  orders: InvoiceOrder[];
+  status: 'Paid' | 'Unpaid';
+  totalAmount: number;
+}
+
+export interface InvoiceOrder {
+  orderId: string;
+  clientName: string;
+  orderDate: string;
+  amount: number;
+}
+
+export interface InvoiceFilter {
+  vendor?: string;
+  status?: 'Paid' | 'Unpaid' | 'All';
+  sortBy?: 'dueDate' | 'amount';
+  sortDirection?: 'asc' | 'desc';
+}

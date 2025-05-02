@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Calendar, Settings, PlusCircle } from "lucide-react";
+import { LayoutDashboard, Calendar, Settings, FileText } from "lucide-react";
 
 export function MobileNavbar() {
   const location = useLocation();
@@ -10,6 +10,7 @@ export function MobileNavbar() {
     if (route === "/" && path === "/") return true;
     if (route === "/pengaturan" && path === "/pengaturan") return true;
     if (route === "/bulan" && path.includes("/bulan")) return true;
+    if (route === "/invoices" && path === "/invoices") return true;
     return false;
   };
 
@@ -29,6 +30,14 @@ export function MobileNavbar() {
       >
         <Calendar className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Pesanan</span>
+      </Link>
+      
+      <Link 
+        to="/invoices" 
+        className={`mobile-navbar-item ${isActive("/invoices") ? "active" : ""}`}
+      >
+        <FileText className="mobile-navbar-icon" />
+        <span className="mobile-navbar-label">Invoice</span>
       </Link>
       
       <Link 

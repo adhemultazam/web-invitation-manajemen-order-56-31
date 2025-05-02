@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Settings from "./pages/settings/Settings";
 import MonthlyOrders from "./pages/orders/MonthlyOrders";
 import NotFound from "./pages/NotFound";
+import Invoices from "./pages/invoices/Invoices";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/pengaturan" element={<Settings />} />
             <Route path="/bulan/:month" element={<MonthlyOrders />} />
+            <Route path="/invoices" element={<Invoices />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -24,24 +24,24 @@ interface OrderFilterProps {
 
 export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProps) {
   const [search, setSearch] = useState("");
-  const [workStatus, setWorkStatus] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [vendor, setVendor] = useState("");
+  const [workStatus, setWorkStatus] = useState("all");
+  const [paymentStatus, setPaymentStatus] = useState("all");
+  const [vendor, setVendor] = useState("all");
 
   const handleSearch = () => {
     onFilter({
       search,
-      workStatus,
-      paymentStatus,
-      vendor,
+      workStatus: workStatus === "all" ? "" : workStatus,
+      paymentStatus: paymentStatus === "all" ? "" : paymentStatus,
+      vendor: vendor === "all" ? "" : vendor,
     });
   };
 
   const handleReset = () => {
     setSearch("");
-    setWorkStatus("");
-    setPaymentStatus("");
-    setVendor("");
+    setWorkStatus("all");
+    setPaymentStatus("all");
+    setVendor("all");
     onFilter({
       search: "",
       workStatus: "",
@@ -83,7 +83,7 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
               <SelectValue placeholder="Semua status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Status</SelectItem>
+              <SelectItem value="all">Semua Status</SelectItem>
               {workStatuses.map((status) => (
                 <SelectItem key={status} value={status}>
                   {status}
@@ -102,7 +102,7 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
               <SelectValue placeholder="Semua status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Status</SelectItem>
+              <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="Lunas">Lunas</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Belum Bayar">Belum Bayar</SelectItem>
@@ -119,7 +119,7 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
               <SelectValue placeholder="Semua vendor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Vendor</SelectItem>
+              <SelectItem value="all">Semua Vendor</SelectItem>
               {vendors.map((vendor) => (
                 <SelectItem key={vendor} value={vendor}>
                   {vendor}

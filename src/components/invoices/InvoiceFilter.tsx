@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { InvoiceFilter, Vendor } from "@/types/types";
+import type { InvoiceFilter as InvoiceFilterType } from "@/types/types";
+import { Vendor } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,31 +13,31 @@ import {
 import { Label } from "@/components/ui/label";
 import {
   ArrowUpDown,
-  CalendarSort,
+  Calendar,
   DollarSign,
 } from "lucide-react";
 
 interface InvoiceFilterProps {
   vendors: Vendor[];
-  onFilterChange: (filters: InvoiceFilter) => void;
+  onFilterChange: (filters: InvoiceFilterType) => void;
 }
 
 export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
-  const [filters, setFilters] = useState<InvoiceFilter>({
+  const [filters, setFilters] = useState<InvoiceFilterType>({
     vendor: undefined,
     status: 'All',
     sortBy: 'dueDate',
     sortDirection: 'asc'
   });
   
-  const handleFilterChange = (key: keyof InvoiceFilter, value: string | undefined) => {
+  const handleFilterChange = (key: keyof InvoiceFilterType, value: string | undefined) => {
     const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+    setFilters(newFilters as InvoiceFilterType);
+    onFilterChange(newFilters as InvoiceFilterType);
   };
   
   const toggleSortDirection = () => {
-    const newDirection = filters.sortDirection === 'asc' ? 'desc' : 'asc';
+    const newDirection = filters.sortDirection === 'asc' ? 'desc' as const : 'asc' as const;
     const newFilters = { ...filters, sortDirection: newDirection };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -93,7 +94,7 @@ export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
           className="h-10"
           onClick={() => setSortBy('dueDate')}
         >
-          <CalendarSort className="mr-2 h-4 w-4" />
+          <Calendar className="mr-2 h-4 w-4" />
           Tanggal
         </Button>
         <Button 

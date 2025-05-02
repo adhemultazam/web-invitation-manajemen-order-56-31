@@ -14,17 +14,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Order } from "@/types/types";
 import { Link } from "react-router-dom";
-import { ChevronDown, Edit, Eye } from "lucide-react";
+import { ChevronDown, Edit, Eye, Check } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface OrderTableProps {
   orders: Order[];
+  vendors: string[];
+  workStatuses: string[];
+  onUpdateOrder: (id: string, data: Partial<Order>) => void;
 }
 
-export function OrderTable({ orders }: OrderTableProps) {
+export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: OrderTableProps) {
+  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -63,6 +76,63 @@ export function OrderTable({ orders }: OrderTableProps) {
     }
   };
 
+  const togglePaymentStatus = (order: Order) => {
+    const newStatus = order.paymentStatus === 'Lunas' ? 'Pending' : 'Lunas';
+    setUpdatingOrders(prev => new Set(prev).add(order.id));
+    
+    onUpdateOrder(order.id, { 
+      paymentStatus: newStatus 
+    });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(order.id);
+        return newSet;
+      });
+      
+      toast.success(`Status pembayaran diubah menjadi ${newStatus}`, {
+        description: `Order: ${order.clientName}`
+      });
+    }, 500);
+  };
+
+  const handleWorkStatusChange = (orderId: string, newStatus: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    onUpdateOrder(orderId, {
+      workStatus: newStatus
+    });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+      
+      toast.success(`Status pengerjaan diubah menjadi ${newStatus}`);
+    }, 500);
+  };
+
+  const handleVendorChange = (orderId: string, newVendor: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    onUpdateOrder(orderId, {
+      vendor: newVendor
+    });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+      
+      toast.success(`Vendor diubah menjadi ${newVendor}`);
+    }, 500);
+  };
+
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
@@ -78,14 +148,13 @@ export function OrderTable({ orders }: OrderTableProps) {
             <TableHead className="w-[120px]">Tema</TableHead>
             <TableHead className="w-[150px]">Status Pembayaran</TableHead>
             <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
-            <TableHead className="w-[80px]">Izin Post</TableHead>
             <TableHead className="w-[60px]">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                 Tidak ada data pesanan
               </TableCell>
             </TableRow>
@@ -107,7 +176,31 @@ export function OrderTable({ orders }: OrderTableProps) {
                     {order.clientName}
                   </Link>
                 </TableCell>
-                <TableCell>{order.vendor}</TableCell>
+                <TableCell>
+                  <Select 
+                    value={order.vendor}
+                    onValueChange={(value) => handleVendorChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="flex items-center gap-1">
+                            <span className="animate-pulse">Menyimpan...</span>
+                          </span>
+                        ) : (
+                          order.vendor
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map((vendor) => (
+                        <SelectItem key={vendor} value={vendor}>
+                          {vendor}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -149,19 +242,53 @@ export function OrderTable({ orders }: OrderTableProps) {
                 <TableCell>{order.theme}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <Badge className={getPaymentStatusColor(order.paymentStatus)}>
-                      {order.paymentStatus}
-                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="p-0 h-6"
+                      onClick={() => togglePaymentStatus(order)}
+                    >
+                      <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="flex items-center gap-1">
+                            <span className="animate-pulse">Menyimpan...</span>
+                          </span>
+                        ) : (
+                          order.paymentStatus
+                        )}
+                      </Badge>
+                    </Button>
                     <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(order.workStatus)}>
-                    {order.workStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  <Checkbox checked={order.postPermission} />
+                  <Select 
+                    value={order.workStatus}
+                    onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 px-3 w-full">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="flex items-center gap-1">
+                            <span className="animate-pulse">Menyimpan...</span>
+                          </span>
+                        ) : (
+                          <Badge className={getStatusColor(order.workStatus)}>
+                            {order.workStatus}
+                          </Badge>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workStatuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          <Badge className={getStatusColor(status)}>
+                            {status}
+                          </Badge>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-1">

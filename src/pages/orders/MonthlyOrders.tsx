@@ -4,8 +4,9 @@ import { useParams } from "react-router-dom";
 import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, CircleDollarSign, Check, X } from "lucide-react";
 import { Order } from "@/types/types";
+import { AddOrderModal } from "@/components/orders/AddOrderModal";
 
 // Mock data for orders
 const mockOrders: Order[] = [
@@ -73,6 +74,7 @@ export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Capitalize the first letter of the month
   const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
@@ -118,6 +120,39 @@ export default function MonthlyOrders() {
     setFilteredOrders(result);
   };
 
+  const handleUpdateOrder = (id: string, data: Partial<Order>) => {
+    const updatedOrders = orders.map(order => 
+      order.id === id ? { ...order, ...data } : order
+    );
+    
+    setOrders(updatedOrders);
+    setFilteredOrders(updatedOrders.filter(order => 
+      filteredOrders.some(fo => fo.id === order.id)
+    ));
+  };
+
+  const handleAddOrder = (orderData: Omit<Order, "id">) => {
+    const newOrder: Order = {
+      ...orderData,
+      id: (orders.length + 1).toString(),
+    };
+    
+    const updatedOrders = [...orders, newOrder];
+    setOrders(updatedOrders);
+    setFilteredOrders(updatedOrders);
+    setIsAddModalOpen(false);
+  };
+
+  // Calculate statistics
+  const totalOrders = orders.length;
+  const completedOrders = orders.filter(order => order.workStatus === "Selesai").length;
+  const inProgressOrders = orders.filter(order => order.workStatus !== "Selesai").length;
+  const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
+  const unpaidOrders = orders.filter(order => order.paymentStatus !== "Lunas").length;
+  const totalRevenue = orders
+    .filter(order => order.paymentStatus === "Lunas")
+    .reduce((sum, order) => sum + order.paymentAmount, 0);
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -127,31 +162,59 @@ export default function MonthlyOrders() {
             Kelola pesanan undangan untuk bulan {capitalizedMonth}
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Tambah Pesanan
         </Button>
       </div>
 
       <div className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border rounded-md p-4 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
             <div className="text-sm text-muted-foreground">Total Pesanan</div>
-            <div className="text-3xl font-bold mt-1">{orders.length}</div>
+            <div className="text-3xl font-bold mt-1">{totalOrders}</div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center">
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
             <div className="text-sm text-muted-foreground">Selesai</div>
             <div className="text-3xl font-bold mt-1 text-green-500">
-              {orders.filter((order) => order.workStatus === "Selesai").length}
+              {completedOrders}
             </div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center">
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
             <div className="text-sm text-muted-foreground">Progress</div>
             <div className="text-3xl font-bold mt-1 text-blue-500">
-              {orders.filter((order) => order.workStatus === "Progress").length +
-                orders.filter((order) => order.workStatus === "Review").length +
-                orders.filter((order) => order.workStatus === "Revisi").length +
-                orders.filter((order) => order.workStatus === "Data Belum").length}
+              {inProgressOrders}
+            </div>
+          </div>
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+            <div className="flex items-center justify-center gap-2">
+              <CircleDollarSign className="h-5 w-5 text-muted-foreground" />
+              <div className="text-sm text-muted-foreground">Total Omset</div>
+            </div>
+            <div className="text-2xl font-bold mt-1 text-wedding-primary">
+              {new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                minimumFractionDigits: 0,
+              }).format(totalRevenue)}
+            </div>
+          </div>
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+            <div className="flex items-center justify-center gap-2">
+              <Check className="h-5 w-5 text-green-500" />
+              <div className="text-sm text-muted-foreground">Sudah Lunas</div>
+            </div>
+            <div className="text-2xl font-bold mt-1 text-green-500">
+              {paidOrders}
+            </div>
+          </div>
+          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+            <div className="flex items-center justify-center gap-2">
+              <X className="h-5 w-5 text-red-500" />
+              <div className="text-sm text-muted-foreground">Belum Lunas</div>
+            </div>
+            <div className="text-2xl font-bold mt-1 text-red-500">
+              {unpaidOrders}
             </div>
           </div>
         </div>
@@ -163,7 +226,20 @@ export default function MonthlyOrders() {
         workStatuses={workStatuses}
       />
 
-      <OrderTable orders={filteredOrders} />
+      <OrderTable 
+        orders={filteredOrders} 
+        vendors={vendors}
+        workStatuses={workStatuses}
+        onUpdateOrder={handleUpdateOrder}
+      />
+      
+      <AddOrderModal 
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddOrder={handleAddOrder}
+        vendors={vendors}
+        workStatuses={workStatuses}
+      />
     </div>
   );
 }

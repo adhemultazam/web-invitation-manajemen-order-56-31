@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,7 @@ const mockOrders: Order[] = [
 // Mock vendors and work statuses
 const vendors = ["Vendor Utama", "Reseller Premium"];
 const workStatuses = ["Selesai", "Progress", "Review", "Revisi", "Data Belum"];
+const themes = ["Elegant Gold", "Floral Pink", "Rustic Wood", "Minimalist"];
 
 export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();
@@ -103,17 +104,17 @@ export default function MonthlyOrders() {
       );
     }
 
-    if (filters.workStatus) {
+    if (filters.workStatus && filters.workStatus !== "all") {
       result = result.filter((order) => order.workStatus === filters.workStatus);
     }
 
-    if (filters.paymentStatus) {
+    if (filters.paymentStatus && filters.paymentStatus !== "all") {
       result = result.filter(
         (order) => order.paymentStatus === filters.paymentStatus
       );
     }
 
-    if (filters.vendor) {
+    if (filters.vendor && filters.vendor !== "all") {
       result = result.filter((order) => order.vendor === filters.vendor);
     }
 
@@ -149,9 +150,27 @@ export default function MonthlyOrders() {
   const inProgressOrders = orders.filter(order => order.workStatus !== "Selesai").length;
   const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
   const unpaidOrders = orders.filter(order => order.paymentStatus !== "Lunas").length;
+  
   const totalRevenue = orders
     .filter(order => order.paymentStatus === "Lunas")
     .reduce((sum, order) => sum + order.paymentAmount, 0);
+  
+  const paidAmount = orders
+    .filter(order => order.paymentStatus === "Lunas")
+    .reduce((sum, order) => sum + order.paymentAmount, 0);
+    
+  const unpaidAmount = orders
+    .filter(order => order.paymentStatus === "Pending")
+    .reduce((sum, order) => sum + order.paymentAmount, 0);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div>
@@ -169,52 +188,59 @@ export default function MonthlyOrders() {
       </div>
 
       <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+        <div className="grid grid-cols-6 gap-3">
+          {/* Total Orders */}
+          <div className="bg-white border rounded-md p-3 text-center">
             <div className="text-sm text-muted-foreground">Total Pesanan</div>
-            <div className="text-3xl font-bold mt-1">{totalOrders}</div>
+            <div className="text-2xl font-bold mt-1">{totalOrders}</div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+          
+          {/* Completed Orders */}
+          <div className="bg-white border rounded-md p-3 text-center">
             <div className="text-sm text-muted-foreground">Selesai</div>
-            <div className="text-3xl font-bold mt-1 text-green-500">
+            <div className="text-2xl font-bold mt-1 text-green-500">
               {completedOrders}
             </div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
+          
+          {/* In Progress Orders */}
+          <div className="bg-white border rounded-md p-3 text-center">
             <div className="text-sm text-muted-foreground">Progress</div>
-            <div className="text-3xl font-bold mt-1 text-blue-500">
+            <div className="text-2xl font-bold mt-1 text-blue-500">
               {inProgressOrders}
             </div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
-            <div className="flex items-center justify-center gap-2">
-              <CircleDollarSign className="h-5 w-5 text-muted-foreground" />
+          
+          {/* Total Revenue */}
+          <div className="bg-white border rounded-md p-3 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
               <div className="text-sm text-muted-foreground">Total Omset</div>
             </div>
-            <div className="text-2xl font-bold mt-1 text-wedding-primary">
-              {new Intl.NumberFormat("id-ID", {
-                style: "currency",
-                currency: "IDR",
-                minimumFractionDigits: 0,
-              }).format(totalRevenue)}
+            <div className="text-lg font-bold mt-1 text-wedding-primary">
+              {formatCurrency(totalRevenue)}
             </div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
-            <div className="flex items-center justify-center gap-2">
-              <Check className="h-5 w-5 text-green-500" />
+          
+          {/* Paid Orders */}
+          <div className="bg-white border rounded-md p-3 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Check className="h-4 w-4 text-green-500" />
               <div className="text-sm text-muted-foreground">Sudah Lunas</div>
             </div>
-            <div className="text-2xl font-bold mt-1 text-green-500">
-              {paidOrders}
+            <div className="text-lg font-bold mt-1 text-green-500">
+              {paidOrders} ({formatCurrency(paidAmount)})
             </div>
           </div>
-          <div className="bg-white border rounded-md p-4 text-center col-span-2">
-            <div className="flex items-center justify-center gap-2">
-              <X className="h-5 w-5 text-red-500" />
+          
+          {/* Unpaid Orders */}
+          <div className="bg-white border rounded-md p-3 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <X className="h-4 w-4 text-red-500" />
               <div className="text-sm text-muted-foreground">Belum Lunas</div>
             </div>
-            <div className="text-2xl font-bold mt-1 text-red-500">
-              {unpaidOrders}
+            <div className="text-lg font-bold mt-1 text-red-500">
+              {unpaidOrders} ({formatCurrency(unpaidAmount)})
             </div>
           </div>
         </div>
@@ -230,6 +256,7 @@ export default function MonthlyOrders() {
         orders={filteredOrders} 
         vendors={vendors}
         workStatuses={workStatuses}
+        themes={themes}
         onUpdateOrder={handleUpdateOrder}
       />
       

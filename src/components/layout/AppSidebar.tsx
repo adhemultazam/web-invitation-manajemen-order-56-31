@@ -14,7 +14,6 @@ import {
   LayoutDashboard, 
   CalendarDays, 
   Settings, 
-  Package,
 } from "lucide-react";
 
 const months = [
@@ -40,7 +39,7 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="px-3 py-4">
           <h1 className="text-xl font-bold text-center text-white mb-2">
-            Nikah Digital
+            Undangan Digital
           </h1>
           <p className="text-xs text-center text-white/80">
             Manajemen Pesanan

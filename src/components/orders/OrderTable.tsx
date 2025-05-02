@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -25,17 +26,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 import { toast } from "sonner";
 
 interface OrderTableProps {
   orders: Order[];
   vendors: string[];
   workStatuses: string[];
+  themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;
 }
 
-export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: OrderTableProps) {
+export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder }: OrderTableProps) {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
 
   const formatCurrency = (amount: number) => {
@@ -44,6 +45,20 @@ export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: Ord
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  };
+
+  const isPastDate = (dateString: string) => {
+    const eventDate = new Date(dateString);
+    const today = new Date();
+    return eventDate < today;
   };
 
   const getStatusColor = (status: string): string => {
@@ -133,6 +148,24 @@ export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: Ord
     }, 500);
   };
 
+  const handleThemeChange = (orderId: string, newTheme: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    onUpdateOrder(orderId, {
+      theme: newTheme
+    });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+      
+      toast.success(`Tema diubah menjadi ${newTheme}`);
+    }, 500);
+  };
+
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
@@ -162,15 +195,21 @@ export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: Ord
             orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-mono text-xs">
-                  {new Date(order.orderDate).toLocaleDateString("id-ID")}
+                  {formatDate(order.orderDate)}
                 </TableCell>
                 <TableCell className="font-mono text-xs">
-                  {new Date(order.eventDate).toLocaleDateString("id-ID")}
+                  {formatDate(order.eventDate)}
                 </TableCell>
                 <TableCell className="font-mono text-xs">
-                  {order.countdownDays} hari
+                  <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+                    {order.countdownDays} hari
+                  </span>
                 </TableCell>
-                <TableCell className="font-medium">{order.customerName}</TableCell>
+                <TableCell className="font-medium">
+                  <Link to={`/order/${order.id}`} className="hover:underline text-wedding-primary">
+                    {order.customerName}
+                  </Link>
+                </TableCell>
                 <TableCell>
                   <Link to={`/order/${order.id}`} className="text-wedding-primary hover:underline">
                     {order.clientName}
@@ -239,7 +278,31 @@ export function OrderTable({ orders, vendors, workStatuses, onUpdateOrder }: Ord
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
-                <TableCell>{order.theme}</TableCell>
+                <TableCell>
+                  <Select 
+                    value={order.theme}
+                    onValueChange={(value) => handleThemeChange(order.id, value)}
+                  >
+                    <SelectTrigger className="h-8 w-full text-xs">
+                      <SelectValue>
+                        {updatingOrders.has(order.id) ? (
+                          <span className="flex items-center gap-1">
+                            <span className="animate-pulse">Menyimpan...</span>
+                          </span>
+                        ) : (
+                          order.theme
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themes.map((theme) => (
+                        <SelectItem key={theme} value={theme}>
+                          {theme}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <Button 

@@ -128,8 +128,7 @@ export default function MonthlyOrders() {
 
   // Try to fetch addons from settings
   useEffect(() => {
-    // In a real app, this would fetch addons from settings or API
-    // For now, we'll use the default addons
+    // Load addons from localStorage
     const storedAddons = localStorage.getItem('addons');
     if (storedAddons) {
       try {
@@ -142,7 +141,7 @@ export default function MonthlyOrders() {
       }
     }
     
-    // Try to fetch themes from localStorage
+    // Load themes from localStorage
     const storedThemes = localStorage.getItem('themes');
     if (storedThemes) {
       try {
@@ -328,6 +327,7 @@ export default function MonthlyOrders() {
         workStatuses={workStatuses}
         themes={availableThemes.map(theme => theme.name)} // Convert Theme[] to string[]
         onUpdateOrder={handleUpdateOrder}
+        addons={addons} // Pass addons to OrderTable
       />
       
       <AddOrderModal 
@@ -336,7 +336,7 @@ export default function MonthlyOrders() {
         onAddOrder={handleAddOrder}
         vendors={vendors}
         workStatuses={workStatuses}
-        addons={addons}
+        addons={addons} // Pass addons to AddOrderModal
       />
 
       {/* Mobile Navigation */}

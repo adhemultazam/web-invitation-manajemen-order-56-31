@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Login function - mock implementation
   const login = async (email: string, password: string): Promise<boolean> => {
     // Mock validation (replace with real authentication)
-    if (email === 'admin@undangandigital.com' && password === 'password') {
+    if ((email === 'admin@undangandigital.com' || email === 'admin') && password === 'admin123') {
       setUser(mockUser);
       setIsAuthenticated(true);
       

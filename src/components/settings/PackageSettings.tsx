@@ -27,7 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Package } from "@/types/types";
 import { Plus, Edit, Trash2, ChevronDown } from "lucide-react";
 import {
@@ -35,6 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { toast } from "sonner";
 
 // Mock data for packages
 const initialPackages: Package[] = [
@@ -66,6 +67,24 @@ export function PackageSettings() {
   });
   const [newFeature, setNewFeature] = useState("");
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+
+  // Load saved packages on component mount
+  useEffect(() => {
+    const savedPackages = localStorage.getItem('packages');
+    if (savedPackages) {
+      try {
+        const parsedPackages = JSON.parse(savedPackages);
+        if (Array.isArray(parsedPackages)) {
+          setPackages(parsedPackages);
+        }
+      } catch (e) {
+        console.error("Error parsing packages:", e);
+      }
+    } else {
+      // Save initial packages to localStorage
+      localStorage.setItem('packages', JSON.stringify(initialPackages));
+    }
+  }, []);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -127,27 +146,39 @@ export function PackageSettings() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    let updatedPackages: Package[];
+
     if (currentPackage) {
       // Edit existing package
-      setPackages((prev) =>
-        prev.map((p) =>
-          p.id === currentPackage.id ? { ...p, ...formData } : p
-        )
+      updatedPackages = packages.map((p) =>
+        p.id === currentPackage.id ? { ...p, ...formData } : p
       );
+      toast.success(`Paket "${formData.name}" berhasil diperbarui`);
     } else {
       // Add new package
       const newPackage: Package = {
         id: Date.now().toString(),
         ...formData
       };
-      setPackages((prev) => [...prev, newPackage]);
+      updatedPackages = [...packages, newPackage];
+      toast.success(`Paket "${formData.name}" berhasil ditambahkan`);
     }
 
+    setPackages(updatedPackages);
+    localStorage.setItem('packages', JSON.stringify(updatedPackages));
     setIsDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {
-    setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
+    const packageToDelete = packages.find(pkg => pkg.id === id);
+    const updatedPackages = packages.filter((pkg) => pkg.id !== id);
+    
+    setPackages(updatedPackages);
+    localStorage.setItem('packages', JSON.stringify(updatedPackages));
+    
+    if (packageToDelete) {
+      toast.success(`Paket "${packageToDelete.name}" berhasil dihapus`);
+    }
   };
 
   const toggleRow = (id: string) => {

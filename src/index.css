@@ -151,16 +151,17 @@
 
 /* Improved sidebar group labels */
 [data-sidebar="group-label"] {
-  @apply text-white/80;
+  @apply text-white/80 font-medium;
 }
 
 /* Improved sidebar menu items */
 [data-sidebar="menu-button"] {
-  @apply text-white hover:bg-white/20 hover:text-white;
+  @apply text-white font-medium hover:bg-white/20 hover:text-white;
 }
 
+/* Improved active state for better contrast */
 [data-sidebar="menu-button"][data-active="true"] {
-  @apply bg-white/80 text-wedding-primary;
+  @apply bg-white/90 text-wedding-primary font-semibold;
 }
 
 /* Keep other styles unaffected */

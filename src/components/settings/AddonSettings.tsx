@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,12 +37,10 @@ import { Addon } from "@/types/types";
 
 // Initial addons for demo
 const initialAddons: Addon[] = [
-  { id: "1", name: "Foto Pre-Wedding", color: "bg-pink-500" },
-  { id: "2", name: "Undangan Fisik", color: "bg-blue-500" },
-  { id: "3", name: "Background Music", color: "bg-purple-500" },
-  { id: "4", name: "Video Opening", color: "bg-amber-500" },
-  { id: "5", name: "Galeri 20 Foto", color: "bg-green-500" },
-  { id: "6", name: "Quotes Islami", color: "bg-cyan-500" },
+  { id: "1", name: "Express", color: "bg-blue-500" },
+  { id: "2", name: "Super Express", color: "bg-orange-500" },
+  { id: "3", name: "Custom Desain", color: "bg-purple-500" },
+  { id: "4", name: "Custom Domain", color: "bg-green-500" }
 ];
 
 // Available colors for addons
@@ -54,9 +52,9 @@ const colorOptions = [
   { name: "Ungu", value: "bg-purple-500" },
   { name: "Pink", value: "bg-pink-500" },
   { name: "Biru Langit", value: "bg-cyan-500" },
-  { name: "Jingga", value: "bg-amber-500" },
+  { name: "Jingga", value: "bg-orange-500" },
   { name: "Abu-abu", value: "bg-gray-500" },
-  { name: "Coklat", value: "bg-orange-500" },
+  { name: "Coklat", value: "bg-orange-800" },
 ];
 
 export function AddonSettings() {
@@ -64,6 +62,24 @@ export function AddonSettings() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentAddon, setCurrentAddon] = useState<Addon | null>(null);
   const [formData, setFormData] = useState({ name: "", color: "bg-blue-500" });
+
+  // Load saved addons or initialize with defaults
+  useEffect(() => {
+    const savedAddons = localStorage.getItem('addons');
+    if (savedAddons) {
+      try {
+        const parsedAddons = JSON.parse(savedAddons);
+        if (Array.isArray(parsedAddons)) {
+          setAddons(parsedAddons);
+        }
+      } catch (e) {
+        console.error("Error parsing addons:", e);
+      }
+    } else {
+      // Save initial addons to localStorage
+      localStorage.setItem('addons', JSON.stringify(initialAddons));
+    }
+  }, []);
 
   const handleOpenDialog = (addon?: Addon) => {
     if (addon) {
@@ -87,10 +103,12 @@ export function AddonSettings() {
       return;
     }
     
+    let updatedAddons: Addon[];
+    
     if (currentAddon) {
       // Update existing addon
-      setAddons((prev) =>
-        prev.map((s) => (s.id === currentAddon.id ? { ...s, ...formData } : s))
+      updatedAddons = addons.map((s) => 
+        (s.id === currentAddon.id ? { ...s, ...formData } : s)
       );
       toast.success("Addon berhasil diperbarui");
     } else {
@@ -99,16 +117,21 @@ export function AddonSettings() {
         id: Date.now().toString(),
         ...formData,
       };
-      setAddons([...addons, newAddon]);
+      updatedAddons = [...addons, newAddon];
       toast.success("Addon baru berhasil ditambahkan");
     }
 
+    setAddons(updatedAddons);
+    localStorage.setItem('addons', JSON.stringify(updatedAddons));
     setIsDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {
     const addonToDelete = addons.find(addon => addon.id === id);
-    setAddons(addons.filter((addon) => addon.id !== id));
+    const updatedAddons = addons.filter((addon) => addon.id !== id);
+    
+    setAddons(updatedAddons);
+    localStorage.setItem('addons', JSON.stringify(updatedAddons));
     
     if (addonToDelete) {
       toast.success(`Addon "${addonToDelete.name}" berhasil dihapus`);

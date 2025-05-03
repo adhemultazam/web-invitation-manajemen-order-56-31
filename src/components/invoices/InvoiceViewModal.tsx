@@ -33,7 +33,8 @@ const defaultInvoiceSettings = {
       accountNumber: "1234567890",
       accountHolderName: "PT Undangan Digital Indonesia",
     }
-  ]
+  ],
+  invoiceFooter: "Terima kasih atas pesanan Anda."
 };
 
 export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalProps) {
@@ -179,7 +180,7 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
             
             {/* Footer - Bank Information */}
             <div className="mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
-              <p>Terima kasih atas kerja sama Anda.</p>
+              <p>{invoiceSettings.invoiceFooter || "Terima kasih atas pesanan Anda."}</p>
               <p className="mt-1">Pembayaran dapat dilakukan melalui transfer ke:</p>
               <div className="mt-2 space-y-1">
                 {invoiceSettings.bankAccounts?.map((account, index) => (

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { BankAccount } from "@/types/types";
+import { Plus, Trash2 } from "lucide-react";
 
 export function InvoiceSettings() {
   const [formData, setFormData] = useState({
@@ -23,9 +25,7 @@ export function InvoiceSettings() {
     phone: "0812-3456-7890",
     email: "info@undangandigital.com",
     website: "www.undangandigital.com",
-    bankAccount: "BCA - 1234567890",
-    bankAccountName: "PT Undangan Digital",
-    taxId: "123.456.789.0-123.000",
+    bankAccounts: [] as BankAccount[],
     invoiceFooter: "Terima kasih atas pesanan Anda.",
     logo: ""
   });
@@ -33,11 +33,63 @@ export function InvoiceSettings() {
   const [previewImage, setPreviewImage] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
 
+  // Load saved settings when component mounts
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("invoiceSettings");
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      setFormData(prev => ({
+        ...prev,
+        ...parsed
+      }));
+      if (parsed.logo) {
+        setPreviewImage(parsed.logo);
+      }
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  const handleBankAccountChange = (index: number, field: keyof BankAccount, value: string) => {
+    const updatedAccounts = [...formData.bankAccounts];
+    updatedAccounts[index] = {
+      ...updatedAccounts[index],
+      [field]: value
+    };
+    
+    setFormData({
+      ...formData,
+      bankAccounts: updatedAccounts
+    });
+  };
+
+  const handleAddBankAccount = () => {
+    const newAccount: BankAccount = {
+      id: Date.now().toString(),
+      bankName: "",
+      accountNumber: "",
+      accountHolderName: ""
+    };
+    
+    setFormData({
+      ...formData,
+      bankAccounts: [...formData.bankAccounts, newAccount]
+    });
+  };
+
+  const handleRemoveBankAccount = (index: number) => {
+    const updatedAccounts = [...formData.bankAccounts];
+    updatedAccounts.splice(index, 1);
+    
+    setFormData({
+      ...formData,
+      bankAccounts: updatedAccounts
     });
   };
 
@@ -76,8 +128,21 @@ export function InvoiceSettings() {
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Save to localStorage
+    const settingsToSave = {
+      brandName: formData.businessName,
+      businessAddress: `${formData.address}, ${formData.city} ${formData.zipCode}`,
+      contactPhone: formData.phone,
+      contactEmail: formData.email,
+      website: formData.website,
+      bankAccounts: formData.bankAccounts,
+      logoUrl: formData.logo,
+      invoiceFooter: formData.invoiceFooter
+    };
+    
+    localStorage.setItem("invoiceSettings", JSON.stringify(settingsToSave));
     toast.success('Pengaturan invoice berhasil disimpan');
-    // In a real application, you would save to backend here
   };
   
   const handleDeleteLogo = () => {
@@ -230,42 +295,80 @@ export function InvoiceSettings() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Informasi Pembayaran</h3>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="bankAccount">Rekening Bank</Label>
-                <Input
-                  id="bankAccount"
-                  name="bankAccount"
-                  value={formData.bankAccount}
-                  onChange={handleChange}
-                  placeholder="BCA - 1234567890"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bankAccountName">Atas Nama</Label>
-                <Input
-                  id="bankAccountName"
-                  name="bankAccountName"
-                  value={formData.bankAccountName}
-                  onChange={handleChange}
-                  placeholder="Nama pemilik rekening"
-                />
-              </div>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Informasi Rekening Bank</h3>
+              <Button 
+                type="button" 
+                onClick={handleAddBankAccount} 
+                variant="outline" 
+                size="sm"
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Tambah Rekening
+              </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="taxId">NPWP (opsional)</Label>
-              <Input
-                id="taxId"
-                name="taxId"
-                value={formData.taxId}
-                onChange={handleChange}
-                placeholder="NPWP"
-              />
-            </div>
+            {formData.bankAccounts.length > 0 ? (
+              <div className="space-y-4">
+                {formData.bankAccounts.map((account, index) => (
+                  <div key={account.id} className="p-4 border rounded-md space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">Rekening #{index + 1}</h4>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleRemoveBankAccount(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label htmlFor={`bankName-${index}`}>Nama Bank</Label>
+                        <Input
+                          id={`bankName-${index}`}
+                          value={account.bankName}
+                          onChange={(e) => handleBankAccountChange(index, 'bankName', e.target.value)}
+                          placeholder="BCA, Mandiri, dll."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`accountNumber-${index}`}>Nomor Rekening</Label>
+                        <Input
+                          id={`accountNumber-${index}`}
+                          value={account.accountNumber}
+                          onChange={(e) => handleBankAccountChange(index, 'accountNumber', e.target.value)}
+                          placeholder="1234567890"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`accountHolderName-${index}`}>Atas Nama</Label>
+                        <Input
+                          id={`accountHolderName-${index}`}
+                          value={account.accountHolderName}
+                          onChange={(e) => handleBankAccountChange(index, 'accountHolderName', e.target.value)}
+                          placeholder="Nama pemilik rekening"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-dashed rounded-md p-8 text-center">
+                <p className="text-muted-foreground mb-2">Belum ada rekening bank</p>
+                <Button 
+                  type="button" 
+                  onClick={handleAddBankAccount} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Tambah Rekening
+                </Button>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="invoiceFooter">Catatan Kaki Invoice</Label>

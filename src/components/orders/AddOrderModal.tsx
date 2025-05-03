@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
-import { Order, Theme } from "@/types/types";
+import { Order, Theme, Addon } from "@/types/types";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddOrderModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ interface AddOrderModalProps {
   onAddOrder: (order: Omit<Order, "id">) => void;
   vendors: string[];
   workStatuses: string[];
+  addons?: Addon[];
 }
 
 // Mock themes data
@@ -58,7 +60,15 @@ const mockThemes = [
   }
 ];
 
-export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses }: AddOrderModalProps) {
+// Default addons data
+const defaultAddons: Addon[] = [
+  { id: "1", name: "Express", color: "#3b82f6" },
+  { id: "2", name: "Super Express", color: "#f97316" },
+  { id: "3", name: "Custom Desain", color: "#8b5cf6" },
+  { id: "4", name: "Custom Domain", color: "#16a34a" }
+];
+
+export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses, addons = defaultAddons }: AddOrderModalProps) {
   const [formData, setFormData] = useState({
     orderDate: new Date().toISOString().split("T")[0],
     eventDate: "",
@@ -79,7 +89,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
 
   const [themes, setThemes] = useState<Theme[]>(mockThemes);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newFeature, setNewFeature] = useState("");
+  const [newBonus, setNewBonus] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -115,20 +125,36 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const handleAddFeature = (type: 'addons' | 'bonuses') => {
-    if (newFeature.trim()) {
+  const handleAddonToggle = (addonName: string) => {
+    setFormData((prev) => {
+      if (prev.addons.includes(addonName)) {
+        return {
+          ...prev,
+          addons: prev.addons.filter(item => item !== addonName)
+        };
+      } else {
+        return {
+          ...prev,
+          addons: [...prev.addons, addonName]
+        };
+      }
+    });
+  };
+
+  const handleAddBonus = () => {
+    if (newBonus.trim()) {
       setFormData((prev) => ({
         ...prev,
-        [type]: [...prev[type], newFeature.trim()]
+        bonuses: [...prev.bonuses, newBonus.trim()]
       }));
-      setNewFeature("");
+      setNewBonus("");
     }
   };
 
-  const handleRemoveFeature = (index: number, type: 'addons' | 'bonuses') => {
+  const handleRemoveBonus = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      [type]: prev[type].filter((_, i) => i !== index)
+      bonuses: prev.bonuses.filter((_, i) => i !== index)
     }));
   };
 
@@ -347,43 +373,24 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
 
           <div className="space-y-2">
             <Label>Addons</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Tambahkan addon"
-                value={newFeature}
-                onChange={(e) => setNewFeature(e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleAddFeature('addons')}
-              >
-                Tambah
-              </Button>
-            </div>
-            <ul className="space-y-2 mt-2">
-              {formData.addons.map((addon, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between bg-muted p-2 rounded-md"
-                >
-                  <span>{addon}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveFeature(index, 'addons')}
+            <div className="grid grid-cols-2 gap-2">
+              {addons.map((addon) => (
+                <div key={addon.id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`addon-${addon.id}`} 
+                    checked={formData.addons.includes(addon.name)}
+                    onCheckedChange={() => handleAddonToggle(addon.name)}
+                  />
+                  <Label 
+                    htmlFor={`addon-${addon.id}`} 
+                    className="text-sm font-normal"
+                    style={{ color: addon.color }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                  </Button>
-                </li>
+                    {addon.name}
+                  </Label>
+                </div>
               ))}
-              {formData.addons.length === 0 && (
-                <li className="text-muted-foreground text-sm">
-                  Belum ada addons yang ditambahkan
-                </li>
-              )}
-            </ul>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -391,13 +398,13 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
             <div className="flex gap-2">
               <Input
                 placeholder="Tambahkan bonus"
-                value={newFeature}
-                onChange={(e) => setNewFeature(e.target.value)}
+                value={newBonus}
+                onChange={(e) => setNewBonus(e.target.value)}
               />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleAddFeature('bonuses')}
+                onClick={handleAddBonus}
               >
                 Tambah
               </Button>
@@ -413,7 +420,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleRemoveFeature(index, 'bonuses')}
+                    onClick={() => handleRemoveBonus(index)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                   </Button>

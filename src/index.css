@@ -35,14 +35,17 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-primary: 227 41% 64%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 227 41% 95%;
-    --sidebar-accent-foreground: 227 41% 64%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 222.2 84% 4.9%;
+    --sidebar-background: 248 54% 60%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 248 54% 60%;
+    --sidebar-accent: 0 0% 100% / 0.2;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 0 0% 100%;
+    
+    --wedding-primary: 248 54% 60%;
+    --wedding-light: 248 54% 95%;
   }
  
   .dark {
@@ -74,14 +77,17 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
 
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 227 41% 64%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 227 41% 70%;
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-background: 248 54% 60%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 248 54% 60%;
+    --sidebar-accent: 0 0% 100% / 0.2;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
     --sidebar-ring: 212.7 26.8% 83.9%;
+    
+    --wedding-primary: 248 54% 60%;
+    --wedding-light: 248 10% 20%;
   }
 }
 
@@ -134,11 +140,27 @@
 }
 
 /* Override sidebar colors */
-body:not(.dark) .sidebar {
-  @apply bg-white;
+.sidebar {
+  @apply bg-wedding-primary;
 }
 
 /* Ensure badges are visible in dark mode */
 .dark .badge {
   @apply text-white;
 }
+
+/* Improved sidebar group labels */
+[data-sidebar="group-label"] {
+  @apply text-white/80;
+}
+
+/* Improved sidebar menu items */
+[data-sidebar="menu-button"] {
+  @apply text-white hover:bg-white/20 hover:text-white;
+}
+
+[data-sidebar="menu-button"][data-active="true"] {
+  @apply bg-white/80 text-wedding-primary;
+}
+
+/* Keep other styles unaffected */

@@ -5,7 +5,7 @@ import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
 import { Plus, CircleDollarSign, Check, X } from "lucide-react";
-import { Order } from "@/types/types";
+import { Order, Addon } from "@/types/types";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -75,11 +75,20 @@ const vendors = ["Vendor Utama", "Reseller Premium"];
 const workStatuses = ["Selesai", "Progress", "Review", "Revisi", "Data Belum"];
 const themes = ["Elegant Gold", "Floral Pink", "Rustic Wood", "Minimalist"];
 
+// Mock addons data
+const defaultAddons: Addon[] = [
+  { id: "1", name: "Express", color: "#3b82f6" },
+  { id: "2", name: "Super Express", color: "#f97316" },
+  { id: "3", name: "Custom Desain", color: "#8b5cf6" },
+  { id: "4", name: "Custom Domain", color: "#16a34a" }
+];
+
 export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const isMobile = useIsMobile();
 
   // Capitalize the first letter of the month
@@ -91,6 +100,23 @@ export default function MonthlyOrders() {
     setOrders(mockOrders);
     setFilteredOrders(mockOrders);
   }, [month]);
+
+  // Try to fetch addons from settings
+  useEffect(() => {
+    // In a real app, this would fetch addons from settings or API
+    // For now, we'll use the default addons
+    const storedAddons = localStorage.getItem('addons');
+    if (storedAddons) {
+      try {
+        const parsedAddons = JSON.parse(storedAddons);
+        if (Array.isArray(parsedAddons) && parsedAddons.length > 0) {
+          setAddons(parsedAddons);
+        }
+      } catch (e) {
+        console.error("Error parsing addons:", e);
+      }
+    }
+  }, []);
 
   const handleFilter = (filters: {
     search: string;
@@ -271,6 +297,7 @@ export default function MonthlyOrders() {
         onAddOrder={handleAddOrder}
         vendors={vendors}
         workStatuses={workStatuses}
+        addons={addons}
       />
 
       {/* Mobile Navigation */}

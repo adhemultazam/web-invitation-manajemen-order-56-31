@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Order, Addon } from "@/types/types";
+import { Order } from "@/types/types";
 import { Link } from "react-router-dom";
-import { ChevronDown, Edit, Eye, Check } from "lucide-react";
+import { ChevronDown, Edit, Eye } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -378,7 +378,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
               <TableHead className="w-[150px]">Nama Klien</TableHead>
               <TableHead className="w-[120px]">Vendor</TableHead>
               <TableHead className="w-[120px]">Paket</TableHead>
-              <TableHead className="w-[120px]">Addons</TableHead>
+              <TableHead className="w-[200px]">Addons</TableHead>
               <TableHead className="w-[120px]">Tema</TableHead>
               <TableHead className="w-[150px]">Status Pembayaran</TableHead>
               <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
@@ -481,29 +481,17 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </DropdownMenu>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 text-xs px-2">
-                          Addons
-                          <ChevronDown className="ml-1 h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-64">
-                        <div className="p-2">
-                          {order.addons.length ? (
-                            <div className="flex flex-wrap gap-1">
-                              {order.addons.map((addon, i) => (
-                                <span key={i} className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 text-xs px-2 py-0.5 rounded-full">
-                                  {addon}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground">Tidak ada addon</p>
-                          )}
-                        </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {order.addons.length ? (
+                      <div className="flex flex-wrap gap-1">
+                        {order.addons.map((addon, i) => (
+                          <span key={i} className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 text-xs px-2 py-0.5 rounded-full">
+                            {addon}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Tidak ada addon</p>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Select 

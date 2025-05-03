@@ -172,7 +172,7 @@ export function EditOrderDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Pesanan</DialogTitle>
           <DialogDescription>
@@ -181,7 +181,7 @@ export function EditOrderDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="orderDate" className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export function EditOrderDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="md:col-span-2 space-y-2">
               <Label className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
                 Addons
@@ -425,7 +425,7 @@ export function EditOrderDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="md:col-span-2 space-y-2">
               <Label htmlFor="notes" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Catatan
@@ -450,3 +450,4 @@ export function EditOrderDialog({
     </Dialog>
   );
 }
+

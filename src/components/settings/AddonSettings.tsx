@@ -37,31 +37,31 @@ import { Addon } from "@/types/types";
 
 // Initial addons for demo
 const initialAddons: Addon[] = [
-  { id: "1", name: "Express", color: "bg-blue-500" },
-  { id: "2", name: "Super Express", color: "bg-orange-500" },
-  { id: "3", name: "Custom Desain", color: "bg-purple-500" },
-  { id: "4", name: "Custom Domain", color: "bg-green-500" }
+  { id: "1", name: "Express", color: "#3b82f6" },
+  { id: "2", name: "Super Express", color: "#f97316" },
+  { id: "3", name: "Custom Desain", color: "#8b5cf6" },
+  { id: "4", name: "Custom Domain", color: "#16a34a" }
 ];
 
-// Available colors for addons
+// Available colors for addons with hex values instead of Tailwind classes
 const colorOptions = [
-  { name: "Merah", value: "bg-red-500" },
-  { name: "Biru", value: "bg-blue-500" },
-  { name: "Hijau", value: "bg-green-500" },
-  { name: "Kuning", value: "bg-yellow-500" },
-  { name: "Ungu", value: "bg-purple-500" },
-  { name: "Pink", value: "bg-pink-500" },
-  { name: "Biru Langit", value: "bg-cyan-500" },
-  { name: "Jingga", value: "bg-orange-500" },
-  { name: "Abu-abu", value: "bg-gray-500" },
-  { name: "Coklat", value: "bg-orange-800" },
+  { name: "Merah", value: "#ef4444" }, // red-500
+  { name: "Biru", value: "#3b82f6" }, // blue-500
+  { name: "Hijau", value: "#22c55e" }, // green-500
+  { name: "Kuning", value: "#eab308" }, // yellow-500
+  { name: "Ungu", value: "#8b5cf6" }, // purple-500
+  { name: "Pink", value: "#ec4899" }, // pink-500
+  { name: "Biru Langit", value: "#06b6d4" }, // cyan-500
+  { name: "Jingga", value: "#f97316" }, // orange-500
+  { name: "Abu-abu", value: "#6b7280" }, // gray-500
+  { name: "Coklat", value: "#9a3412" }, // orange-800
 ];
 
 export function AddonSettings() {
   const [addons, setAddons] = useState<Addon[]>(initialAddons);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentAddon, setCurrentAddon] = useState<Addon | null>(null);
-  const [formData, setFormData] = useState({ name: "", color: "bg-blue-500" });
+  const [formData, setFormData] = useState({ name: "", color: "#3b82f6" });
 
   // Load saved addons or initialize with defaults
   useEffect(() => {
@@ -70,7 +70,12 @@ export function AddonSettings() {
       try {
         const parsedAddons = JSON.parse(savedAddons);
         if (Array.isArray(parsedAddons)) {
-          setAddons(parsedAddons);
+          // Convert any bg-* classes to hex codes if needed
+          const normalizedAddons = parsedAddons.map(addon => ({
+            ...addon,
+            color: addon.color.startsWith('#') ? addon.color : convertBgClassToHex(addon.color)
+          }));
+          setAddons(normalizedAddons);
         }
       } catch (e) {
         console.error("Error parsing addons:", e);
@@ -81,6 +86,25 @@ export function AddonSettings() {
     }
   }, []);
 
+  // Function to convert Tailwind bg-* class to hex color
+  const convertBgClassToHex = (bgClass: string) => {
+    // Map of Tailwind bg classes to hex colors
+    const colorMap: Record<string, string> = {
+      'bg-red-500': '#ef4444',
+      'bg-blue-500': '#3b82f6',
+      'bg-green-500': '#22c55e',
+      'bg-yellow-500': '#eab308',
+      'bg-purple-500': '#8b5cf6',
+      'bg-pink-500': '#ec4899',
+      'bg-cyan-500': '#06b6d4',
+      'bg-orange-500': '#f97316',
+      'bg-gray-500': '#6b7280',
+      'bg-orange-800': '#9a3412',
+    };
+
+    return colorMap[bgClass] || '#3b82f6'; // Default to blue if not found
+  };
+
   const handleOpenDialog = (addon?: Addon) => {
     if (addon) {
       setCurrentAddon(addon);
@@ -90,7 +114,7 @@ export function AddonSettings() {
       });
     } else {
       setCurrentAddon(null);
-      setFormData({ name: "", color: "bg-blue-500" });
+      setFormData({ name: "", color: "#3b82f6" });
     }
     setIsDialogOpen(true);
   };
@@ -189,18 +213,22 @@ export function AddonSettings() {
                       <button
                         key={color.value}
                         type="button"
-                        className={`h-8 rounded-md transition-all ${color.value} ${
+                        className={`h-8 rounded-md transition-all ${
                           formData.color === color.value
                             ? "ring-2 ring-offset-2 ring-wedding-primary"
                             : ""
                         }`}
+                        style={{ backgroundColor: color.value }}
                         onClick={() => handleColorChange(color.value)}
                         title={color.name}
                       />
                     ))}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
-                    <div className={`h-6 w-6 rounded-full ${formData.color}`} />
+                    <div 
+                      className="h-6 w-6 rounded-full" 
+                      style={{ backgroundColor: formData.color }}
+                    />
                     <span className="text-sm">Preview label</span>
                   </div>
                 </div>
@@ -219,7 +247,10 @@ export function AddonSettings() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${addon.color}`} />
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: addon.color }}
+                    />
                     <h3 className="font-medium">{addon.name}</h3>
                   </div>
                   <div className="flex space-x-2">
@@ -255,7 +286,10 @@ export function AddonSettings() {
                 </div>
               </CardHeader>
               <CardFooter className="p-4 pt-0">
-                <div className={`px-2 py-1 text-xs rounded-full text-white ${addon.color}`}>
+                <div 
+                  className="px-2 py-1 text-xs rounded-full text-white"
+                  style={{ backgroundColor: addon.color }}
+                >
                   {addon.name}
                 </div>
               </CardFooter>

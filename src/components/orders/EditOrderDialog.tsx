@@ -57,6 +57,13 @@ export function EditOrderDialog({
         theme: order.theme,
         paymentStatus: order.paymentStatus,
         paymentAmount: order.paymentAmount,
+        orderDate: order.orderDate,
+        eventDate: order.eventDate,
+        package: order.package,
+        clientUrl: order.clientUrl,
+        countdownDays: order.countdownDays,
+        notes: order.notes,
+        postPermission: order.postPermission
       });
       setSelectedAddons(order.addons || []);
     }
@@ -132,6 +139,27 @@ export function EditOrderDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="orderDate">Tanggal Pesan</Label>
+                <Input
+                  id="orderDate"
+                  type="date"
+                  value={formData.orderDate || ""}
+                  onChange={(e) => handleChange("orderDate", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="eventDate">Tanggal Acara</Label>
+                <Input
+                  id="eventDate"
+                  type="date"
+                  value={formData.eventDate || ""}
+                  onChange={(e) => handleChange("eventDate", e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="customerName">Nama Pemesan</Label>
               <Input
@@ -151,22 +179,51 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="vendor">Vendor</Label>
-              <Select
-                value={formData.vendor || ""}
-                onValueChange={(value) => handleChange("vendor", value)}
-              >
-                <SelectTrigger id="vendor">
-                  <SelectValue placeholder="Pilih vendor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vendors.map((vendor) => (
-                    <SelectItem key={vendor} value={vendor}>
-                      {vendor}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="clientUrl">URL Undangan</Label>
+              <Input
+                id="clientUrl"
+                value={formData.clientUrl || ""}
+                onChange={(e) => handleChange("clientUrl", e.target.value)}
+                placeholder="https://undangan.com/nama-klien"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="vendor">Vendor</Label>
+                <Select
+                  value={formData.vendor || ""}
+                  onValueChange={(value) => handleChange("vendor", value)}
+                >
+                  <SelectTrigger id="vendor">
+                    <SelectValue placeholder="Pilih vendor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vendors.map((vendor) => (
+                      <SelectItem key={vendor} value={vendor}>
+                        {vendor}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="package">Paket</Label>
+                <Select
+                  value={formData.package || ""}
+                  onValueChange={(value) => handleChange("package", value)}
+                >
+                  <SelectTrigger id="package">
+                    <SelectValue placeholder="Pilih paket" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Basic">Basic</SelectItem>
+                    <SelectItem value="Premium">Premium</SelectItem>
+                    <SelectItem value="Ultimate">Ultimate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -181,46 +238,48 @@ export function EditOrderDialog({
                 <SelectContent>
                   {availableThemes.map((theme) => (
                     <SelectItem key={theme.id} value={theme.name}>
-                      {theme.name}
+                      {theme.name}{theme.category && ` - ${theme.category}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="workStatus">Status Pengerjaan</Label>
-              <Select
-                value={formData.workStatus || ""}
-                onValueChange={(value) => handleChange("workStatus", value)}
-              >
-                <SelectTrigger id="workStatus">
-                  <SelectValue placeholder="Pilih status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {workStatuses.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="workStatus">Status Pengerjaan</Label>
+                <Select
+                  value={formData.workStatus || ""}
+                  onValueChange={(value) => handleChange("workStatus", value)}
+                >
+                  <SelectTrigger id="workStatus">
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workStatuses.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="paymentStatus">Status Pembayaran</Label>
-              <Select
-                value={formData.paymentStatus || ""}
-                onValueChange={(value) => handleChange("paymentStatus", value)}
-              >
-                <SelectTrigger id="paymentStatus">
-                  <SelectValue placeholder="Pilih status pembayaran" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Lunas">Lunas</SelectItem>
-                  <SelectItem value="Pending">Belum Lunas</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="paymentStatus">Status Pembayaran</Label>
+                <Select
+                  value={formData.paymentStatus || ""}
+                  onValueChange={(value) => handleChange("paymentStatus", value)}
+                >
+                  <SelectTrigger id="paymentStatus">
+                    <SelectValue placeholder="Pilih status pembayaran" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Lunas">Lunas</SelectItem>
+                    <SelectItem value="Pending">Belum Lunas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -231,6 +290,28 @@ export function EditOrderDialog({
                 value={formData.paymentAmount || 0}
                 onChange={(e) => handleChange("paymentAmount", parseInt(e.target.value, 10))}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Izin Post</Label>
+              <div className="flex items-center space-x-2 mt-1">
+                <Button
+                  type="button"
+                  variant={formData.postPermission ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleChange("postPermission", true)}
+                >
+                  Boleh
+                </Button>
+                <Button
+                  type="button"
+                  variant={!formData.postPermission ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleChange("postPermission", false)}
+                >
+                  Tidak Boleh
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -254,6 +335,16 @@ export function EditOrderDialog({
                   </Button>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Catatan</Label>
+              <Input
+                id="notes"
+                value={formData.notes || ""}
+                onChange={(e) => handleChange("notes", e.target.value)}
+                placeholder="Tambahkan catatan jika ada"
+              />
             </div>
           </div>
 

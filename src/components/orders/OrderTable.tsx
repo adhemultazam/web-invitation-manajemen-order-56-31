@@ -314,6 +314,11 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     return availablePackages.find(pkg => pkg.name === packageName);
   };
 
+  // Find available addons for display in empty addon slots
+  const getPlaceholderAddons = () => {
+    return availableAddons.slice(0, 2);
+  };
+
   if (isMobile) {
     return (
       <>
@@ -349,7 +354,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8"
+                      className="h-8 w-8 text-wedding-primary hover:text-blue-600 hover:bg-blue-50"
                       onClick={() => handleOpenEditDialog(order)}
                     >
                       <Edit className="h-4 w-4" />
@@ -468,7 +473,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         {availableAddons.slice(0, 2).map((addon) => (
                           <Badge 
                             key={addon.id} 
-                            style={{ backgroundColor: addon.color || "#6366f1", color: '#fff' }}
+                            style={{ backgroundColor: addon.color || "#6366f1", opacity: 0.5, color: '#fff' }}
                             className="text-[10px] px-1.5 py-0 rounded-full"
                           >
                             {addon.name}
@@ -675,7 +680,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         {availableAddons.slice(0, 2).map((addon) => (
                           <Badge 
                             key={addon.id} 
-                            style={{ backgroundColor: addon.color || "#6366f1", color: '#fff' }}
+                            style={{ backgroundColor: addon.color || "#6366f1", opacity: 0.5, color: '#fff' }}
                             className="text-[10px] py-0 px-1.5"
                           >
                             {addon.name}

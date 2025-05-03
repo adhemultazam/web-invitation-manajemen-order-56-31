@@ -24,8 +24,9 @@ interface InvoiceTableProps {
 export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTableProps) {
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
+  const [defaultAddons, setDefaultAddons] = useState<Addon[]>([]);
   
-  // Load addon styles from localStorage
+  // Load addon styles and default addons from localStorage
   useEffect(() => {
     try {
       const storedAddons = localStorage.getItem('addons');
@@ -36,6 +37,7 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
           styles[addon.name] = { color: addon.color || '#6366f1' };
         });
         setAddonStyles(styles);
+        setDefaultAddons(parsedAddons);
       }
     } catch (e) {
       console.error("Error parsing addons:", e);

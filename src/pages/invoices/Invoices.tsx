@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from "react";
 import { Invoice, Vendor, InvoiceFilter } from "@/types/types";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";

@@ -4,6 +4,8 @@ export interface ChartData {
   value: number;
 }
 
+export interface ChartDataArray extends Array<ChartData> {}
+
 export interface Order {
   id: string;
   orderDate: string;
@@ -60,6 +62,13 @@ export interface Vendor {
   contactPerson?: string;
   contactEmail?: string;
   contactPhone?: string;
+  commission?: number;
+}
+
+export interface WorkStatus {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface BankAccount {

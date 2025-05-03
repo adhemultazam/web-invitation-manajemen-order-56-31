@@ -4,10 +4,10 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { Package, ShoppingCart, DollarSign, Users } from "lucide-react";
-import { ChartData } from "@/types/types";
+import { ChartData, ChartDataArray } from "@/types/types";
 
 // Mock data for charts
-const salesData: ChartData = [
+const salesData: ChartDataArray = [
   { name: "Jan", value: 10 },
   { name: "Feb", value: 15 },
   { name: "Mar", value: 12 },
@@ -22,7 +22,7 @@ const salesData: ChartData = [
   { name: "Des", value: 0 },
 ];
 
-const statusData: ChartData = [
+const statusData: ChartDataArray = [
   { name: "Selesai", value: 45 },
   { name: "Progress", value: 25 },
   { name: "Review", value: 15 },
@@ -30,12 +30,12 @@ const statusData: ChartData = [
   { name: "Data Belum", value: 5 },
 ];
 
-const paymentByVendorData: ChartData = [
+const paymentByVendorData: ChartDataArray = [
   { name: "Vendor Utama", value: 65 },
   { name: "Reseller Premium", value: 35 },
 ];
 
-const bestSellingData: ChartData = [
+const bestSellingData: ChartDataArray = [
   { name: "Elegant Gold", value: 30 },
   { name: "Floral Pink", value: 25 },
   { name: "Rustic Wood", value: 20 },

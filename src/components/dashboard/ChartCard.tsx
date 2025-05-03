@@ -1,12 +1,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartData } from "@/types/types";
+import { ChartData, ChartDataArray } from "@/types/types";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface ChartCardProps {
   title: string;
   description?: string;
-  data: ChartData;
+  data: ChartDataArray;
   type: "bar" | "pie";
   colors?: string[];
 }

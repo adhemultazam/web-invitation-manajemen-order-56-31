@@ -1,94 +1,96 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User } from "@/types/types";
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-type AuthContextType = {
+// Define types for auth
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateUser: (user: User) => void;
+  updateUser: (userData: User) => void;
+}
+
+// Create the context
+const AuthContext = createContext<AuthContextType | null>(null);
+
+// Custom hook to use the auth context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  login: async () => false,
-  logout: () => {},
-  updateUser: () => {},
-});
-
-export const useAuth = () => useContext(AuthContext);
-
-// Sample user for demonstration
-const sampleUser = {
-  id: "1",
-  name: "Admin User",
-  email: "admin@example.com",
-  avatar: "",
+// Mock user data (replace with real authentication later)
+const mockUser = {
+  id: '1',
+  name: 'Admin User',
+  email: 'admin@undangandigital.com',
+  role: 'admin',
 };
 
-type AuthProviderProps = {
-  children: ReactNode;
-};
-
-export function AuthProvider({ children }: AuthProviderProps) {
+// AuthProvider component
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Check for existing session on mount
   useEffect(() => {
-    // Check for existing user session in localStorage
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const storedUser = localStorage.getItem('user');
+    const storedAuth = localStorage.getItem('isAuthenticated');
+    
+    if (storedUser && storedAuth === 'true') {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
     }
-    setIsLoading(false);
   }, []);
 
+  // Login function - mock implementation
   const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    try {
-      // This is a mock login - in a real app, you would validate credentials against a server
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+    // Mock validation (replace with real authentication)
+    if (email === 'admin@undangandigital.com' && password === 'password') {
+      setUser(mockUser);
+      setIsAuthenticated(true);
       
-      // Update credentials to match the demo credentials shown on the login page
-      if ((email === "admin@example.com" || email === "admin") && password === "admin123") {
-        setUser(sampleUser);
-        localStorage.setItem("user", JSON.stringify(sampleUser));
-        return true;
-      }
+      // Store in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('isAuthenticated', 'true');
       
-      return false;
-    } catch (error) {
-      console.error("Login error:", error);
-      return false;
-    } finally {
-      setIsLoading(false);
+      return true;
     }
+    return false;
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    setIsAuthenticated(false);
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
   };
 
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+  // Update user function
+  const updateUser = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Context provider value
   const value = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     login,
     logout,
     updateUser,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!isLoading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

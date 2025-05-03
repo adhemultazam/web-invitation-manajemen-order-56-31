@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Invoice, Vendor } from "@/types/types";
+import { useState, useEffect } from "react";
+import { Invoice, Vendor, Addon } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -23,6 +23,24 @@ interface InvoiceTableProps {
 
 export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTableProps) {
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
+  
+  // Load addon styles from localStorage
+  useEffect(() => {
+    try {
+      const storedAddons = localStorage.getItem('addons');
+      if (storedAddons) {
+        const parsedAddons: Addon[] = JSON.parse(storedAddons);
+        const styles: Record<string, {color: string}> = {};
+        parsedAddons.forEach(addon => {
+          styles[addon.name] = { color: addon.color || '#6366f1' };
+        });
+        setAddonStyles(styles);
+      }
+    } catch (e) {
+      console.error("Error parsing addons:", e);
+    }
+  }, []);
   
   const getVendorName = (vendorId: string): string => {
     const vendor = vendors.find(v => v.id === vendorId);
@@ -43,6 +61,12 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+  
+  // Function to get addon style based on its name
+  const getAddonStyle = (addonName: string) => {
+    const addonStyle = addonStyles[addonName];
+    return addonStyle?.color || "#6366f1";
   };
   
   return (

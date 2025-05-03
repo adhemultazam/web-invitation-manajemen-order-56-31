@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Order, Addon, Vendor, Theme, WorkStatus } from "@/types/types";
+import { Order, Addon, Vendor, Theme, WorkStatus, Package } from "@/types/types";
 import { Link } from "react-router-dom";
 import { ChevronDown, Edit, Eye } from "lucide-react";
 import {
@@ -50,6 +50,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [availableAddons, setAvailableAddons] = useState<Addon[]>([]);
   const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
+  const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -114,6 +115,36 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
       }
     } catch (e) {
       console.error("Error parsing work statuses:", e);
+    }
+
+    // Load packages from localStorage
+    try {
+      const storedPackages = localStorage.getItem('packages');
+      if (storedPackages) {
+        setAvailablePackages(JSON.parse(storedPackages));
+      } else {
+        // Default packages if none are stored
+        const defaultPackages: Package[] = [
+          {
+            id: "1",
+            name: "Basic",
+            price: 150000,
+            description: "Paket basic untuk undangan digital sederhana.",
+            features: ["1 halaman", "Maksimal 10 foto", "Durasi 1 bulan"]
+          },
+          {
+            id: "2",
+            name: "Premium",
+            price: 250000,
+            description: "Paket premium dengan fitur tambahan.",
+            features: ["3 halaman", "Gallery foto tanpa batas", "Durasi 3 bulan", "Peta lokasi"]
+          }
+        ];
+        setAvailablePackages(defaultPackages);
+        localStorage.setItem('packages', JSON.stringify(defaultPackages));
+      }
+    } catch (e) {
+      console.error("Error parsing packages:", e);
     }
   }, []);
 
@@ -231,6 +262,24 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     }, 500);
   };
 
+  const handlePackageChange = (orderId: string, newPackage: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    onUpdateOrder(orderId, {
+      package: newPackage
+    });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+      
+      toast.success(`Paket diubah menjadi ${newPackage}`);
+    }, 500);
+  };
+
   const handleViewOrderDetail = (order: Order) => {
     setSelectedOrder(order);
     setDetailModalOpen(true);
@@ -262,6 +311,10 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     };
   };
 
+  const findPackageInfo = (packageName: string) => {
+    return availablePackages.find(pkg => pkg.name === packageName);
+  };
+
   if (isMobile) {
     return (
       <>
@@ -276,12 +329,14 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="font-medium text-sm">{order.customerName}</div>
-                    <div 
-                      onClick={() => handleViewOrderDetail(order)} 
-                      className="text-wedding-primary font-semibold cursor-pointer"
+                    <a 
+                      href={order.clientUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-wedding-primary font-semibold hover:underline"
                     >
                       {order.clientName}
-                    </div>
+                    </a>
                   </div>
                   <div className="flex space-x-2">
                     <Button 
@@ -356,7 +411,22 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-muted-foreground text-xs">Paket</div>
-                    <div className="text-sm">{order.package}</div>
+                    <Select
+                      value={order.package}
+                      onValueChange={(value) => handlePackageChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
+                        <SelectValue>{order.package}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availablePackages.map((pkg) => (
+                          <SelectItem key={pkg.id} value={pkg.name} className="text-xs">
+                            {pkg.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <div className="text-muted-foreground text-xs">Tema</div>
@@ -521,12 +591,14 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     {order.customerName}
                   </TableCell>
                   <TableCell>
-                    <span 
+                    <a 
+                      href={order.clientUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-wedding-primary hover:underline cursor-pointer"
-                      onClick={() => handleViewOrderDetail(order)}
                     >
                       {order.clientName}
-                    </span>
+                    </a>
                   </TableCell>
                   <TableCell>
                     <Select
@@ -559,20 +631,22 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 text-xs px-2">
-                          {order.package}
-                          <ChevronDown className="ml-1 h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-64">
-                        <div className="p-2 text-xs">
-                          <div className="font-semibold">Paket:</div>
-                          <div className="mt-1">{order.package}</div>
-                        </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Select
+                      value={order.package}
+                      onValueChange={(value) => handlePackageChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                        <SelectValue>{order.package}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availablePackages.map((pkg) => (
+                          <SelectItem key={pkg.id} value={pkg.name}>
+                            {pkg.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     {order.addons.length > 0 ? (

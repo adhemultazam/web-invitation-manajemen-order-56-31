@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
 import { Plus, CircleDollarSign, Check, X } from "lucide-react";
-import { Order, Addon } from "@/types/types";
+import { Order, Addon, Theme } from "@/types/types";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -73,7 +72,32 @@ const mockOrders: Order[] = [
 // Mock vendors and work statuses
 const vendors = ["Vendor Utama", "Reseller Premium"];
 const workStatuses = ["Selesai", "Progress", "Review", "Revisi", "Data Belum"];
-const themes = ["Elegant Gold", "Floral Pink", "Rustic Wood", "Minimalist"];
+const themes: Theme[] = [
+  {
+    id: "1",
+    name: "Elegant Gold",
+    thumbnail: "https://placehold.co/200x280/e9d985/ffffff?text=Elegant+Gold",
+    category: "Premium"
+  },
+  {
+    id: "2",
+    name: "Floral Pink",
+    thumbnail: "https://placehold.co/200x280/ffb6c1/ffffff?text=Floral+Pink",
+    category: "Basic"
+  },
+  {
+    id: "3",
+    name: "Rustic Wood",
+    thumbnail: "https://placehold.co/200x280/8b4513/ffffff?text=Rustic+Wood",
+    category: "Premium"
+  },
+  {
+    id: "4",
+    name: "Minimalist",
+    thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Minimalist",
+    category: "Basic"
+  }
+];
 
 // Mock addons data
 const defaultAddons: Addon[] = [
@@ -89,6 +113,7 @@ export default function MonthlyOrders() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
+  const [availableThemes, setAvailableThemes] = useState<Theme[]>(themes);
   const isMobile = useIsMobile();
 
   // Capitalize the first letter of the month
@@ -114,6 +139,19 @@ export default function MonthlyOrders() {
         }
       } catch (e) {
         console.error("Error parsing addons:", e);
+      }
+    }
+    
+    // Try to fetch themes from localStorage
+    const storedThemes = localStorage.getItem('themes');
+    if (storedThemes) {
+      try {
+        const parsedThemes = JSON.parse(storedThemes);
+        if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
+          setAvailableThemes(parsedThemes);
+        }
+      } catch (e) {
+        console.error("Error parsing themes:", e);
       }
     }
   }, []);
@@ -220,6 +258,7 @@ export default function MonthlyOrders() {
 
       <div className="mb-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {/* Statistics cards */}
           {/* Total Orders */}
           <div className="bg-white border rounded-md p-2 text-center">
             <div className="text-xs text-muted-foreground">Total Pesanan</div>
@@ -287,7 +326,7 @@ export default function MonthlyOrders() {
         orders={filteredOrders} 
         vendors={vendors}
         workStatuses={workStatuses}
-        themes={themes}
+        themes={availableThemes}
         onUpdateOrder={handleUpdateOrder}
       />
       
@@ -328,7 +367,6 @@ export default function MonthlyOrders() {
           </Button>
           <Button variant="ghost" size="sm" className="flex flex-col items-center text-xs">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
             <span>Pengaturan</span>

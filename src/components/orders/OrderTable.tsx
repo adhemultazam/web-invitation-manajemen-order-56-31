@@ -36,7 +36,7 @@ interface OrderTableProps {
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;
-  addons: Addon[]; // Add the addons prop to the interface
+  addons: Addon[];
 }
 
 export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder, addons }: OrderTableProps) {
@@ -47,7 +47,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [vendorColors, setVendorColors] = useState<Record<string, string>>({});
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
-  const [availableAddons, setAvailableAddons] = useState<Addon[]>(addons || []); // Use passed addons as default
+  const [availableAddons, setAvailableAddons] = useState<Addon[]>(addons || []);
   const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
   const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
@@ -314,7 +314,6 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     };
   };
 
-  // Function to get addon style based on its name
   const getAddonStyle = (addonName: string) => {
     const addonStyle = addonStyles[addonName];
     return {
@@ -327,9 +326,9 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     return availablePackages.find(pkg => pkg.name === packageName);
   };
 
-  // Find available addons for display in empty addon slots
-  const getPlaceholderAddons = () => {
-    return availableAddons.slice(0, 2);
+  // Function to check if an order has any addons
+  const hasAddons = (order: Order): boolean => {
+    return Array.isArray(order.addons) && order.addons.length > 0;
   };
 
   if (isMobile) {
@@ -482,17 +481,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {availableAddons.slice(0, 2).map((addon) => (
-                          <Badge 
-                            key={addon.id} 
-                            style={{ backgroundColor: addon.color || "#6366f1", opacity: 0.5, color: '#fff' }}
-                            className="text-[10px] px-1.5 py-0 rounded-full"
-                          >
-                            {addon.name}
-                          </Badge>
-                        ))}
-                      </div>
+                      <span className="text-xs text-muted-foreground">-</span>
                     )}
                   </div>
                 </div>
@@ -576,244 +565,239 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   return (
     <>
       <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted">
-            <TableRow>
-              <TableHead className="w-[100px]">Tgl Pesan</TableHead>
-              <TableHead className="w-[100px]">Tgl Acara</TableHead>
-              <TableHead className="w-[80px]">Countdown</TableHead>
-              <TableHead className="w-[150px]">Nama Pemesan</TableHead>
-              <TableHead className="w-[150px]">Nama Klien</TableHead>
-              <TableHead className="w-[120px]">Vendor</TableHead>
-              <TableHead className="w-[120px]">Paket</TableHead>
-              <TableHead className="w-[200px]">Addons</TableHead>
-              <TableHead className="w-[120px]">Tema</TableHead>
-              <TableHead className="w-[150px]">Status Pembayaran</TableHead>
-              <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
-              <TableHead className="w-[60px]">Aksi</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-muted">
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                  Tidak ada data pesanan
-                </TableCell>
+                <TableHead className="w-[100px]">Tgl Pesan</TableHead>
+                <TableHead className="w-[100px]">Tgl Acara</TableHead>
+                <TableHead className="w-[80px]">Countdown</TableHead>
+                <TableHead className="w-[150px]">Nama Pemesan</TableHead>
+                <TableHead className="w-[150px]">Nama Klien</TableHead>
+                <TableHead className="w-[120px]">Vendor</TableHead>
+                <TableHead className="w-[120px]">Paket</TableHead>
+                <TableHead className="w-[200px]">Addons</TableHead>
+                <TableHead className="w-[120px]">Tema</TableHead>
+                <TableHead className="w-[150px]">Status Pembayaran</TableHead>
+                <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
+                <TableHead className="w-[60px]">Aksi</TableHead>
               </TableRow>
-            ) : (
-              orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono text-xs">
-                    {formatDate(order.orderDate)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {formatDate(order.eventDate)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
-                      {order.countdownDays} hari
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {order.customerName}
-                  </TableCell>
-                  <TableCell>
-                    <a 
-                      href={order.clientUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-wedding-primary hover:underline cursor-pointer"
-                    >
-                      {order.clientName}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={order.vendor}
-                      onValueChange={(value) => handleVendorChange(order.id, value)}
-                      disabled={updatingOrders.has(order.id)}
-                    >
-                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-                        <div className="flex items-center">
-                          <div
-                            className="w-2 h-2 mr-1 rounded-full"
-                            style={{ backgroundColor: vendorColors[order.vendor] || '#6366f1' }}
-                          />
-                          <SelectValue>{order.vendor}</SelectValue>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {vendors.map((vendor) => (
-                          <SelectItem key={vendor} value={vendor}>
-                            <div className="flex items-center">
-                              <div
-                                className="w-2 h-2 mr-2 rounded-full"
-                                style={{ backgroundColor: vendorColors[vendor] || '#6366f1' }}
-                              />
-                              {vendor}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={order.package}
-                      onValueChange={(value) => handlePackageChange(order.id, value)}
-                      disabled={updatingOrders.has(order.id)}
-                    >
-                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-                        <SelectValue>{order.package}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availablePackages.map((pkg) => (
-                          <SelectItem key={pkg.id} value={pkg.name}>
-                            {pkg.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {order.addons && order.addons.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {order.addons.map((addon, index) => (
-                          <Badge 
-                            key={index} 
-                            style={getAddonStyle(addon)}
-                            className="text-[10px] py-0 px-1.5"
-                          >
-                            {addon}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {availableAddons.slice(0, 2).map((addon) => (
-                          <Badge 
-                            key={addon.id} 
-                            style={{ backgroundColor: addon.color || "#6366f1", opacity: 0.5, color: '#fff' }}
-                            className="text-[10px] py-0 px-1.5"
-                          >
-                            {addon.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={order.theme}
-                      onValueChange={(value) => handleThemeChange(order.id, value)}
-                      disabled={updatingOrders.has(order.id)}
-                    >
-                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-                        <SelectValue>{order.theme}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {themes.map((theme) => (
-                          <SelectItem key={theme} value={theme}>
-                            {theme}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-0 h-6 justify-start"
-                        onClick={() => togglePaymentStatus(order)}
-                      >
-                        <Badge className={getPaymentStatusColor(order.paymentStatus)}>
-                          {updatingOrders.has(order.id) ? (
-                            <span className="animate-pulse">Menyimpan...</span>
-                          ) : (
-                            order.paymentStatus
-                          )}
-                        </Badge>
-                      </Button>
-                      <span className="text-xs font-mono mt-1">
-                        {formatCurrency(order.paymentAmount)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={order.workStatus}
-                      onValueChange={(value) => handleWorkStatusChange(order.id, value)}
-                      disabled={updatingOrders.has(order.id)}
-                    >
-                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-                        <div className="flex items-center">
-                          <div
-                            className="w-2 h-2 mr-1 rounded-full"
-                            style={{ backgroundColor: getStatusColor(order.workStatus) }}
-                          />
-                          <SelectValue>{order.workStatus}</SelectValue>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableWorkStatuses.map((status) => (
-                          <SelectItem key={status.id} value={status.name}>
-                            <div className="flex items-center">
-                              <div
-                                className="w-2 h-2 mr-2 rounded-full"
-                                style={{ backgroundColor: status.color }}
-                              />
-                              {status.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => handleViewOrderDetail(order)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-wedding-primary hover:text-blue-600 hover:bg-blue-50"
-                        onClick={() => handleOpenEditDialog(order)}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {orders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+                    Tidak ada data pesanan
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                orders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-xs">
+                      {formatDate(order.orderDate)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {formatDate(order.eventDate)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+                        {order.countdownDays} hari
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {order.customerName}
+                    </TableCell>
+                    <TableCell>
+                      <a 
+                        href={order.clientUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-wedding-primary hover:underline cursor-pointer"
+                      >
+                        {order.clientName}
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex justify-between w-full min-w-[120px]"
+                            style={getVendorColorStyle(order.vendor)}
+                            disabled={updatingOrders.has(order.id)}
+                          >
+                            <span className="truncate">{order.vendor}</span>
+                            <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {vendors.map((vendor) => (
+                            <DropdownMenuItem
+                              key={vendor}
+                              onClick={() => handleVendorChange(order.id, vendor)}
+                              className={vendor === order.vendor ? "font-medium" : ""}
+                            >
+                              {vendor}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={order.package}
+                        onValueChange={(value) => handlePackageChange(order.id, value)}
+                        disabled={updatingOrders.has(order.id)}
+                      >
+                        <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                          <SelectValue>{order.package}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availablePackages.map(pkg => (
+                            <SelectItem key={pkg.id} value={pkg.name}>
+                              {pkg.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {/* Only show badges if there are addons */}
+                      {hasAddons(order) ? (
+                        <div className="flex flex-wrap gap-1">
+                          {order.addons.map((addon, i) => (
+                            <Badge key={i} style={getAddonStyle(addon)} variant="secondary" className="text-xs">
+                              {addon}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={order.theme}
+                        onValueChange={(value) => handleThemeChange(order.id, value)}
+                        disabled={updatingOrders.has(order.id)}
+                      >
+                        <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                          <SelectValue>{order.theme}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {themes.map((theme) => (
+                            <SelectItem key={theme} value={theme}>
+                              {theme}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-0 h-6 justify-start"
+                          onClick={() => togglePaymentStatus(order)}
+                        >
+                          <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                            {updatingOrders.has(order.id) ? (
+                              <span className="animate-pulse">Menyimpan...</span>
+                            ) : (
+                              order.paymentStatus
+                            )}
+                          </Badge>
+                        </Button>
+                        <span className="text-xs font-mono mt-1">
+                          {formatCurrency(order.paymentAmount)}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={order.workStatus}
+                        onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                        disabled={updatingOrders.has(order.id)}
+                      >
+                        <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                          <div className="flex items-center">
+                            <div
+                              className="w-2 h-2 mr-1 rounded-full"
+                              style={{ backgroundColor: getStatusColor(order.workStatus) }}
+                            />
+                            <SelectValue>{order.workStatus}</SelectValue>
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableWorkStatuses.map((status) => (
+                            <SelectItem key={status.id} value={status.name}>
+                              <div className="flex items-center">
+                                <div
+                                  className="w-2 h-2 mr-2 rounded-full"
+                                  style={{ backgroundColor: status.color }}
+                                />
+                                {status.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleViewOrderDetail(order)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-wedding-primary hover:text-blue-600 hover:bg-blue-50"
+                          onClick={() => handleOpenEditDialog(order)}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    Tidak ada data pesanan
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      <OrderDetailModal
-        order={selectedOrder}
-        onClose={() => setDetailModalOpen(false)}
-        isOpen={detailModalOpen}
-      />
-
-      <EditOrderDialog
-        order={selectedOrder}
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        onSave={handleSaveEdit}
-        vendors={vendors}
-        workStatuses={workStatuses}
-        themes={availableThemes}
-        addons={availableAddons}
-      />
+      {selectedOrder && (
+        <>
+          <OrderDetailModal
+            order={selectedOrder}
+            onClose={() => setDetailModalOpen(false)}
+            isOpen={detailModalOpen}
+          />
+          <EditOrderDialog
+            order={selectedOrder}
+            isOpen={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            onSave={handleSaveEdit}
+            vendors={vendors}
+            workStatuses={workStatuses}
+            themes={availableThemes}
+            addons={availableAddons}
+          />
+        </>
+      )}
     </>
   );
 }

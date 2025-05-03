@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WorkStatus } from "@/types/types";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
@@ -52,13 +52,37 @@ const initialStatuses: WorkStatus[] = [
 ];
 
 export function StatusSettings() {
-  const [statuses, setStatuses] = useState<WorkStatus[]>(initialStatuses);
+  const [statuses, setStatuses] = useState<WorkStatus[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<WorkStatus | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     color: "#000000"
   });
+
+  useEffect(() => {
+    // Load statuses from localStorage or use initialStatuses
+    const savedStatuses = localStorage.getItem('workStatuses');
+    if (savedStatuses) {
+      try {
+        setStatuses(JSON.parse(savedStatuses));
+      } catch (e) {
+        console.error("Error parsing work statuses:", e);
+        setStatuses(initialStatuses);
+        localStorage.setItem('workStatuses', JSON.stringify(initialStatuses));
+      }
+    } else {
+      setStatuses(initialStatuses);
+      localStorage.setItem('workStatuses', JSON.stringify(initialStatuses));
+    }
+  }, []);
+
+  // Save statuses to localStorage whenever they change
+  useEffect(() => {
+    if (statuses.length > 0) {
+      localStorage.setItem('workStatuses', JSON.stringify(statuses));
+    }
+  }, [statuses]);
 
   const handleOpenDialog = (status?: WorkStatus) => {
     if (status) {

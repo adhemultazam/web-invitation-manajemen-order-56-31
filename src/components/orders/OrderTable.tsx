@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Order, Addon, Vendor, Theme } from "@/types/types";
+import { Order, Addon, Vendor, Theme, WorkStatus } from "@/types/types";
 import { Link } from "react-router-dom";
 import { ChevronDown, Edit, Eye } from "lucide-react";
 import {
@@ -47,6 +47,8 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
   const [availableAddons, setAvailableAddons] = useState<Addon[]>([]);
+  const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
+  const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           colors[vendor.name] = vendor.color || '#6366f1'; // Default to indigo if no color
         });
         setVendorColors(colors);
+        setAvailableVendors(parsedVendors);
       }
     } catch (e) {
       console.error("Error parsing vendors:", e);
@@ -90,6 +93,27 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     } catch (e) {
       console.error("Error parsing themes:", e);
     }
+    
+    // Load work statuses from localStorage
+    try {
+      const storedWorkStatuses = localStorage.getItem('workStatuses');
+      if (storedWorkStatuses) {
+        setAvailableWorkStatuses(JSON.parse(storedWorkStatuses));
+      } else {
+        // Use default work statuses if none are stored
+        const defaultWorkStatuses: WorkStatus[] = [
+          { id: "1", name: "Selesai", color: "#22c55e" },
+          { id: "2", name: "Progress", color: "#3b82f6" },
+          { id: "3", name: "Review", color: "#f59e0b" },
+          { id: "4", name: "Revisi", color: "#f97316" },
+          { id: "5", name: "Data Belum", color: "#ef4444" }
+        ];
+        setAvailableWorkStatuses(defaultWorkStatuses);
+        localStorage.setItem('workStatuses', JSON.stringify(defaultWorkStatuses));
+      }
+    } catch (e) {
+      console.error("Error parsing work statuses:", e);
+    }
   }, []);
 
   const formatCurrency = (amount: number) => {
@@ -116,20 +140,8 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   };
 
   const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case 'selesai':
-        return 'bg-green-500';
-      case 'progress':
-        return 'bg-blue-500';
-      case 'review':
-        return 'bg-amber-500';
-      case 'revisi':
-        return 'bg-orange-500';
-      case 'data belum':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
+    const workStatus = availableWorkStatuses.find(ws => ws.name === status);
+    return workStatus ? workStatus.color : '#6E6E6E'; // Default gray if not found
   };
 
   const getPaymentStatusColor = (status: string): string => {
@@ -300,9 +312,34 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                   
                   <div>
                     <div className="text-muted-foreground text-xs">Vendor</div>
-                    <Badge style={getVendorColorStyle(order.vendor)} className="mt-1">
-                      {order.vendor}
-                    </Badge>
+                    <Select
+                      value={order.vendor}
+                      onValueChange={(value) => handleVendorChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-1 rounded-full"
+                            style={{ backgroundColor: vendorColors[order.vendor] || '#6366f1' }}
+                          />
+                          <SelectValue>{order.vendor}</SelectValue>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map((vendor) => (
+                          <SelectItem key={vendor} value={vendor} className="text-xs">
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-1 rounded-full"
+                                style={{ backgroundColor: vendorColors[vendor] || '#6366f1' }}
+                              />
+                              {vendor}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 
@@ -313,7 +350,22 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                   </div>
                   <div>
                     <div className="text-muted-foreground text-xs">Tema</div>
-                    <div className="text-sm">{order.theme}</div>
+                    <Select
+                      value={order.theme}
+                      onValueChange={(value) => handleThemeChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
+                        <SelectValue>{order.theme}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme} value={theme} className="text-xs">
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 
@@ -331,7 +383,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                                 backgroundColor: style?.color || "#6366f1",
                                 color: "#fff"
                               }}
-                              className="text-xs px-1.5 py-0 rounded-full"
+                              className="text-[10px] px-1.5 py-0 rounded-full"
                             >
                               {addon}
                             </Badge>
@@ -365,9 +417,34 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                   </div>
                   <div>
                     <div className="text-muted-foreground text-xs">Status</div>
-                    <Badge className={getStatusColor(order.workStatus)}>
-                      {order.workStatus}
-                    </Badge>
+                    <Select
+                      value={order.workStatus}
+                      onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-1 rounded-full"
+                            style={{ backgroundColor: getStatusColor(order.workStatus) }}
+                          />
+                          <SelectValue>{order.workStatus}</SelectValue>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableWorkStatuses.map((status) => (
+                          <SelectItem key={status.id} value={status.name} className="text-xs">
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-1 rounded-full"
+                                style={{ backgroundColor: status.color }}
+                              />
+                              {status.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -448,9 +525,34 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge style={getVendorColorStyle(order.vendor)}>
-                      {order.vendor}
-                    </Badge>
+                    <Select
+                      value={order.vendor}
+                      onValueChange={(value) => handleVendorChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-1 rounded-full"
+                            style={{ backgroundColor: vendorColors[order.vendor] || '#6366f1' }}
+                          />
+                          <SelectValue>{order.vendor}</SelectValue>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map((vendor) => (
+                          <SelectItem key={vendor} value={vendor}>
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-2 rounded-full"
+                                style={{ backgroundColor: vendorColors[vendor] || '#6366f1' }}
+                              />
+                              {vendor}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -503,7 +605,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                                 color: "#fff"
                               }}
                               variant="outline"
-                              className="text-xs px-1.5 py-0.5 border-0 whitespace-nowrap"
+                              className="text-[10px] px-1 py-0 border-0 whitespace-nowrap"
                             >
                               {addon}
                             </Badge>
@@ -515,7 +617,22 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     )}
                   </TableCell>
                   <TableCell>
-                    {order.theme}
+                    <Select
+                      value={order.theme}
+                      onValueChange={(value) => handleThemeChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                        <SelectValue>{order.theme}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
@@ -539,9 +656,34 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(order.workStatus)}>
-                      {order.workStatus}
-                    </Badge>
+                    <Select
+                      value={order.workStatus}
+                      onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                      disabled={updatingOrders.has(order.id)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: getStatusColor(order.workStatus) }}
+                          />
+                          <SelectValue>{order.workStatus}</SelectValue>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableWorkStatuses.map((status) => (
+                          <SelectItem key={status.id} value={status.name}>
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-2 rounded-full"
+                                style={{ backgroundColor: status.color }}
+                              />
+                              {status.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-1">

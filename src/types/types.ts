@@ -1,4 +1,3 @@
-
 export interface ChartData {
   name: string;
   value: number;
@@ -48,6 +47,9 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category: string;
+  price?: number;
+  description?: string;
+  backgroundColor?: string;
 }
 
 export interface Addon {

@@ -7,17 +7,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Theme } from "@/types/types";
 
 interface ThemeSelectProps {
   value: string;
-  themes: string[];
+  themes?: string[] | Theme[];
   isDisabled: boolean;
   onChange: (value: string) => void;
 }
 
 const ThemeSelect: React.FC<ThemeSelectProps> = ({
   value,
-  themes,
+  themes = [],
   isDisabled,
   onChange,
 }) => {
@@ -32,6 +33,13 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
     }
   }, [value]);
 
+  // Get theme options either from string array or Theme objects
+  const themeOptions = Array.isArray(themes) 
+    ? (typeof themes[0] === 'string' 
+      ? themes as string[]
+      : (themes as Theme[]).map(theme => theme.name))
+    : [];
+
   return (
     <Select
       value={value}
@@ -42,7 +50,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
         <SelectValue>{value}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {themes.map((theme) => (
+        {themeOptions.map((theme) => (
           <SelectItem key={theme} value={theme}>
             {theme}
           </SelectItem>

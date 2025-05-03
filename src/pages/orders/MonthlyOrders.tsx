@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { OrderTable } from "@/components/orders/OrderTable";
@@ -327,7 +328,7 @@ export default function MonthlyOrders() {
         workStatuses={workStatuses}
         themes={availableThemes.map(theme => theme.name)} // Convert Theme[] to string[]
         onUpdateOrder={handleUpdateOrder}
-        addons={addons} // Pass addons to OrderTable
+        addons={addons} // Now this properly matches the updated OrderTableProps interface
       />
       
       <AddOrderModal 

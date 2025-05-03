@@ -36,9 +36,10 @@ interface OrderTableProps {
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;
+  addons: Addon[]; // Add the addons prop to the interface
 }
 
-export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder }: OrderTableProps) {
+export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder, addons }: OrderTableProps) {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -46,7 +47,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [vendorColors, setVendorColors] = useState<Record<string, string>>({});
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
-  const [availableAddons, setAvailableAddons] = useState<Addon[]>([]);
+  const [availableAddons, setAvailableAddons] = useState<Addon[]>(addons || []); // Use passed addons as default
   const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
   const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
@@ -69,20 +70,32 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
       console.error("Error parsing vendors:", e);
     }
     
-    // Load addon styles from localStorage
-    try {
-      const storedAddons = localStorage.getItem('addons');
-      if (storedAddons) {
-        const parsedAddons: Addon[] = JSON.parse(storedAddons);
-        const styles: Record<string, {color: string}> = {};
-        parsedAddons.forEach(addon => {
-          styles[addon.name] = { color: addon.color || '#6366f1' };
-        });
-        setAddonStyles(styles);
-        setAvailableAddons(parsedAddons);
+    // Update availableAddons when addons prop changes
+    if (addons && addons.length > 0) {
+      setAvailableAddons(addons);
+      
+      // Create addon styles from passed addons
+      const styles: Record<string, {color: string}> = {};
+      addons.forEach(addon => {
+        styles[addon.name] = { color: addon.color || '#6366f1' };
+      });
+      setAddonStyles(styles);
+    } else {
+      // Load addon styles from localStorage as fallback
+      try {
+        const storedAddons = localStorage.getItem('addons');
+        if (storedAddons) {
+          const parsedAddons: Addon[] = JSON.parse(storedAddons);
+          const styles: Record<string, {color: string}> = {};
+          parsedAddons.forEach(addon => {
+            styles[addon.name] = { color: addon.color || '#6366f1' };
+          });
+          setAddonStyles(styles);
+          setAvailableAddons(parsedAddons);
+        }
+      } catch (e) {
+        console.error("Error parsing addons:", e);
       }
-    } catch (e) {
-      console.error("Error parsing addons:", e);
     }
     
     // Load themes from localStorage
@@ -145,7 +158,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     } catch (e) {
       console.error("Error parsing packages:", e);
     }
-  }, []);
+  }, [addons]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {

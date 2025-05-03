@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Order, Theme, Addon } from "@/types/types";
+import { Order, Theme, Addon, Package } from "@/types/types";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +45,7 @@ export function EditOrderDialog({
   const [formData, setFormData] = useState<Partial<Order>>({});
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
   const [availableAddons, setAvailableAddons] = useState<Addon[]>([]);
+  const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   useEffect(() => {
@@ -81,6 +82,36 @@ export function EditOrderDialog({
     } catch (e) {
       console.error("Error loading themes:", e);
       setAvailableThemes(themes);
+    }
+
+    // Load packages from localStorage
+    try {
+      const storedPackages = localStorage.getItem("packages");
+      if (storedPackages) {
+        setAvailablePackages(JSON.parse(storedPackages));
+      } else {
+        // Default packages if none are stored
+        const defaultPackages: Package[] = [
+          {
+            id: "1",
+            name: "Basic",
+            price: 150000,
+            description: "Paket basic untuk undangan digital sederhana.",
+            features: ["1 halaman", "Maksimal 10 foto", "Durasi 1 bulan"]
+          },
+          {
+            id: "2",
+            name: "Premium",
+            price: 250000,
+            description: "Paket premium dengan fitur tambahan.",
+            features: ["3 halaman", "Gallery foto tanpa batas", "Durasi 3 bulan", "Peta lokasi"]
+          }
+        ];
+        setAvailablePackages(defaultPackages);
+      }
+    } catch (e) {
+      console.error("Error loading packages:", e);
+      setAvailablePackages([]);
     }
 
     // Load addons from localStorage
@@ -218,9 +249,15 @@ export function EditOrderDialog({
                     <SelectValue placeholder="Pilih paket" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Basic">Basic</SelectItem>
-                    <SelectItem value="Premium">Premium</SelectItem>
-                    <SelectItem value="Ultimate">Ultimate</SelectItem>
+                    {availablePackages.map((pkg) => (
+                      <SelectItem key={pkg.id} value={pkg.name}>
+                        {pkg.name} - {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                          minimumFractionDigits: 0
+                        }).format(pkg.price)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -327,7 +364,7 @@ export function EditOrderDialog({
                     className="flex items-center gap-1"
                     style={{
                       backgroundColor: selectedAddons.includes(addon.name) ? addon.color : "",
-                      color: selectedAddons.includes(addon.name) ? "#fff" : "",
+                      color: selectedAddons.includes(addon.name) ? '#fff' : "",
                       borderColor: addon.color
                     }}
                   >

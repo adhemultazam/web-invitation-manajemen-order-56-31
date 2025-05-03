@@ -24,7 +24,8 @@ const initializeLocalStorage = () => {
     'orders_januari', 'orders_februari', 'orders_maret',
     'orders_april', 'orders_mei', 'orders_juni',
     'orders_juli', 'orders_agustus', 'orders_september',
-    'orders_oktober', 'orders_november', 'orders_desember'
+    'orders_oktober', 'orders_november', 'orders_desember',
+    'invoices', 'invoiceSettings', 'themeSettings', 'settingsActiveTab'
   ];
   
   let initialized = false;

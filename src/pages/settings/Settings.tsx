@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Tabs,
@@ -18,6 +18,20 @@ import { VendorSettings } from "@/components/settings/VendorSettings";
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("account");
 
+  // Load the selected tab from localStorage when the component mounts
+  useEffect(() => {
+    const savedTab = localStorage.getItem('settingsActiveTab');
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
+  // Save the selected tab to localStorage when it changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    localStorage.setItem('settingsActiveTab', value);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -27,7 +41,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList className="grid grid-cols-7 md:w-[900px]">
           <TabsTrigger value="account">Akun</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,18 +129,7 @@ export function InvoiceSettings() {
     e.preventDefault();
     
     // Save to localStorage
-    const settingsToSave = {
-      brandName: formData.businessName,
-      businessAddress: `${formData.address}, ${formData.city} ${formData.zipCode}`,
-      contactPhone: formData.phone,
-      contactEmail: formData.email,
-      website: formData.website,
-      bankAccounts: formData.bankAccounts,
-      logoUrl: formData.logo,
-      invoiceFooter: formData.invoiceFooter
-    };
-    
-    localStorage.setItem("invoiceSettings", JSON.stringify(settingsToSave));
+    localStorage.setItem("invoiceSettings", JSON.stringify(formData));
     toast.success('Pengaturan invoice berhasil disimpan');
   };
   

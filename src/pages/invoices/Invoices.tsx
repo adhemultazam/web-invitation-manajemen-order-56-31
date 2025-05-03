@@ -64,7 +64,7 @@ const mockOrders = [
 ];
 
 // Mock data for invoices - Updated to match existing vendors and use client names from orders
-const mockInvoices: Invoice[] = [
+const initialInvoices: Invoice[] = [
   {
     id: "1",
     invoiceNumber: "INV-2025-001",
@@ -110,13 +110,34 @@ const mockInvoices: Invoice[] = [
 ];
 
 export default function Invoices() {
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filters, setFilters] = useState<InvoiceFilter>({
     vendor: undefined,
     status: 'All',
     sortBy: 'dueDate',
     sortDirection: 'asc'
   });
+  
+  // Load invoices from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedInvoices = localStorage.getItem('invoices');
+      if (savedInvoices) {
+        setInvoices(JSON.parse(savedInvoices));
+      } else {
+        setInvoices(initialInvoices);
+        localStorage.setItem('invoices', JSON.stringify(initialInvoices));
+      }
+    } catch (e) {
+      console.error("Error loading invoices from localStorage:", e);
+      setInvoices(initialInvoices);
+    }
+  }, []);
+
+  // Save invoices to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('invoices', JSON.stringify(invoices));
+  }, [invoices]);
   
   // Function to sync order changes with invoice data
   const syncOrderChanges = () => {

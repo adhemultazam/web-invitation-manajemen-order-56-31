@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,9 +26,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Vendor } from "@/types/types";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // Mock data for vendors
 const initialVendors: Vendor[] = [
@@ -35,13 +37,15 @@ const initialVendors: Vendor[] = [
     id: "1",
     name: "Vendor Utama",
     code: "MAIN",
-    commission: 10
+    commission: 10,
+    color: "#6366f1" // Default color - indigo
   },
   {
     id: "2",
     name: "Reseller Premium",
     code: "PREM",
-    commission: 15
+    commission: 15,
+    color: "#3b82f6" // Default color - blue
   }
 ];
 
@@ -52,8 +56,26 @@ export function VendorSettings() {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    commission: 0
+    commission: 0,
+    color: "#6366f1"
   });
+
+  useEffect(() => {
+    // Load vendors from localStorage if available
+    const storedVendors = localStorage.getItem('vendors');
+    if (storedVendors) {
+      try {
+        setVendors(JSON.parse(storedVendors));
+      } catch (e) {
+        console.error("Error parsing vendors:", e);
+      }
+    }
+  }, []);
+
+  // Save vendors to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('vendors', JSON.stringify(vendors));
+  }, [vendors]);
 
   const handleOpenDialog = (vendor?: Vendor) => {
     if (vendor) {
@@ -61,14 +83,16 @@ export function VendorSettings() {
       setFormData({
         name: vendor.name,
         code: vendor.code,
-        commission: vendor.commission
+        commission: vendor.commission,
+        color: vendor.color || "#6366f1"
       });
     } else {
       setCurrentVendor(null);
       setFormData({
         name: "",
         code: "",
-        commission: 0
+        commission: 0,
+        color: "#6366f1"
       });
     }
     setIsDialogOpen(true);
@@ -175,6 +199,35 @@ export function VendorSettings() {
                     required
                   />
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="color">Warna Label</Label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      id="color"
+                      name="color"
+                      type="color"
+                      value={formData.color}
+                      onChange={handleChange}
+                      className="w-16 h-10 p-1"
+                      required
+                    />
+                    <Input
+                      name="color"
+                      type="text"
+                      value={formData.color}
+                      onChange={handleChange}
+                      className="flex-1"
+                      placeholder="#6366f1"
+                      required
+                    />
+                    <Badge style={{ backgroundColor: formData.color, color: "#fff" }}>
+                      Preview
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Pilih warna untuk label vendor pada daftar pesanan
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -192,6 +245,7 @@ export function VendorSettings() {
             <TableRow>
               <TableHead>Nama Vendor</TableHead>
               <TableHead>Kode</TableHead>
+              <TableHead>Warna</TableHead>
               <TableHead>Komisi (%)</TableHead>
               <TableHead className="w-[100px]">Aksi</TableHead>
             </TableRow>
@@ -199,8 +253,24 @@ export function VendorSettings() {
           <TableBody>
             {vendors.map((vendor) => (
               <TableRow key={vendor.id}>
-                <TableCell className="font-medium">{vendor.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Badge style={{
+                    backgroundColor: vendor.color || "#6366f1", 
+                    color: "#fff"
+                  }}>
+                    {vendor.name}
+                  </Badge>
+                </TableCell>
                 <TableCell>{vendor.code}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="h-5 w-5 rounded-full" 
+                      style={{ backgroundColor: vendor.color || "#6366f1" }}
+                    ></div>
+                    <span>{vendor.color || "#6366f1"}</span>
+                  </div>
+                </TableCell>
                 <TableCell>{vendor.commission}%</TableCell>
                 <TableCell>
                   <div className="flex space-x-1">
@@ -224,7 +294,7 @@ export function VendorSettings() {
             ))}
             {vendors.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   Belum ada vendor yang terdaftar
                 </TableCell>
               </TableRow>

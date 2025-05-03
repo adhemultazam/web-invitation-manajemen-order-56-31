@@ -45,7 +45,11 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
     // Load invoice settings from localStorage if available
     const savedSettings = localStorage.getItem("invoiceSettings");
     if (savedSettings) {
-      setInvoiceSettings(JSON.parse(savedSettings));
+      try {
+        setInvoiceSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error("Error parsing invoice settings:", e);
+      }
     }
   }, []);
   

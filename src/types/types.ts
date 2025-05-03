@@ -4,33 +4,42 @@ export interface ChartData {
   value: number;
 }
 
-export interface ChartDataArray extends Array<ChartData> {}
+export type ChartDataArray = ChartData[];
 
 export interface Order {
   id: string;
+  clientName: string;
+  customerName: string;
+  clientUrl: string;
   orderDate: string;
   eventDate: string;
-  customerName: string;
-  clientName: string;
-  clientUrl?: string;
+  countdownDays: number;
   vendor: string;
   package: string;
   theme: string;
-  paymentStatus: 'Lunas' | 'Pending';
-  paymentAmount: number;
-  workStatus: string;
-  countdownDays: number;
-  postPermission?: boolean;
-  notes?: string;
   addons: string[];
   bonuses: string[];
+  paymentStatus: "Lunas" | "Pending";
+  paymentAmount: number;
+  workStatus: string;
+  postPermission: boolean;
+  notes: string;
 }
 
-export interface User {
+export interface WorkStatus {
   id: string;
   name: string;
-  email: string;
-  avatar?: string;
+  color: string;
+}
+
+export interface Vendor {
+  id: string;
+  name: string;
+  code: string;
+  color: string;
+  contact?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Theme {
@@ -38,6 +47,12 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category: string;
+}
+
+export interface Addon {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface Package {
@@ -48,28 +63,24 @@ export interface Package {
   features: string[];
 }
 
-export interface InvoiceFilter {
-  vendor?: string;
-  status: 'Paid' | 'Unpaid' | 'All';
-  sortBy: 'dueDate' | 'amount';
-  sortDirection: 'asc' | 'desc';
+export interface InvoiceOrder {
+  orderId: string;
+  clientName: string;
+  orderDate: string;
+  amount: number;
 }
 
-export interface Vendor {
+export interface Invoice {
   id: string;
-  name: string;
-  code: string;
-  contactPerson?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  commission?: number;
-  color?: string; // Added color property
-}
-
-export interface WorkStatus {
-  id: string;
-  name: string;
-  color: string;
+  invoiceNumber: string;
+  vendorId: string;
+  vendor: string;
+  dateIssued: string;
+  dueDate: string;
+  orders: InvoiceOrder[];
+  totalAmount: number;
+  status: "Paid" | "Unpaid";
+  notes: string;
 }
 
 export interface BankAccount {
@@ -79,25 +90,9 @@ export interface BankAccount {
   accountHolderName: string;
 }
 
-export interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  vendor: string;
-  vendorId: string;
-  dateIssued: string;
-  dueDate: string;
-  status: 'Paid' | 'Unpaid';
-  totalAmount: number;
-  orders: {
-    orderId: string;
-    orderDate: string;
-    clientName: string;
-    amount: number;
-  }[];
-}
-
-export interface Addon {
-  id: string;
-  name: string;
-  color: string;
+export interface InvoiceFilter {
+  vendor?: string;
+  status: "Paid" | "Unpaid" | "All";
+  sortBy: "dueDate" | "amount";
+  sortDirection: "asc" | "desc";
 }

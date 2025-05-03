@@ -1,0 +1,122 @@
+
+import { v4 as uuidv4 } from 'uuid';
+import { Invoice, Order } from '@/types/types';
+import { toast } from 'sonner';
+
+// Load all orders from all months in local storage
+export const loadAllOrders = (): Order[] => {
+  const months = [
+    'januari', 'februari', 'maret', 'april', 'mei', 'juni',
+    'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
+  ];
+  
+  let allOrders: Order[] = [];
+  
+  months.forEach(month => {
+    try {
+      const storageKey = `orders_${month}`;
+      const monthOrders = localStorage.getItem(storageKey);
+      if (monthOrders) {
+        const parsedOrders = JSON.parse(monthOrders);
+        if (Array.isArray(parsedOrders)) {
+          allOrders = [...allOrders, ...parsedOrders];
+        }
+      }
+    } catch (error) {
+      console.error(`Error loading orders for ${month}:`, error);
+    }
+  });
+  
+  return allOrders;
+};
+
+// Get all invoices from local storage
+export const loadInvoices = (): Invoice[] => {
+  try {
+    const savedInvoices = localStorage.getItem('invoices');
+    if (savedInvoices) {
+      return JSON.parse(savedInvoices);
+    }
+  } catch (error) {
+    console.error('Error loading invoices:', error);
+  }
+  return [];
+};
+
+// Save invoices to local storage
+export const saveInvoices = (invoices: Invoice[]) => {
+  try {
+    localStorage.setItem('invoices', JSON.stringify(invoices));
+  } catch (error) {
+    console.error('Error saving invoices:', error);
+    toast.error('Gagal menyimpan data invoice');
+  }
+};
+
+// Filter orders by vendor and payment status
+export const filterOrdersByVendor = (orders: Order[], vendorId: string): Order[] => {
+  return orders.filter(order => order.vendor === vendorId && order.paymentStatus === 'Lunas');
+};
+
+// Generate a new invoice from orders
+export const generateInvoice = (
+  vendorId: string,
+  vendorName: string,
+  orders: Order[],
+  dueDate: string
+): Invoice => {
+  // Calculate total amount from orders
+  const totalAmount = orders.reduce((sum, order) => sum + order.paymentAmount, 0);
+  
+  // Generate invoice number (format: INV-YYYYMMDD-XXXX)
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+  const randomPart = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+  const invoiceNumber = `INV-${dateStr}-${randomPart}`;
+  
+  // Map orders to the format needed for invoices
+  const invoiceOrders = orders.map(order => ({
+    orderId: order.id,
+    clientName: order.clientName,
+    orderDate: order.orderDate,
+    amount: order.paymentAmount
+  }));
+  
+  return {
+    id: uuidv4(),
+    invoiceNumber,
+    vendorId,
+    vendor: vendorName,
+    dateIssued: today.toISOString().split('T')[0],
+    dueDate,
+    orders: invoiceOrders,
+    totalAmount,
+    status: "Unpaid",
+    notes: ""
+  };
+};
+
+// Mark an invoice as paid
+export const markInvoiceAsPaid = (invoiceId: string): boolean => {
+  try {
+    const invoices = loadInvoices();
+    const updatedInvoices = invoices.map(invoice => 
+      invoice.id === invoiceId 
+        ? { ...invoice, status: "Paid" } 
+        : invoice
+    );
+    
+    saveInvoices(updatedInvoices);
+    return true;
+  } catch (error) {
+    console.error('Error marking invoice as paid:', error);
+    return false;
+  }
+};
+
+// Check if an order is already included in any invoice
+export const isOrderInvoiced = (orderId: string, invoices: Invoice[]): boolean => {
+  return invoices.some(invoice => 
+    invoice.orders.some(order => order.orderId === orderId)
+  );
+};

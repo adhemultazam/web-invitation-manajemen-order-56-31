@@ -326,7 +326,7 @@ export default function MonthlyOrders() {
         orders={filteredOrders} 
         vendors={vendors}
         workStatuses={workStatuses}
-        themes={availableThemes}
+        themes={availableThemes.map(theme => theme.name)} // Convert Theme[] to string[]
         onUpdateOrder={handleUpdateOrder}
       />
       

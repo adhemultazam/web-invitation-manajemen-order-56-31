@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Order, Theme, Addon, Package } from "@/types/types";
 import {
@@ -164,7 +163,7 @@ export function EditOrderDialog({
         <DialogHeader>
           <DialogTitle>Edit Pesanan</DialogTitle>
           <DialogDescription>
-            Perbarui detail pesanan untuk {order.clientName}
+            Perbarui detail pesanan untuk {order?.clientName}
           </DialogDescription>
         </DialogHeader>
 

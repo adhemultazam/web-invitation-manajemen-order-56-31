@@ -21,6 +21,7 @@ interface InvoiceViewModalProps {
 
 // Default invoice settings
 const defaultInvoiceSettings = {
+  logoUrl: "",
   brandName: "Undangan Digital",
   businessAddress: "Jl. Pemuda No. 123, Surabaya",
   contactEmail: "contact@undangandigital.com",
@@ -87,11 +88,22 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
           <div className="bg-white p-6 rounded-lg border">
             {/* Header */}
             <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-bold text-wedding-primary">{invoiceSettings.brandName}</h2>
-                <p className="text-sm text-muted-foreground">{invoiceSettings.businessAddress}</p>
-                <p className="text-sm text-muted-foreground">{invoiceSettings.contactEmail}</p>
-                <p className="text-sm text-muted-foreground">{invoiceSettings.contactPhone}</p>
+              <div className="flex items-center gap-4">
+                {invoiceSettings.logoUrl && (
+                  <div className="w-16 h-16 rounded overflow-hidden">
+                    <img 
+                      src={invoiceSettings.logoUrl} 
+                      alt="Business Logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold text-wedding-primary">{invoiceSettings.brandName}</h2>
+                  <p className="text-sm text-muted-foreground">{invoiceSettings.businessAddress}</p>
+                  <p className="text-sm text-muted-foreground">{invoiceSettings.contactEmail}</p>
+                  <p className="text-sm text-muted-foreground">{invoiceSettings.contactPhone}</p>
+                </div>
               </div>
               <div className="text-right">
                 <h3 className="text-xl font-semibold">INVOICE</h3>

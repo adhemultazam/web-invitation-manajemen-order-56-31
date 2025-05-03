@@ -1,29 +1,41 @@
 
+export interface ChartData {
+  name: string;
+  value: number;
+}
+
 export interface Order {
   id: string;
   orderDate: string;
   eventDate: string;
-  countdownDays: number;
   customerName: string;
   clientName: string;
+  clientUrl?: string;
   vendor: string;
   package: string;
-  addons: string[];
-  bonuses: string[];
   theme: string;
-  paymentStatus: 'Lunas' | 'Pending' | 'Belum Bayar';
+  paymentStatus: 'Lunas' | 'Pending';
   paymentAmount: number;
   workStatus: string;
-  postPermission: boolean;
-  notes: string;
-  clientUrl?: string; // Added clientUrl property as optional
+  countdownDays: number;
+  postPermission?: boolean;
+  notes?: string;
+  addons: string[];
+  bonuses: string[];
 }
 
-export interface Vendor {
+export interface User {
   id: string;
   name: string;
-  code: string;
-  commission: number;
+  email: string;
+  avatar?: string;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  thumbnail: string;
+  category: string;
 }
 
 export interface Package {
@@ -34,53 +46,20 @@ export interface Package {
   features: string[];
 }
 
-export interface Theme {
-  id: string;
-  name: string;
-  thumbnail: string;
-  category: string;
-}
-
-export interface WorkStatus {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface FilterOptions {
-  year: string;
-  month: string;
-}
-
-export type ChartData = {
-  name: string;
-  value: number;
-}[];
-
-export interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  vendor: string;
-  vendorId: string;
-  dateIssued: string;
-  dueDate: string;
-  orders: InvoiceOrder[];
-  status: 'Paid' | 'Unpaid';
-  totalAmount: number;
-}
-
-export interface InvoiceOrder {
-  orderId: string;
-  clientName: string;
-  orderDate: string;
-  amount: number;
-}
-
 export interface InvoiceFilter {
   vendor?: string;
-  status?: 'Paid' | 'Unpaid' | 'All';
-  sortBy?: 'dueDate' | 'amount';
-  sortDirection?: 'asc' | 'desc';
+  status: 'Paid' | 'Unpaid' | 'All';
+  sortBy: 'dueDate' | 'amount';
+  sortDirection: 'asc' | 'desc';
+}
+
+export interface Vendor {
+  id: string;
+  name: string;
+  code: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface BankAccount {
@@ -90,14 +69,19 @@ export interface BankAccount {
   accountHolderName: string;
 }
 
-// Authentication types
-export interface User {
-  username: string;
-  name: string;
-  role: 'admin';
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  vendor: string;
+  vendorId: string;
+  dateIssued: string;
+  dueDate: string;
+  status: 'Paid' | 'Unpaid';
+  totalAmount: number;
+  orders: {
+    orderId: string;
+    orderDate: string;
+    clientName: string;
+    amount: number;
+  }[];
 }

@@ -15,10 +15,11 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
 import { BankAccount } from "@/types/types";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileImage } from "lucide-react";
 
 // Default invoice settings
 const defaultInvoiceSettings = {
+  logoUrl: "",
   brandName: "Undangan Digital",
   businessAddress: "Jl. Pemuda No. 123, Surabaya",
   contactEmail: "contact@undangandigital.com",
@@ -35,6 +36,7 @@ const defaultInvoiceSettings = {
 
 // Type for our invoice settings
 interface InvoiceSettingsType {
+  logoUrl: string;
   brandName: string;
   businessAddress: string;
   contactEmail: string;
@@ -74,6 +76,27 @@ export function InvoiceSettings() {
     });
   };
 
+  // Logo upload handling
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+      toast.error("Ukuran file terlalu besar", {
+        description: "Maksimal ukuran file adalah 1MB",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        form.setValue('logoUrl', event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -86,8 +109,45 @@ export function InvoiceSettings() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informasi Bisnis</h3>
+              <h3 className="text-lg font-medium">Logo & Informasi Bisnis</h3>
               <Separator />
+              
+              <div className="grid gap-6">
+                <FormField
+                  control={form.control}
+                  name="logoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo Bisnis</FormLabel>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 border rounded-md p-2 w-24 h-24 flex items-center justify-center overflow-hidden bg-muted">
+                          {field.value ? (
+                            <img
+                              src={field.value}
+                              alt="Logo"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <FileImage className="h-10 w-10 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="space-y-2 flex-grow">
+                          <Input
+                            type="file"
+                            accept="image/png, image/jpeg, image/svg+xml"
+                            onChange={handleLogoChange}
+                            className="max-w-sm"
+                          />
+                          <FormDescription>
+                            Upload logo untuk ditampilkan pada invoice. Format yang didukung: PNG, JPG, SVG. Maksimal ukuran 1MB.
+                          </FormDescription>
+                        </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField

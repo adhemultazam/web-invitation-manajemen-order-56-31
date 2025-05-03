@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { OrderDetailModal } from "./OrderDetailModal";
 
 interface OrderTableProps {
   orders: Order[];
@@ -39,6 +40,8 @@ interface OrderTableProps {
 
 export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder }: OrderTableProps) {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const formatCurrency = (amount: number) => {
@@ -166,301 +169,124 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     }, 500);
   };
 
+  const handleViewOrderDetail = (order: Order) => {
+    setSelectedOrder(order);
+    setDetailModalOpen(true);
+  };
+
   if (isMobile) {
     return (
-      <div className="space-y-4">
-        {orders.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground border rounded-md">
-            Tidak ada data pesanan
-          </div>
-        ) : (
-          orders.map((order) => (
-            <div key={order.id} className="bg-white border rounded-md p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-medium text-sm">{order.customerName}</div>
-                  <Link to={order.clientUrl || `/order/${order.id}`} className="text-wedding-primary font-semibold">
-                    {order.clientName}
-                  </Link>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Link to={order.clientUrl || `/order/${order.id}`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Link to={`/order/${order.id}/edit`}>
-                      <Edit className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-muted-foreground text-xs">Tgl Pesan</div>
-                  <div className="font-mono text-xs">{formatDate(order.orderDate)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-xs">Tgl Acara</div>
-                  <div className="font-mono text-xs">{formatDate(order.eventDate)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-xs">Countdown</div>
-                  <div className={`font-mono text-xs ${isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}`}>
-                    {order.countdownDays} hari
-                  </div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-xs">Vendor</div>
-                  <Select 
-                    value={order.vendor}
-                    onValueChange={(value) => handleVendorChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-xs">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="animate-pulse">Menyimpan...</span>
-                        ) : (
-                          order.vendor
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map((vendor) => (
-                        <SelectItem key={vendor} value={vendor}>
-                          {vendor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-muted-foreground text-xs">Paket</div>
-                  <div className="text-sm">{order.package}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-xs">Tema</div>
-                  <Select 
-                    value={order.theme}
-                    onValueChange={(value) => handleThemeChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-xs">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="animate-pulse">Menyimpan...</span>
-                        ) : (
-                          order.theme
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {themes.map((theme) => (
-                        <SelectItem key={theme} value={theme}>
-                          {theme}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-muted-foreground text-xs">Pembayaran</div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="p-0 h-6"
-                    onClick={() => togglePaymentStatus(order)}
-                  >
-                    <Badge className={getPaymentStatusColor(order.paymentStatus)}>
-                      {updatingOrders.has(order.id) ? (
-                        <span className="animate-pulse">Menyimpan...</span>
-                      ) : (
-                        order.paymentStatus
-                      )}
-                    </Badge>
-                  </Button>
-                  <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground text-xs">Status</div>
-                  <Select 
-                    value={order.workStatus}
-                    onValueChange={(value) => handleWorkStatusChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 px-3 w-full">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="animate-pulse">Menyimpan...</span>
-                        ) : (
-                          <Badge className={getStatusColor(order.workStatus)}>
-                            {order.workStatus}
-                          </Badge>
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {workStatuses.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          <Badge className={getStatusColor(status)}>
-                            {status}
-                          </Badge>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-md border overflow-hidden">
-      <Table>
-        <TableHeader className="bg-muted">
-          <TableRow>
-            <TableHead className="w-[100px]">Tgl Pesan</TableHead>
-            <TableHead className="w-[100px]">Tgl Acara</TableHead>
-            <TableHead className="w-[80px]">Countdown</TableHead>
-            <TableHead className="w-[150px]">Nama Pemesan</TableHead>
-            <TableHead className="w-[150px]">Nama Klien</TableHead>
-            <TableHead className="w-[120px]">Vendor</TableHead>
-            <TableHead className="w-[120px]">Paket</TableHead>
-            <TableHead className="w-[120px]">Tema</TableHead>
-            <TableHead className="w-[150px]">Status Pembayaran</TableHead>
-            <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
-            <TableHead className="w-[60px]">Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      <>
+        <div className="space-y-4">
           {orders.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
-                Tidak ada data pesanan
-              </TableCell>
-            </TableRow>
+            <div className="text-center py-8 text-muted-foreground border rounded-md">
+              Tidak ada data pesanan
+            </div>
           ) : (
             orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-mono text-xs">
-                  {formatDate(order.orderDate)}
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  {formatDate(order.eventDate)}
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
-                    {order.countdownDays} hari
-                  </span>
-                </TableCell>
-                <TableCell className="font-medium">
-                  {order.customerName}
-                </TableCell>
-                <TableCell>
-                  <Link to={order.clientUrl || `/order/${order.id}`} className="text-wedding-primary hover:underline">
-                    {order.clientName}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Select 
-                    value={order.vendor}
-                    onValueChange={(value) => handleVendorChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-xs">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="flex items-center gap-1">
+              <div key={order.id} className="bg-white dark:bg-gray-800 border rounded-md p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-medium text-sm">{order.customerName}</div>
+                    <div 
+                      onClick={() => handleViewOrderDetail(order)} 
+                      className="text-wedding-primary font-semibold cursor-pointer"
+                    >
+                      {order.clientName}
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={() => handleViewOrderDetail(order)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Link to={`/order/${order.id}/edit`}>
+                        <Edit className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-muted-foreground text-xs">Tgl Pesan</div>
+                    <div className="font-mono text-xs">{formatDate(order.orderDate)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs">Tgl Acara</div>
+                    <div className="font-mono text-xs">{formatDate(order.eventDate)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs">Countdown</div>
+                    <div className={`font-mono text-xs ${isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}`}>
+                      {order.countdownDays} hari
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs">Vendor</div>
+                    <Select 
+                      value={order.vendor}
+                      onValueChange={(value) => handleVendorChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
                             <span className="animate-pulse">Menyimpan...</span>
-                          </span>
-                        ) : (
-                          order.vendor
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map((vendor) => (
-                        <SelectItem key={vendor} value={vendor}>
-                          {vendor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 text-xs px-2">
-                        {order.package}
-                        <ChevronDown className="ml-1 h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-64">
-                      <div className="p-2">
-                        <div className="mb-2">
-                          <span className="font-semibold text-xs">Addons:</span>
-                          {order.addons.length ? (
-                            <ul className="text-xs ml-2 mt-1 list-disc pl-3">
-                              {order.addons.map((addon, i) => (
-                                <li key={i}>{addon}</li>
-                              ))}
-                            </ul>
                           ) : (
-                            <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
+                            order.vendor
                           )}
-                        </div>
-                        <div>
-                          <span className="font-semibold text-xs">Bonus:</span>
-                          {order.bonuses.length ? (
-                            <ul className="text-xs ml-2 mt-1 list-disc pl-3">
-                              {order.bonuses.map((bonus, i) => (
-                                <li key={i}>{bonus}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
-                          )}
-                        </div>
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-                <TableCell>
-                  <Select 
-                    value={order.theme}
-                    onValueChange={(value) => handleThemeChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 w-full text-xs">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="flex items-center gap-1">
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map((vendor) => (
+                          <SelectItem key={vendor} value={vendor}>
+                            {vendor}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-muted-foreground text-xs">Paket</div>
+                    <div className="text-sm">{order.package}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs">Tema</div>
+                    <Select 
+                      value={order.theme}
+                      onValueChange={(value) => handleThemeChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
                             <span className="animate-pulse">Menyimpan...</span>
-                          </span>
-                        ) : (
-                          order.theme
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {themes.map((theme) => (
-                        <SelectItem key={theme} value={theme}>
-                          {theme}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
+                          ) : (
+                            order.theme
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-muted-foreground text-xs">Pembayaran</div>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -469,9 +295,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     >
                       <Badge className={getPaymentStatusColor(order.paymentStatus)}>
                         {updatingOrders.has(order.id) ? (
-                          <span className="flex items-center gap-1">
-                            <span className="animate-pulse">Menyimpan...</span>
-                          </span>
+                          <span className="animate-pulse">Menyimpan...</span>
                         ) : (
                           order.paymentStatus
                         )}
@@ -479,55 +303,267 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </Button>
                     <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Select 
-                    value={order.workStatus}
-                    onValueChange={(value) => handleWorkStatusChange(order.id, value)}
-                  >
-                    <SelectTrigger className="h-8 px-3 w-full">
-                      <SelectValue>
-                        {updatingOrders.has(order.id) ? (
-                          <span className="flex items-center gap-1">
+                  <div>
+                    <div className="text-muted-foreground text-xs">Status</div>
+                    <Select 
+                      value={order.workStatus}
+                      onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 px-3 w-full">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
                             <span className="animate-pulse">Menyimpan...</span>
-                          </span>
-                        ) : (
-                          <Badge className={getStatusColor(order.workStatus)}>
-                            {order.workStatus}
-                          </Badge>
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {workStatuses.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          <Badge className={getStatusColor(status)}>
-                            {status}
-                          </Badge>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={order.clientUrl || `/order/${order.id}`}>
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={`/order/${order.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                          ) : (
+                            <Badge className={getStatusColor(order.workStatus)}>
+                              {order.workStatus}
+                            </Badge>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {workStatuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            <Badge className={getStatusColor(status)}>
+                              {status}
+                            </Badge>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             ))
           )}
-        </TableBody>
-      </Table>
-    </div>
+        </div>
+        
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setDetailModalOpen(false)}
+          isOpen={detailModalOpen}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="rounded-md border overflow-hidden">
+        <Table>
+          <TableHeader className="bg-muted">
+            <TableRow>
+              <TableHead className="w-[100px]">Tgl Pesan</TableHead>
+              <TableHead className="w-[100px]">Tgl Acara</TableHead>
+              <TableHead className="w-[80px]">Countdown</TableHead>
+              <TableHead className="w-[150px]">Nama Pemesan</TableHead>
+              <TableHead className="w-[150px]">Nama Klien</TableHead>
+              <TableHead className="w-[120px]">Vendor</TableHead>
+              <TableHead className="w-[120px]">Paket</TableHead>
+              <TableHead className="w-[120px]">Tema</TableHead>
+              <TableHead className="w-[150px]">Status Pembayaran</TableHead>
+              <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
+              <TableHead className="w-[60px]">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                  Tidak ada data pesanan
+                </TableCell>
+              </TableRow>
+            ) : (
+              orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-xs">
+                    {formatDate(order.orderDate)}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {formatDate(order.eventDate)}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+                      {order.countdownDays} hari
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {order.customerName}
+                  </TableCell>
+                  <TableCell>
+                    <span 
+                      className="text-wedding-primary hover:underline cursor-pointer"
+                      onClick={() => handleViewOrderDetail(order)}
+                    >
+                      {order.clientName}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Select 
+                      value={order.vendor}
+                      onValueChange={(value) => handleVendorChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-pulse">Menyimpan...</span>
+                            </span>
+                          ) : (
+                            order.vendor
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map((vendor) => (
+                          <SelectItem key={vendor} value={vendor}>
+                            {vendor}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 text-xs px-2">
+                          {order.package}
+                          <ChevronDown className="ml-1 h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-64">
+                        <div className="p-2">
+                          <div className="mb-2">
+                            <span className="font-semibold text-xs">Addons:</span>
+                            {order.addons.length ? (
+                              <ul className="text-xs ml-2 mt-1 list-disc pl-3">
+                                {order.addons.map((addon, i) => (
+                                  <li key={i}>{addon}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-xs">Bonus:</span>
+                            {order.bonuses.length ? (
+                              <ul className="text-xs ml-2 mt-1 list-disc pl-3">
+                                {order.bonuses.map((bonus, i) => (
+                                  <li key={i}>{bonus}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
+                            )}
+                          </div>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                  <TableCell>
+                    <Select 
+                      value={order.theme}
+                      onValueChange={(value) => handleThemeChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 w-full text-xs">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-pulse">Menyimpan...</span>
+                            </span>
+                          ) : (
+                            order.theme
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme} value={theme}>
+                            {theme}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="p-0 h-6"
+                        onClick={() => togglePaymentStatus(order)}
+                      >
+                        <Badge className={getPaymentStatusColor(order.paymentStatus)}>
+                          {updatingOrders.has(order.id) ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-pulse">Menyimpan...</span>
+                            </span>
+                          ) : (
+                            order.paymentStatus
+                          )}
+                        </Badge>
+                      </Button>
+                      <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Select 
+                      value={order.workStatus}
+                      onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                    >
+                      <SelectTrigger className="h-8 px-3 w-full">
+                        <SelectValue>
+                          {updatingOrders.has(order.id) ? (
+                            <span className="flex items-center gap-1">
+                              <span className="animate-pulse">Menyimpan...</span>
+                            </span>
+                          ) : (
+                            <Badge className={getStatusColor(order.workStatus)}>
+                              {order.workStatus}
+                            </Badge>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {workStatuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            <Badge className={getStatusColor(status)}>
+                              {status}
+                            </Badge>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => handleViewOrderDetail(order)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Link to={`/order/${order.id}/edit`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+        
+      <OrderDetailModal
+        order={selectedOrder}
+        onClose={() => setDetailModalOpen(false)}
+        isOpen={detailModalOpen}
+      />
+    </>
   );
 }

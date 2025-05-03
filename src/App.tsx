@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Settings from "./pages/settings/Settings";
@@ -19,49 +20,51 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Index />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/pengaturan" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Settings />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/bulan/:month" element={
-              <ProtectedRoute>
-                <Layout>
-                  <MonthlyOrders />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/invoices" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Invoices />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </BrowserRouter>
+      <ThemeProvider defaultTheme="light" storageKey="nikah-theme-mode">
+        <BrowserRouter>
+          <TooltipProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Index />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/pengaturan" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/bulan/:month" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MonthlyOrders />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/invoices" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Invoices />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

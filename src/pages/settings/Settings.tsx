@@ -1,48 +1,47 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VendorSettings } from "@/components/settings/VendorSettings";
-import { PackageSettings } from "@/components/settings/PackageSettings";
-import { ThemeSettings } from "@/components/settings/ThemeSettings";
-import { StatusSettings } from "@/components/settings/StatusSettings";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
+import { PackageSettings } from "@/components/settings/PackageSettings";
+import { StatusSettings } from "@/components/settings/StatusSettings";
+import { AccountSettings } from "@/components/settings/AccountSettings";
 
 export default function Settings() {
+  const [activeTab, setActiveTab] = useState("account");
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Pengaturan</h1>
-        <p className="text-muted-foreground">
-          Atur konfigurasi sistem manajemen undangan digital
-        </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Pengaturan</h1>
+        <div>
+          <Button variant="outline">Batal</Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="vendors" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
-          <TabsTrigger value="vendors">Vendor</TabsTrigger>
-          <TabsTrigger value="packages">Paket</TabsTrigger>
-          <TabsTrigger value="themes">Tema</TabsTrigger>
-          <TabsTrigger value="status">Status</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid grid-cols-4 md:w-[600px]">
+          <TabsTrigger value="account">Akun</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
+          <TabsTrigger value="packages">Paket</TabsTrigger>
+          <TabsTrigger value="statuses">Status</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="vendors" className="space-y-4">
-          <VendorSettings />
+        <TabsContent value="account" className="space-y-4">
+          <AccountSettings />
         </TabsContent>
-        
+        <TabsContent value="invoice" className="space-y-4">
+          <InvoiceSettings />
+        </TabsContent>
         <TabsContent value="packages" className="space-y-4">
           <PackageSettings />
         </TabsContent>
-        
-        <TabsContent value="themes" className="space-y-4">
-          <ThemeSettings />
-        </TabsContent>
-        
-        <TabsContent value="status" className="space-y-4">
+        <TabsContent value="statuses" className="space-y-4">
           <StatusSettings />
-        </TabsContent>
-        
-        <TabsContent value="invoice" className="space-y-4">
-          <InvoiceSettings />
         </TabsContent>
       </Tabs>
     </div>

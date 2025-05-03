@@ -1,76 +1,93 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { User, AuthState } from '@/types/types';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { User } from "@/types/types";
 
-interface AuthContextType extends AuthState {
-  login: (username: string, password: string) => Promise<boolean>;
+type AuthContextType = {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-}
+  updateUser: (user: User) => void;
+};
 
-// Default admin credentials (in a real app, these would be stored securely on a server)
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin123';
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  login: async () => false,
+  logout: () => {},
+  updateUser: () => {},
+});
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    // Check if user is already logged in (from localStorage)
-    const storedUser = localStorage.getItem('user');
-    return {
-      user: storedUser ? JSON.parse(storedUser) : null,
-      isAuthenticated: !!storedUser
-    };
-  });
+// Sample user for demonstration
+const sampleUser = {
+  id: "1",
+  name: "Admin User",
+  email: "admin@example.com",
+  avatar: "",
+};
 
-  // Persist auth state to localStorage when it changes
+type AuthProviderProps = {
+  children: ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    if (authState.user) {
-      localStorage.setItem('user', JSON.stringify(authState.user));
-    } else {
-      localStorage.removeItem('user');
+    // Check for existing user session in localStorage
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
-  }, [authState.user]);
+    setIsLoading(false);
+  }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    // For demo purposes, we're using a simple credential check
-    // In a real app, this would make an API request to validate credentials
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      const user: User = {
-        username,
-        name: 'Administrator',
-        role: 'admin'
-      };
-      
-      setAuthState({
-        user,
-        isAuthenticated: true
-      });
-      
-      return true;
-    }
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
     
-    return false;
+    try {
+      // This is a mock login - in a real app, you would validate credentials against a server
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+      
+      if (email === "admin@example.com" && password === "password") {
+        setUser(sampleUser);
+        localStorage.setItem("user", JSON.stringify(sampleUser));
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
-    setAuthState({
-      user: null,
-      isAuthenticated: false
-    });
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    updateUser,
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Order, Theme, Addon, Package } from "@/types/types";
 import {
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Tag, CalendarDays, Users, Link, Truck, Package as PackageIcon, Palette, ClipboardCheck, CircleDollarSign, FileText } from "lucide-react";
 
 interface EditOrderDialogProps {
   order: Order | null;
@@ -117,13 +119,24 @@ export function EditOrderDialog({
     try {
       const storedAddons = localStorage.getItem("addons");
       if (storedAddons) {
-        setAvailableAddons(JSON.parse(storedAddons));
-      } else {
+        const parsedAddons = JSON.parse(storedAddons);
+        setAvailableAddons(parsedAddons);
+      } else if (addons && addons.length > 0) {
+        // Use provided addons as fallback if none in localStorage
         setAvailableAddons(addons);
+      } else {
+        // Default addons if none are stored or provided
+        const defaultAddons: Addon[] = [
+          { id: "1", name: "Express", color: "#3b82f6" },
+          { id: "2", name: "Super Express", color: "#f97316" },
+          { id: "3", name: "Custom Desain", color: "#8b5cf6" },
+          { id: "4", name: "Custom Domain", color: "#16a34a" }
+        ];
+        setAvailableAddons(defaultAddons);
       }
     } catch (e) {
       console.error("Error loading addons:", e);
-      setAvailableAddons(addons);
+      setAvailableAddons(addons || []);
     }
   }, [themes, addons]);
 
@@ -171,7 +184,10 @@ export function EditOrderDialog({
           <div className="grid grid-cols-1 gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="orderDate">Tanggal Pesan</Label>
+                <Label htmlFor="orderDate" className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Tanggal Pesan
+                </Label>
                 <Input
                   id="orderDate"
                   type="date"
@@ -180,7 +196,10 @@ export function EditOrderDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="eventDate">Tanggal Acara</Label>
+                <Label htmlFor="eventDate" className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Tanggal Acara
+                </Label>
                 <Input
                   id="eventDate"
                   type="date"
@@ -191,7 +210,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customerName">Nama Pemesan</Label>
+              <Label htmlFor="customerName" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Nama Pemesan
+              </Label>
               <Input
                 id="customerName"
                 value={formData.customerName || ""}
@@ -200,7 +222,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="clientName">Nama Klien</Label>
+              <Label htmlFor="clientName" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Nama Klien
+              </Label>
               <Input
                 id="clientName"
                 value={formData.clientName || ""}
@@ -209,7 +234,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="clientUrl">URL Undangan</Label>
+              <Label htmlFor="clientUrl" className="flex items-center gap-2">
+                <Link className="h-4 w-4" />
+                URL Undangan
+              </Label>
               <Input
                 id="clientUrl"
                 value={formData.clientUrl || ""}
@@ -220,7 +248,10 @@ export function EditOrderDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="vendor">Vendor</Label>
+                <Label htmlFor="vendor" className="flex items-center gap-2">
+                  <Truck className="h-4 w-4" />
+                  Vendor
+                </Label>
                 <Select
                   value={formData.vendor || ""}
                   onValueChange={(value) => handleChange("vendor", value)}
@@ -239,7 +270,10 @@ export function EditOrderDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="package">Paket</Label>
+                <Label htmlFor="package" className="flex items-center gap-2">
+                  <PackageIcon className="h-4 w-4" />
+                  Paket
+                </Label>
                 <Select
                   value={formData.package || ""}
                   onValueChange={(value) => handleChange("package", value)}
@@ -263,7 +297,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="theme">Tema</Label>
+              <Label htmlFor="theme" className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                Tema
+              </Label>
               <Select
                 value={formData.theme || ""}
                 onValueChange={(value) => handleChange("theme", value)}
@@ -283,7 +320,10 @@ export function EditOrderDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="workStatus">Status Pengerjaan</Label>
+                <Label htmlFor="workStatus" className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4" />
+                  Status Pengerjaan
+                </Label>
                 <Select
                   value={formData.workStatus || ""}
                   onValueChange={(value) => handleChange("workStatus", value)}
@@ -302,7 +342,10 @@ export function EditOrderDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="paymentStatus">Status Pembayaran</Label>
+                <Label htmlFor="paymentStatus" className="flex items-center gap-2">
+                  <CircleDollarSign className="h-4 w-4" />
+                  Status Pembayaran
+                </Label>
                 <Select
                   value={formData.paymentStatus || ""}
                   onValueChange={(value) => handleChange("paymentStatus", value)}
@@ -319,7 +362,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
+              <Label htmlFor="paymentAmount" className="flex items-center gap-2">
+                <CircleDollarSign className="h-4 w-4" />
+                Jumlah Pembayaran
+              </Label>
               <Input
                 id="paymentAmount"
                 type="number"
@@ -329,7 +375,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Izin Post</Label>
+              <Label className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Izin Post
+              </Label>
               <div className="flex items-center space-x-2 mt-1">
                 <Button
                   type="button"
@@ -351,7 +400,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Addons</Label>
+              <Label className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Addons
+              </Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {availableAddons.map((addon) => (
                   <Button
@@ -374,7 +426,10 @@ export function EditOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Catatan</Label>
+              <Label htmlFor="notes" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Catatan
+              </Label>
               <Input
                 id="notes"
                 value={formData.notes || ""}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -452,7 +451,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   <div>
                     <div className="text-muted-foreground text-xs">Addons</div>
-                    {order.addons.length > 0 ? (
+                    {order.addons && order.addons.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {order.addons.map((addon, index) => (
                           <Badge 
@@ -465,7 +464,17 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         ))}
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground">Tidak ada</div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {availableAddons.slice(0, 2).map((addon) => (
+                          <Badge 
+                            key={addon.id} 
+                            style={{ backgroundColor: addon.color || "#6366f1", color: '#fff' }}
+                            className="text-[10px] px-1.5 py-0 rounded-full"
+                          >
+                            {addon.name}
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -649,7 +658,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </Select>
                   </TableCell>
                   <TableCell>
-                    {order.addons.length > 0 ? (
+                    {order.addons && order.addons.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {order.addons.map((addon, index) => (
                           <Badge 
@@ -662,9 +671,17 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         ))}
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">
-                        Tidak ada
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {availableAddons.slice(0, 2).map((addon) => (
+                          <Badge 
+                            key={addon.id} 
+                            style={{ backgroundColor: addon.color || "#6366f1", color: '#fff' }}
+                            className="text-[10px] py-0 px-1.5"
+                          >
+                            {addon.name}
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </TableCell>
                   <TableCell>
@@ -749,7 +766,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-7 w-7 text-wedding-primary hover:text-blue-600 hover:bg-blue-50"
                         onClick={() => handleOpenEditDialog(order)}
                       >
                         <Edit className="h-3.5 w-3.5" />

@@ -38,8 +38,14 @@ export default function Invoices() {
       
       // Load invoices
       const savedInvoices = loadInvoices();
-      setInvoices(savedInvoices);
-      setFilteredInvoices(savedInvoices);
+      // Ensure the status property is correctly typed
+      const typedInvoices: Invoice[] = savedInvoices.map(invoice => ({
+        ...invoice,
+        status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
+      }));
+      
+      setInvoices(typedInvoices);
+      setFilteredInvoices(typedInvoices);
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -85,12 +91,12 @@ export default function Invoices() {
     if (success) {
       // Update local state after marking as paid
       const updatedInvoices = invoices.map((invoice) =>
-        invoice.id === invoiceId ? { ...invoice, status: "Paid" } : invoice
+        invoice.id === invoiceId ? { ...invoice, status: "Paid" as "Paid" } : invoice
       );
       setInvoices(updatedInvoices);
       setFilteredInvoices(
         filteredInvoices.map((invoice) =>
-          invoice.id === invoiceId ? { ...invoice, status: "Paid" } : invoice
+          invoice.id === invoiceId ? { ...invoice, status: "Paid" as "Paid" } : invoice
         )
       );
       toast.success("Invoice berhasil ditandai sebagai lunas");

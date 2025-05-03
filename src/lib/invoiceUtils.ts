@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice, Order } from '@/types/types';
 import { toast } from 'sonner';
@@ -35,7 +34,12 @@ export const loadInvoices = (): Invoice[] => {
   try {
     const savedInvoices = localStorage.getItem('invoices');
     if (savedInvoices) {
-      return JSON.parse(savedInvoices);
+      const parsedInvoices = JSON.parse(savedInvoices);
+      // Ensure each invoice has the correct status type
+      return parsedInvoices.map((invoice: any) => ({
+        ...invoice,
+        status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
+      }));
     }
   } catch (error) {
     console.error('Error loading invoices:', error);

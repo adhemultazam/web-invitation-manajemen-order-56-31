@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -21,6 +21,17 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
   isDisabled,
   onChange,
 }) => {
+  // Save selected theme to localStorage when it changes
+  useEffect(() => {
+    try {
+      if (value) {
+        localStorage.setItem('last_selected_theme', value);
+      }
+    } catch (e) {
+      console.error("Error saving theme to localStorage:", e);
+    }
+  }, [value]);
+
   return (
     <Select
       value={value}

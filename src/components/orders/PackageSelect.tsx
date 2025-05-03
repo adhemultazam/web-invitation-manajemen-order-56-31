@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,17 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
   isDisabled,
   onChange,
 }) => {
+  // Save selected package to localStorage when it changes
+  useEffect(() => {
+    try {
+      if (value) {
+        localStorage.setItem('last_selected_package', value);
+      }
+    } catch (e) {
+      console.error("Error saving package to localStorage:", e);
+    }
+  }, [value]);
+
   return (
     <Select
       value={value}

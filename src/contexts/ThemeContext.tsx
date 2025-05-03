@@ -28,8 +28,13 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const storedTheme = localStorage.getItem(storageKey) as Theme;
-    return storedTheme || defaultTheme;
+    try {
+      const storedTheme = localStorage.getItem(storageKey) as Theme;
+      return storedTheme || defaultTheme;
+    } catch (e) {
+      console.error("Error accessing localStorage for theme:", e);
+      return defaultTheme;
+    }
   });
 
   useEffect(() => {
@@ -51,8 +56,13 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+      try {
+        localStorage.setItem(storageKey, theme);
+        setTheme(theme);
+      } catch (e) {
+        console.error("Error saving theme to localStorage:", e);
+        setTheme(theme);
+      }
     },
   };
 

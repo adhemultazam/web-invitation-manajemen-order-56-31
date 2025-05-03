@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface OrderAddonsProps {
@@ -8,6 +8,17 @@ interface OrderAddonsProps {
 }
 
 const OrderAddons: React.FC<OrderAddonsProps> = ({ addons, addonStyles }) => {
+  // Store last used addons in localStorage
+  useEffect(() => {
+    try {
+      if (addons && addons.length > 0) {
+        localStorage.setItem('last_used_addons', JSON.stringify(addons));
+      }
+    } catch (e) {
+      console.error("Error saving addons to localStorage:", e);
+    }
+  }, [addons]);
+
   if (!addons || addons.length === 0) {
     return <span className="text-xs text-muted-foreground">-</span>;
   }

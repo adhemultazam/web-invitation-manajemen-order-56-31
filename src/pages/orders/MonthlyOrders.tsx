@@ -108,6 +108,28 @@ const defaultAddons: Addon[] = [
   { id: "4", name: "Custom Domain", color: "#16a34a" }
 ];
 
+// Helper function to load orders from localStorage
+const loadOrdersFromStorage = (month: string): Order[] => {
+  try {
+    const storedOrders = localStorage.getItem(`orders_${month}`);
+    if (storedOrders) {
+      return JSON.parse(storedOrders);
+    }
+  } catch (e) {
+    console.error("Error loading orders from localStorage:", e);
+  }
+  return [];
+};
+
+// Helper function to save orders to localStorage
+const saveOrdersToStorage = (month: string, orders: Order[]): void => {
+  try {
+    localStorage.setItem(`orders_${month}`, JSON.stringify(orders));
+  } catch (e) {
+    console.error("Error saving orders to localStorage:", e);
+  }
+};
+
 export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -120,12 +142,27 @@ export default function MonthlyOrders() {
   // Capitalize the first letter of the month
   const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
 
-  // Set orders based on month (dummy implementation)
+  // Set orders based on month and load from localStorage
   useEffect(() => {
-    // In a real app, this would fetch data based on the month
-    setOrders(mockOrders);
-    setFilteredOrders(mockOrders);
+    const storedOrders = loadOrdersFromStorage(month);
+    
+    // If there are stored orders, use them; otherwise use the mock data and save it
+    if (storedOrders && storedOrders.length > 0) {
+      setOrders(storedOrders);
+      setFilteredOrders(storedOrders);
+    } else {
+      setOrders(mockOrders);
+      setFilteredOrders(mockOrders);
+      saveOrdersToStorage(month, mockOrders);
+    }
   }, [month]);
+
+  // Save orders to localStorage whenever they change
+  useEffect(() => {
+    if (orders.length > 0) {
+      saveOrdersToStorage(month, orders);
+    }
+  }, [orders, month]);
 
   // Try to fetch addons from settings
   useEffect(() => {
@@ -199,6 +236,9 @@ export default function MonthlyOrders() {
     setFilteredOrders(updatedOrders.filter(order => 
       filteredOrders.some(fo => fo.id === order.id)
     ));
+    
+    // Save to localStorage
+    saveOrdersToStorage(month, updatedOrders);
   };
 
   const handleAddOrder = (orderData: Omit<Order, "id">) => {
@@ -211,6 +251,9 @@ export default function MonthlyOrders() {
     setOrders(updatedOrders);
     setFilteredOrders(updatedOrders);
     setIsAddModalOpen(false);
+    
+    // Save to localStorage
+    saveOrdersToStorage(month, updatedOrders);
   };
 
   // Calculate statistics

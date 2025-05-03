@@ -63,6 +63,7 @@ export interface Vendor {
   contactEmail?: string;
   contactPhone?: string;
   commission?: number;
+  color?: string; // Added color property
 }
 
 export interface WorkStatus {

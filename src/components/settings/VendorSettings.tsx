@@ -28,10 +28,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { Vendor } from "@/types/types";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, ColorPicker } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
-// Mock data for vendors
+// Mock data for vendors with colors
 const initialVendors: Vendor[] = [
   {
     id: "1",
@@ -47,6 +48,23 @@ const initialVendors: Vendor[] = [
     commission: 15,
     color: "#3b82f6" // Default color - blue
   }
+];
+
+// Color palette options
+const colorOptions = [
+  "#6366f1", // indigo
+  "#3b82f6", // blue
+  "#8b5cf6", // violet
+  "#d946ef", // pink
+  "#ec4899", // magenta
+  "#f97316", // orange
+  "#f59e0b", // amber
+  "#10b981", // emerald
+  "#14b8a6", // teal
+  "#06b6d4", // cyan
+  "#ef4444", // red
+  "#84cc16", // lime
+  "#64748b", // slate
 ];
 
 export function VendorSettings() {
@@ -83,7 +101,7 @@ export function VendorSettings() {
       setFormData({
         name: vendor.name,
         code: vendor.code,
-        commission: vendor.commission,
+        commission: vendor.commission || 0,
         color: vendor.color || "#6366f1"
       });
     } else {
@@ -118,6 +136,7 @@ export function VendorSettings() {
             : v
         )
       );
+      toast.success(`Vendor ${formData.name} berhasil diperbarui`);
     } else {
       // Add new vendor
       const newVendor: Vendor = {
@@ -125,13 +144,22 @@ export function VendorSettings() {
         ...formData
       };
       setVendors((prev) => [...prev, newVendor]);
+      toast.success(`Vendor ${formData.name} berhasil ditambahkan`);
     }
 
     setIsDialogOpen(false);
   };
 
   const handleDelete = (id: string) => {
+    const vendorToDelete = vendors.find(v => v.id === id);
     setVendors((prev) => prev.filter((vendor) => vendor.id !== id));
+    if (vendorToDelete) {
+      toast.success(`Vendor ${vendorToDelete.name} berhasil dihapus`);
+    }
+  };
+
+  const handleColorSelect = (color: string) => {
+    setFormData(prev => ({ ...prev, color }));
   };
 
   return (
@@ -223,6 +251,24 @@ export function VendorSettings() {
                     <Badge style={{ backgroundColor: formData.color, color: "#fff" }}>
                       Preview
                     </Badge>
+                  </div>
+                  <div className="mt-2">
+                    <Label className="mb-2 block text-sm">Pilihan warna cepat:</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {colorOptions.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`h-8 w-8 rounded-full transition-all ${
+                            formData.color === color 
+                              ? "ring-2 ring-offset-2 ring-wedding-primary" 
+                              : ""
+                          }`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleColorSelect(color)}
+                        />
+                      ))}
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Pilih warna untuk label vendor pada daftar pesanan

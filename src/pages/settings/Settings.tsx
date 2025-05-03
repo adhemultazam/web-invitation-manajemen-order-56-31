@@ -13,6 +13,7 @@ import { StatusSettings } from "@/components/settings/StatusSettings";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { AddonSettings } from "@/components/settings/AddonSettings";
+import { VendorSettings } from "@/components/settings/VendorSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("account");
@@ -27,13 +28,14 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-6 md:w-[800px]">
+        <TabsList className="grid grid-cols-7 md:w-[900px]">
           <TabsTrigger value="account">Akun</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
           <TabsTrigger value="packages">Paket</TabsTrigger>
           <TabsTrigger value="statuses">Status</TabsTrigger>
           <TabsTrigger value="themes">Tema</TabsTrigger>
           <TabsTrigger value="addons">Addons</TabsTrigger>
+          <TabsTrigger value="vendors">Vendor</TabsTrigger>
         </TabsList>
         <TabsContent value="account" className="space-y-4">
           <AccountSettings />
@@ -52,6 +54,9 @@ export default function Settings() {
         </TabsContent>
         <TabsContent value="addons" className="space-y-4">
           <AddonSettings />
+        </TabsContent>
+        <TabsContent value="vendors" className="space-y-4">
+          <VendorSettings />
         </TabsContent>
       </Tabs>
     </div>

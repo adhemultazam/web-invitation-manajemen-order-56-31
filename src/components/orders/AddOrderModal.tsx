@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Order, Addon, Package } from "@/types/types";
+import { Order, Addon, Package, Theme } from "@/types/types";
 
 interface AddOrderModalProps {
   isOpen: boolean;
@@ -24,10 +23,10 @@ interface AddOrderModalProps {
 }
 
 export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses, addons: defaultAddons }: AddOrderModalProps) {
-  // Load packages from local storage
+  // Load packages and themes from local storage
   const [packages, setPackages] = useState<Package[]>([]);
-  // Load addons from local storage
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
+  const [themes, setThemes] = useState<Theme[]>([]);
   
   const [formData, setFormData] = useState({
     customerName: "",
@@ -48,7 +47,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     notes: "",
   });
 
-  // Load packages from localStorage when component mounts
+  // Load data from localStorage when component mounts
   useEffect(() => {
     const loadPackages = () => {
       try {
@@ -82,8 +81,27 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       }
     };
     
+    const loadThemes = () => {
+      try {
+        const savedThemes = localStorage.getItem("themes");
+        if (savedThemes) {
+          const parsedThemes = JSON.parse(savedThemes);
+          if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
+            setThemes(parsedThemes);
+            // Set default theme if available
+            if (parsedThemes.length > 0 && !formData.theme) {
+              setFormData(prev => ({...prev, theme: parsedThemes[0].name}));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading themes:", error);
+      }
+    };
+    
     loadPackages();
     loadAddons();
+    loadThemes();
   }, [isOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -150,7 +168,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       countdownDays: 30,
       vendor: vendors[0] || "",
       package: packages[0]?.name || "",
-      theme: "",
+      theme: themes[0]?.name || "",
       addons: [],
       bonuses: [],
       paymentStatus: "Pending",
@@ -364,13 +382,26 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
               </div>
               <div className="space-y-2">
                 <Label htmlFor="theme">Tema</Label>
-                <Input
-                  id="theme"
-                  name="theme"
-                  value={formData.theme}
-                  onChange={handleInputChange}
-                  placeholder="Tema undangan"
-                />
+                <Select 
+                  value={formData.theme} 
+                  onValueChange={(value) => handleSelectChange(value, "theme")}
+                >
+                  <SelectTrigger id="theme">
+                    <SelectValue placeholder="Pilih tema" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {themes.map((theme) => (
+                      <SelectItem key={theme.id} value={theme.name}>
+                        {theme.name}
+                      </SelectItem>
+                    ))}
+                    {themes.length === 0 && (
+                      <SelectItem value="default" disabled>
+                        Tidak ada tema tersedia
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             

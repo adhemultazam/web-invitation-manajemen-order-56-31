@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -332,7 +331,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                                 backgroundColor: style?.color || "#6366f1",
                                 color: "#fff"
                               }}
-                              className="text-xs px-2 py-0.5 rounded-full"
+                              className="text-xs px-1.5 py-0 rounded-full"
                             >
                               {addon}
                             </Badge>
@@ -504,7 +503,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                                 color: "#fff"
                               }}
                               variant="outline"
-                              className="text-xs px-2 py-0.5 border-0"
+                              className="text-xs px-1.5 py-0.5 border-0 whitespace-nowrap"
                             >
                               {addon}
                             </Badge>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -252,6 +253,15 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     };
   };
 
+  // Function to get addon style based on its name
+  const getAddonStyle = (addonName: string) => {
+    const addonStyle = addonStyles[addonName];
+    return {
+      backgroundColor: addonStyle?.color || "#6366f1",
+      color: '#fff'
+    };
+  };
+
   if (isMobile) {
     return (
       <>
@@ -374,21 +384,15 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     <div className="text-muted-foreground text-xs">Addons</div>
                     {order.addons.length > 0 ? (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {order.addons.map((addon, index) => {
-                          const style = addonStyles[addon];
-                          return (
-                            <Badge 
-                              key={index} 
-                              style={{
-                                backgroundColor: style?.color || "#6366f1",
-                                color: "#fff"
-                              }}
-                              className="text-[10px] px-1.5 py-0 rounded-full"
-                            >
-                              {addon}
-                            </Badge>
-                          );
-                        })}
+                        {order.addons.map((addon, index) => (
+                          <Badge 
+                            key={index} 
+                            style={getAddonStyle(addon)}
+                            className="text-[10px] px-1.5 py-0 rounded-full"
+                          >
+                            {addon}
+                          </Badge>
+                        ))}
                       </div>
                     ) : (
                       <div className="text-xs text-muted-foreground">Tidak ada</div>
@@ -563,57 +567,30 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-64">
-                        <div className="p-2">
-                          <div className="mb-2">
-                            <span className="font-semibold text-xs">Addons:</span>
-                            {order.addons.length ? (
-                              <ul className="text-xs ml-2 mt-1 list-disc pl-3">
-                                {order.addons.map((addon, i) => (
-                                  <li key={i}>{addon}</li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
-                            )}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-xs">Bonus:</span>
-                            {order.bonuses.length ? (
-                              <ul className="text-xs ml-2 mt-1 list-disc pl-3">
-                                {order.bonuses.map((bonus, i) => (
-                                  <li key={i}>{bonus}</li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
-                            )}
-                          </div>
+                        <div className="p-2 text-xs">
+                          <div className="font-semibold">Paket:</div>
+                          <div className="mt-1">{order.package}</div>
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                   <TableCell>
-                    {order.addons.length ? (
+                    {order.addons.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {order.addons.map((addon, i) => {
-                          const style = addonStyles[addon];
-                          return (
-                            <Badge 
-                              key={i} 
-                              style={{
-                                backgroundColor: style?.color || "#6366f1",
-                                color: "#fff"
-                              }}
-                              variant="outline"
-                              className="text-[10px] px-1 py-0 border-0 whitespace-nowrap"
-                            >
-                              {addon}
-                            </Badge>
-                          );
-                        })}
+                        {order.addons.map((addon, index) => (
+                          <Badge 
+                            key={index} 
+                            style={getAddonStyle(addon)}
+                            className="text-[10px] py-0 px-1.5"
+                          >
+                            {addon}
+                          </Badge>
+                        ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground">Tidak ada addon</p>
+                      <span className="text-xs text-muted-foreground">
+                        Tidak ada
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -635,24 +612,24 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="p-0 h-6"
+                    <div className="flex flex-col">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-0 h-6 justify-start"
                         onClick={() => togglePaymentStatus(order)}
                       >
                         <Badge className={getPaymentStatusColor(order.paymentStatus)}>
                           {updatingOrders.has(order.id) ? (
-                            <span className="flex items-center gap-1">
-                              <span className="animate-pulse">Menyimpan...</span>
-                            </span>
+                            <span className="animate-pulse">Menyimpan...</span>
                           ) : (
                             order.paymentStatus
                           )}
                         </Badge>
                       </Button>
-                      <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
+                      <span className="text-xs font-mono mt-1">
+                        {formatCurrency(order.paymentAmount)}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -664,7 +641,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                       <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
                         <div className="flex items-center">
                           <div
-                            className="w-2 h-2 mr-2 rounded-full"
+                            className="w-2 h-2 mr-1 rounded-full"
                             style={{ backgroundColor: getStatusColor(order.workStatus) }}
                           />
                           <SelectValue>{order.workStatus}</SelectValue>
@@ -686,22 +663,22 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     </Select>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8"
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
                         onClick={() => handleViewOrderDetail(order)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8"
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
                         onClick={() => handleOpenEditDialog(order)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -711,13 +688,13 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           </TableBody>
         </Table>
       </div>
-        
+
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setDetailModalOpen(false)}
         isOpen={detailModalOpen}
       />
-      
+
       <EditOrderDialog
         order={selectedOrder}
         isOpen={editModalOpen}

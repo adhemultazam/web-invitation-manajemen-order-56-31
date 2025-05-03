@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -231,6 +232,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                       selected={formData.orderDate}
                       onSelect={(date) => date && setFormData({...formData, orderDate: date})}
                       initialFocus
+                      className="p-3 pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -253,6 +255,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                       selected={formData.eventDate}
                       onSelect={(date) => date && setFormData({...formData, eventDate: date})}
                       initialFocus
+                      className="p-3 pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -314,7 +317,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                       htmlFor={`addon-${addon.id}`}
                       className="flex items-center space-x-2 cursor-pointer"
                     >
-                      <div className={`w-2 h-2 rounded-full ${addon.color}`}></div>
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: addon.color }}></div>
                       <span>{addon.name}</span>
                     </Label>
                   </div>

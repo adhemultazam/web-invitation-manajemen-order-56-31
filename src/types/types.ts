@@ -37,6 +37,7 @@ export interface Vendor {
   name: string;
   code: string;
   color: string;
+  commission?: number;
   contact?: string;
   email?: string;
   phone?: string;

@@ -91,7 +91,7 @@ export const generateInvoice = (
     dueDate,
     orders: invoiceOrders,
     totalAmount,
-    status: "Unpaid",
+    status: "Unpaid" as "Unpaid",
     notes: ""
   };
 };
@@ -102,7 +102,7 @@ export const markInvoiceAsPaid = (invoiceId: string): boolean => {
     const invoices = loadInvoices();
     const updatedInvoices = invoices.map(invoice => 
       invoice.id === invoiceId 
-        ? { ...invoice, status: "Paid" } 
+        ? { ...invoice, status: "Paid" as "Paid" } 
         : invoice
     );
     

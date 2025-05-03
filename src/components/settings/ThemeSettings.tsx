@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Theme } from "@/types/types";
+import { Theme, Package } from "@/types/types";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -33,17 +33,30 @@ import {
 
 export function ThemeSettings() {
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [formData, setFormData] = useState<Partial<Theme>>({
     name: "",
-    category: "Basic",
+    category: "",
     price: 150000,
     backgroundColor: "#F5F5F5"
   });
   
   // Load themes from localStorage on component mount
   useEffect(() => {
+    // Load packages first
+    const storedPackages = localStorage.getItem('packages');
+    if (storedPackages) {
+      try {
+        const parsedPackages = JSON.parse(storedPackages);
+        setPackages(parsedPackages);
+      } catch (e) {
+        console.error("Error parsing packages:", e);
+      }
+    }
+    
+    // Then load themes
     const storedThemes = localStorage.getItem('themes');
     
     if (storedThemes) {
@@ -62,6 +75,10 @@ export function ThemeSettings() {
   
   // Initialize default themes
   const initializeDefaultThemes = () => {
+    // Get package names if packages exist
+    const packageNames = packages.length > 0 ? packages.map(pkg => pkg.name) : ["Basic", "Premium"];
+    const defaultCategory = packageNames[0] || "Basic";
+    
     const defaultThemes: Theme[] = [
       {
         id: uuidv4(),
@@ -114,10 +131,13 @@ export function ThemeSettings() {
   
   // Handle adding a new theme
   const handleAddTheme = () => {
+    // Set default category to first package name if available, otherwise "Basic"
+    const defaultCategory = packages.length > 0 ? packages[0].name : "Basic";
+    
     setEditingTheme(null);
     setFormData({
       name: "",
-      category: "Basic",
+      category: defaultCategory,
       price: 150000,
       backgroundColor: "#F5F5F5"
     });
@@ -175,7 +195,7 @@ export function ThemeSettings() {
         id: uuidv4(),
         name: formData.name || "Tema Baru",
         thumbnail: "",
-        category: formData.category || "Basic",
+        category: formData.category || (packages.length > 0 ? packages[0].name : "Basic"),
         price: formData.price || 150000,
         backgroundColor: formData.backgroundColor || "#F5F5F5",
         description: formData.description || ""
@@ -280,9 +300,20 @@ export function ThemeSettings() {
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Basic">Basic</SelectItem>
-                  <SelectItem value="Premium">Premium</SelectItem>
-                  <SelectItem value="Custom">Custom</SelectItem>
+                  {/* Dynamic options based on loaded packages */}
+                  {packages.length > 0 ? (
+                    packages.map((pkg) => (
+                      <SelectItem key={pkg.id} value={pkg.name}>
+                        {pkg.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="Basic">Basic</SelectItem>
+                      <SelectItem value="Premium">Premium</SelectItem>
+                      <SelectItem value="Custom">Custom</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>

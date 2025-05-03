@@ -1,4 +1,3 @@
-
 export interface ChartData {
   name: string;
   value: number;
@@ -93,4 +92,10 @@ export interface Invoice {
     clientName: string;
     amount: number;
   }[];
+}
+
+export interface Addon {
+  id: string;
+  name: string;
+  color: string;
 }

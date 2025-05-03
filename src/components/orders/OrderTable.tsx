@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Order } from "@/types/types";
+import { Order, Addon } from "@/types/types";
 import { Link } from "react-router-dom";
 import { ChevronDown, Edit, Eye, Check } from "lucide-react";
 import {
@@ -286,6 +286,23 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                   </div>
                 </div>
                 
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div>
+                    <div className="text-muted-foreground text-xs">Addons</div>
+                    {order.addons.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {order.addons.map((addon, index) => (
+                          <div key={index} className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 text-xs px-2 py-0.5 rounded-full">
+                            {addon}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground">Tidak ada</div>
+                    )}
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-muted-foreground text-xs">Pembayaran</div>
@@ -361,6 +378,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
               <TableHead className="w-[150px]">Nama Klien</TableHead>
               <TableHead className="w-[120px]">Vendor</TableHead>
               <TableHead className="w-[120px]">Paket</TableHead>
+              <TableHead className="w-[120px]">Addons</TableHead>
               <TableHead className="w-[120px]">Tema</TableHead>
               <TableHead className="w-[150px]">Status Pembayaran</TableHead>
               <TableHead className="w-[150px]">Status Pengerjaan</TableHead>
@@ -370,7 +388,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                   Tidak ada data pesanan
                 </TableCell>
               </TableRow>
@@ -458,6 +476,31 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                               <p className="text-xs text-muted-foreground ml-2 mt-1">Tidak ada</p>
                             )}
                           </div>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-7 text-xs px-2">
+                          Addons
+                          <ChevronDown className="ml-1 h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-64">
+                        <div className="p-2">
+                          {order.addons.length ? (
+                            <div className="flex flex-wrap gap-1">
+                              {order.addons.map((addon, i) => (
+                                <span key={i} className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 text-xs px-2 py-0.5 rounded-full">
+                                  {addon}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">Tidak ada addon</p>
+                          )}
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>

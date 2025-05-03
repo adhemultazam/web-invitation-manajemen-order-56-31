@@ -1,307 +1,289 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { useForm, useFieldArray } from "react-hook-form";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { BankAccount } from "@/types/types";
-import { Plus, Trash2, FileImage } from "lucide-react";
-
-// Default invoice settings
-const defaultInvoiceSettings = {
-  logoUrl: "",
-  brandName: "Undangan Digital",
-  businessAddress: "Jl. Pemuda No. 123, Surabaya",
-  contactEmail: "contact@undangandigital.com",
-  contactPhone: "+62 812 3456 7890",
-  bankAccounts: [
-    {
-      id: "1",
-      bankName: "BCA",
-      accountNumber: "1234567890",
-      accountHolderName: "PT Undangan Digital Indonesia",
-    }
-  ]
-};
-
-// Type for our invoice settings
-interface InvoiceSettingsType {
-  logoUrl: string;
-  brandName: string;
-  businessAddress: string;
-  contactEmail: string;
-  contactPhone: string;
-  bankAccounts: BankAccount[];
-}
 
 export function InvoiceSettings() {
-  const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettingsType>(() => {
-    // Try to load from localStorage on initial render
-    const savedSettings = localStorage.getItem("invoiceSettings");
-    return savedSettings ? JSON.parse(savedSettings) : defaultInvoiceSettings;
+  const [formData, setFormData] = useState({
+    businessName: "Undangan Digital",
+    address: "Jl. Contoh No. 123, Jakarta",
+    city: "Jakarta",
+    zipCode: "12345",
+    phone: "0812-3456-7890",
+    email: "info@undangandigital.com",
+    website: "www.undangandigital.com",
+    bankAccount: "BCA - 1234567890",
+    bankAccountName: "PT Undangan Digital",
+    taxId: "123.456.789.0-123.000",
+    invoiceFooter: "Terima kasih atas pesanan Anda.",
+    logo: ""
   });
-  
-  const form = useForm<InvoiceSettingsType>({
-    defaultValues: invoiceSettings,
-  });
-  
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "bankAccounts",
-  });
-  
-  // Update form values when invoiceSettings change
-  useEffect(() => {
-    form.reset(invoiceSettings);
-  }, [invoiceSettings, form]);
 
-  const onSubmit = (data: InvoiceSettingsType) => {
-    // Save to localStorage
-    localStorage.setItem("invoiceSettings", JSON.stringify(data));
-    setInvoiceSettings(data);
-    
-    // Show success message
-    toast.success("Pengaturan invoice berhasil disimpan", {
-      description: "Detail bisnis telah diperbarui untuk invoice",
+  const [previewImage, setPreviewImage] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
     });
   };
 
-  // Logo upload handling
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
-
-    if (file.size > 1024 * 1024) {
-      toast.error("Ukuran file terlalu besar", {
-        description: "Maksimal ukuran file adalah 1MB",
-      });
+    
+    // Only allow images
+    if (!file.type.match('image.*')) {
+      toast.error('Hanya file gambar yang diperbolehkan');
       return;
     }
-
+    
+    // Size check - limit to 500KB
+    if (file.size > 500 * 1024) {
+      toast.error('Ukuran maksimal logo adalah 500KB');
+      return;
+    }
+    
+    setIsUploading(true);
+    
+    // Create a preview URL
     const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        form.setValue('logoUrl', event.target.result as string);
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setPreviewImage(reader.result);
+        setFormData({
+          ...formData,
+          logo: reader.result
+        });
       }
+      setIsUploading(false);
     };
     reader.readAsDataURL(file);
   };
+  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    toast.success('Pengaturan invoice berhasil disimpan');
+    // In a real application, you would save to backend here
+  };
+  
+  const handleDeleteLogo = () => {
+    setPreviewImage('');
+    setFormData({
+      ...formData,
+      logo: ''
+    });
+    toast.success('Logo berhasil dihapus');
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Pengaturan Invoice</CardTitle>
-        <CardDescription>
-          Atur detail bisnis untuk ditampilkan pada invoice
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Logo & Informasi Bisnis</h3>
-              <Separator />
-              
-              <div className="grid gap-6">
-                <FormField
-                  control={form.control}
-                  name="logoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Logo Bisnis</FormLabel>
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 border rounded-md p-2 w-24 h-24 flex items-center justify-center overflow-hidden bg-muted">
-                          {field.value ? (
-                            <img
-                              src={field.value}
-                              alt="Logo"
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <FileImage className="h-10 w-10 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="space-y-2 flex-grow">
-                          <Input
-                            type="file"
-                            accept="image/png, image/jpeg, image/svg+xml"
-                            onChange={handleLogoChange}
-                            className="max-w-sm"
-                          />
-                          <FormDescription>
-                            Upload logo untuk ditampilkan pada invoice. Format yang didukung: PNG, JPG, SVG. Maksimal ukuran 1MB.
-                          </FormDescription>
-                        </div>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="brandName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Brand</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Undangan Digital" />
-                      </FormControl>
-                      <FormDescription>
-                        Nama perusahaan atau brand yang akan ditampilkan
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="businessAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Alamat Bisnis</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Jl. Pemuda No. 123, Surabaya" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="contactEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Kontak</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" placeholder="contact@example.com" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="contactPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telepon Kontak</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="+62 812 3456 7890" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Pengaturan Invoice</CardTitle>
+          <CardDescription>
+            Atur informasi yang akan ditampilkan pada invoice
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Informasi Bisnis</h3>
             
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Informasi Rekening Bank</h3>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => append({ 
-                    id: Date.now().toString(), 
-                    bankName: "", 
-                    accountNumber: "", 
-                    accountHolderName: "" 
-                  })}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Tambah Rekening
-                </Button>
-              </div>
-              <Separator />
-              
-              {fields.map((field, index) => (
-                <div key={field.id} className="space-y-4 p-4 border rounded-md">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">Rekening {index + 1}</h4>
-                    {fields.length > 1 && (
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => remove(index)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+            <div className="space-y-2">
+              <Label htmlFor="logo">Logo</Label>
+              <div className="flex items-start space-x-4">
+                <div>
+                  <div className="border rounded-md h-32 w-32 flex items-center justify-center overflow-hidden bg-secondary">
+                    {previewImage ? (
+                      <img 
+                        src={previewImage}
+                        alt="Logo preview"
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Tidak ada logo</span>
+                    )}
+                  </div>
+                  <div className="mt-2 flex space-x-2">
+                    <div className="relative">
+                      <Button size="sm" variant="outline" className="w-full" type="button" disabled={isUploading}>
+                        {isUploading ? "Uploading..." : "Upload Logo"}
+                      </Button>
+                      <Input
+                        type="file"
+                        id="logo"
+                        accept="image/*"
+                        className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                        onChange={handleImageUpload}
+                        disabled={isUploading}
+                      />
+                    </div>
+                    {previewImage && (
+                      <Button size="sm" variant="outline" type="button" onClick={handleDeleteLogo}>
+                        Hapus
                       </Button>
                     )}
                   </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`bankAccounts.${index}.bankName`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nama Bank</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="BCA" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`bankAccounts.${index}.accountNumber`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nomor Rekening</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="1234567890" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Rekomendasi: 200x200px, maks 500KB
                   </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name={`bankAccounts.${index}.accountHolderName`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nama Pemilik Rekening</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="PT Undangan Digital Indonesia" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                </div>
+                
+                <div className="space-y-2 flex-1">
+                  <Label htmlFor="businessName">Nama Bisnis</Label>
+                  <Input
+                    id="businessName"
+                    name="businessName"
+                    value={formData.businessName}
+                    onChange={handleChange}
+                    placeholder="Nama bisnis Anda"
                   />
                 </div>
-              ))}
+              </div>
             </div>
-            
-            <Button type="submit" className="mt-4">
-              Simpan Pengaturan
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="address">Alamat</Label>
+                <Textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="Alamat lengkap"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Kota</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="Kota"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">Kode Pos</Label>
+                  <Input
+                    id="zipCode"
+                    name="zipCode"
+                    value={formData.zipCode}
+                    onChange={handleChange}
+                    placeholder="Kode pos"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telepon</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Nomor telepon"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                placeholder="Website URL"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Informasi Pembayaran</h3>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="bankAccount">Rekening Bank</Label>
+                <Input
+                  id="bankAccount"
+                  name="bankAccount"
+                  value={formData.bankAccount}
+                  onChange={handleChange}
+                  placeholder="BCA - 1234567890"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bankAccountName">Atas Nama</Label>
+                <Input
+                  id="bankAccountName"
+                  name="bankAccountName"
+                  value={formData.bankAccountName}
+                  onChange={handleChange}
+                  placeholder="Nama pemilik rekening"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="taxId">NPWP (opsional)</Label>
+              <Input
+                id="taxId"
+                name="taxId"
+                value={formData.taxId}
+                onChange={handleChange}
+                placeholder="NPWP"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="invoiceFooter">Catatan Kaki Invoice</Label>
+              <Textarea
+                id="invoiceFooter"
+                name="invoiceFooter"
+                value={formData.invoiceFooter}
+                onChange={handleChange}
+                rows={2}
+                placeholder="Catatan kaki yang akan ditampilkan di bagian bawah invoice"
+              />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          <Button type="submit">Simpan Perubahan</Button>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

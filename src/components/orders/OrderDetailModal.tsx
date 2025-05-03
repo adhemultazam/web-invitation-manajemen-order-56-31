@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,7 @@ export function OrderDetailModal({ order, onClose, isOpen }: OrderDetailModalPro
   if (!order) return null;
 
   const formatDate = (dateString: string) => {
+    // Keeping the long format for the detail modal as it has more space
     return new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",

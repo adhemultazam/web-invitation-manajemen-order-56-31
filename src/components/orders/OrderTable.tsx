@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Table,
@@ -53,11 +52,12 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   };
 
   const formatDate = (dateString: string) => {
+    // Updated format to be more compact: dd/mm/yy
     return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric"
-    });
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit"
+    }).replace(/-/g, '/');
   };
 
   const isPastDate = (dateString: string) => {
@@ -221,12 +221,14 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     <div className="text-muted-foreground text-xs">Tgl Acara</div>
                     <div className="font-mono text-xs">{formatDate(order.eventDate)}</div>
                   </div>
+                  
                   <div>
                     <div className="text-muted-foreground text-xs">Countdown</div>
                     <div className={`font-mono text-xs ${isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}`}>
                       {order.countdownDays} hari
                     </div>
                   </div>
+                  
                   <div>
                     <div className="text-muted-foreground text-xs">Vendor</div>
                     <Select 

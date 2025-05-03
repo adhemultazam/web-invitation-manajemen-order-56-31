@@ -52,7 +52,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // This is a mock login - in a real app, you would validate credentials against a server
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
       
-      if (email === "admin@example.com" && password === "password") {
+      // Update credentials to match the demo credentials shown on the login page
+      if ((email === "admin@example.com" || email === "admin") && password === "admin123") {
         setUser(sampleUser);
         localStorage.setItem("user", JSON.stringify(sampleUser));
         return true;

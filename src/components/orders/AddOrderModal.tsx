@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -93,6 +92,38 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
             if (parsedThemes.length > 0 && !formData.theme) {
               setFormData(prev => ({...prev, theme: parsedThemes[0].name}));
             }
+          }
+        } else {
+          // Load themes from ThemeSettings (initial themes) if not found in localStorage
+          const initialThemes = [
+            {
+              id: "1",
+              name: "Elegant Gold",
+              thumbnail: "https://placehold.co/200x280/e9d985/ffffff?text=Elegant+Gold",
+              category: "Premium"
+            },
+            {
+              id: "2",
+              name: "Floral Pink",
+              thumbnail: "https://placehold.co/200x280/ffb6c1/ffffff?text=Floral+Pink",
+              category: "Basic"
+            },
+            {
+              id: "3",
+              name: "Rustic Wood",
+              thumbnail: "https://placehold.co/200x280/8b4513/ffffff?text=Rustic+Wood",
+              category: "Premium"
+            },
+            {
+              id: "4",
+              name: "Minimalist",
+              thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Minimalist",
+              category: "Basic"
+            }
+          ];
+          setThemes(initialThemes);
+          if (initialThemes.length > 0 && !formData.theme) {
+            setFormData(prev => ({...prev, theme: initialThemes[0].name}));
           }
         }
       } catch (error) {
@@ -395,7 +426,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                   <SelectContent>
                     {themes.map((theme) => (
                       <SelectItem key={theme.id} value={theme.name}>
-                        {theme.name}
+                        {theme.name} ({theme.category})
                       </SelectItem>
                     ))}
                     {themes.length === 0 && (

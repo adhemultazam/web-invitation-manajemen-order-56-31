@@ -7,7 +7,13 @@ import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { Plus } from "lucide-react";
 import { Invoice, Vendor, InvoiceFilter as InvoiceFilterType } from "@/types/types";
 import { toast } from "sonner";
-import { loadInvoices, saveInvoices, loadAllOrders, markInvoiceAsPaid } from "@/lib/invoiceUtils";
+import { 
+  loadInvoices, 
+  saveInvoices, 
+  loadAllOrders, 
+  markInvoiceAsPaid, 
+  getVendorsWithUnpaidOrders 
+} from "@/lib/invoiceUtils";
 
 export default function Invoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -16,6 +22,7 @@ export default function Invoices() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [vendorsWithOrders, setVendorsWithOrders] = useState<Record<string, number>>({});
 
   // Load data on component mount
   useEffect(() => {
@@ -46,6 +53,10 @@ export default function Invoices() {
       
       setInvoices(typedInvoices);
       setFilteredInvoices(typedInvoices);
+      
+      // Calculate vendors with uninvoiced orders
+      const vendorOrderCounts = getVendorsWithUnpaidOrders(allOrders, savedInvoices);
+      setVendorsWithOrders(vendorOrderCounts);
       
     } catch (error) {
       console.error("Error loading data:", error);
@@ -109,10 +120,20 @@ export default function Invoices() {
     loadData(); // Reload all data after creating a new invoice
   };
 
+  // Count vendors with available orders
+  const vendorsWithAvailableOrders = Object.keys(vendorsWithOrders).length;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Invoice</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Invoice</h1>
+          {vendorsWithAvailableOrders > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {vendorsWithAvailableOrders} vendor memiliki pesanan yang belum dibuatkan invoice
+            </p>
+          )}
+        </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Buat Invoice Baru

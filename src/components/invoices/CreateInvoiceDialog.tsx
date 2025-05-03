@@ -24,10 +24,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { Order, Vendor } from "@/types/types";
-import { generateInvoice, filterOrdersByVendor, isOrderInvoiced, loadInvoices, saveInvoices } from "@/lib/invoiceUtils";
+import { 
+  generateInvoice, 
+  filterOrdersByVendor, 
+  isOrderInvoiced, 
+  loadInvoices, 
+  saveInvoices, 
+  getVendorsWithUnpaidOrders 
+} from "@/lib/invoiceUtils";
 
 interface CreateInvoiceDialogProps {
   open: boolean;
@@ -50,11 +58,19 @@ export function CreateInvoiceDialog({
   const [dueDate, setDueDate] = useState<Date>(addDays(new Date(), 14)); // Default due date: 14 days from today
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [existingInvoices, setExistingInvoices] = useState([]);
+  const [vendorOrderCounts, setVendorOrderCounts] = useState<Record<string, number>>({});
   
   // Load existing invoices to check for already invoiced orders
   useEffect(() => {
-    setExistingInvoices(loadInvoices());
-  }, []);
+    if (open) {
+      const invoices = loadInvoices();
+      setExistingInvoices(invoices);
+      
+      // Calculate number of uninvoiced orders per vendor
+      const orderCounts = getVendorsWithUnpaidOrders(orders, invoices);
+      setVendorOrderCounts(orderCounts);
+    }
+  }, [open, orders]);
 
   // Filter orders when vendor changes
   useEffect(() => {
@@ -162,7 +178,14 @@ export function CreateInvoiceDialog({
               <SelectContent>
                 {vendors.map((vendor) => (
                   <SelectItem key={vendor.id} value={vendor.id}>
-                    {vendor.name}
+                    <div className="flex items-center justify-between w-full">
+                      <span>{vendor.name}</span>
+                      {vendorOrderCounts[vendor.id] > 0 && (
+                        <Badge variant="secondary" className="ml-2">
+                          {vendorOrderCounts[vendor.id]} pesanan
+                        </Badge>
+                      )}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

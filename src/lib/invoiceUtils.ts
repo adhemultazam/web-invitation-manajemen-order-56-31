@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice, Order } from '@/types/types';
 import { toast } from 'sonner';
@@ -62,6 +63,11 @@ export const filterOrdersByVendor = (orders: Order[], vendorId: string): Order[]
   return orders.filter(order => order.vendor === vendorId && order.paymentStatus === 'Lunas');
 };
 
+// Get orders that haven't been invoiced yet
+export const getUninvoicedOrders = (orders: Order[], invoices: Invoice[]): Order[] => {
+  return orders.filter(order => !isOrderInvoiced(order.id, invoices));
+};
+
 // Generate a new invoice from orders
 export const generateInvoice = (
   vendorId: string,
@@ -123,4 +129,23 @@ export const isOrderInvoiced = (orderId: string, invoices: Invoice[]): boolean =
   return invoices.some(invoice => 
     invoice.orders.some(order => order.orderId === orderId)
   );
+};
+
+// Get available vendors with unpaid orders
+export const getVendorsWithUnpaidOrders = (orders: Order[], invoices: Invoice[]) => {
+  const uninvoicedOrders = getUninvoicedOrders(orders, invoices);
+  
+  // Group unpaid orders by vendor ID
+  const vendorOrderCount: Record<string, number> = {};
+  
+  uninvoicedOrders
+    .filter(order => order.paymentStatus === 'Lunas') // Only include paid orders
+    .forEach(order => {
+      if (!vendorOrderCount[order.vendor]) {
+        vendorOrderCount[order.vendor] = 0;
+      }
+      vendorOrderCount[order.vendor]++;
+    });
+    
+  return vendorOrderCount;
 };

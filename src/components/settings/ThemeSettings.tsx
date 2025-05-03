@@ -40,9 +40,9 @@ export function ThemeSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pengaturan Tampilan</CardTitle>
+        <CardTitle>Pengaturan Tema Undangan</CardTitle>
         <CardDescription>
-          Pilih tema tampilan untuk aplikasi.
+          Pilih tema tampilan untuk undangan digital Anda.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

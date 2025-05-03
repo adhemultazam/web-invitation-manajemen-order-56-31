@@ -47,7 +47,7 @@ export default function Settings() {
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
           <TabsTrigger value="packages">Paket</TabsTrigger>
           <TabsTrigger value="statuses">Status</TabsTrigger>
-          <TabsTrigger value="themes">Tema</TabsTrigger>
+          <TabsTrigger value="themes">Tema Undangan</TabsTrigger>
           <TabsTrigger value="addons">Addons</TabsTrigger>
           <TabsTrigger value="vendors">Vendor</TabsTrigger>
         </TabsList>

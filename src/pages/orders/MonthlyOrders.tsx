@@ -4,10 +4,10 @@ import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
 import { Plus, CircleDollarSign, Check, X } from "lucide-react";
-import { Order, Addon, Theme, Vendor } from "@/types/types";
+import { Order, Addon, Theme, Vendor, WorkStatus } from "@/types/types";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { loadVendorsFromStorage } from "@/components/orders/OrderUtils";
+import { loadVendorsFromStorage, loadWorkStatusesFromStorage } from "@/components/orders/OrderUtils";
 
 // Mock data for orders
 const mockOrders: Order[] = [
@@ -141,8 +141,11 @@ export default function MonthlyOrders() {
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [availableThemes, setAvailableThemes] = useState<Theme[]>(themes);
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
+  const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
   // Create a derived state for vendor names
   const [vendorNames, setVendorNames] = useState<string[]>(vendors);
+  // Create a derived state for work status names
+  const [workStatusNames, setWorkStatusNames] = useState<string[]>(workStatuses);
   const isMobile = useIsMobile();
 
   // Capitalize the first letter of the month
@@ -205,6 +208,28 @@ export default function MonthlyOrders() {
       } catch (e) {
         console.error("Error parsing themes:", e);
       }
+    }
+    
+    // Load work statuses from localStorage
+    try {
+      const savedWorkStatuses = localStorage.getItem('workStatuses');
+      if (savedWorkStatuses) {
+        const parsedWorkStatuses = JSON.parse(savedWorkStatuses);
+        if (Array.isArray(parsedWorkStatuses) && parsedWorkStatuses.length > 0) {
+          setAvailableWorkStatuses(parsedWorkStatuses);
+          setWorkStatusNames(parsedWorkStatuses.map(status => status.name));
+        } else {
+          const workStatusesFromStorage = loadWorkStatusesFromStorage();
+          setAvailableWorkStatuses(workStatusesFromStorage);
+          setWorkStatusNames(workStatusesFromStorage.map(status => status.name));
+        }
+      } else {
+        const workStatusesFromStorage = loadWorkStatusesFromStorage();
+        setAvailableWorkStatuses(workStatusesFromStorage);
+        setWorkStatusNames(workStatusesFromStorage.map(status => status.name));
+      }
+    } catch (e) {
+      console.error("Error loading work statuses:", e);
     }
   }, []);
 
@@ -375,13 +400,13 @@ export default function MonthlyOrders() {
       <OrderFilter
         onFilter={handleFilter}
         vendors={vendorNames}
-        workStatuses={workStatuses}
+        workStatuses={workStatusNames}
       />
 
       <OrderTable 
         orders={filteredOrders} 
         vendors={availableVendors} 
-        workStatuses={workStatuses}
+        workStatuses={workStatusNames}
         themes={availableThemes.map(theme => theme.name)} 
         onUpdateOrder={handleUpdateOrder}
         addons={addons} 
@@ -392,7 +417,7 @@ export default function MonthlyOrders() {
         onClose={() => setIsAddModalOpen(false)}
         onAddOrder={handleAddOrder}
         vendors={vendorNames} 
-        workStatuses={workStatuses}
+        workStatuses={workStatusNames}
         addons={addons} 
       />
 

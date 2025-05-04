@@ -127,8 +127,26 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     if (convertedWorkStatuses && convertedWorkStatuses.length > 0) {
       setAvailableWorkStatuses(convertedWorkStatuses);
     } else {
-      const workStatuses = loadWorkStatusesFromStorage();
-      setAvailableWorkStatuses(workStatuses);
+      // Load work statuses from localStorage directly
+      try {
+        const savedWorkStatuses = localStorage.getItem('workStatuses');
+        if (savedWorkStatuses) {
+          const parsedWorkStatuses = JSON.parse(savedWorkStatuses);
+          if (Array.isArray(parsedWorkStatuses) && parsedWorkStatuses.length > 0) {
+            setAvailableWorkStatuses(parsedWorkStatuses);
+          } else {
+            const workStatusesFromStorage = loadWorkStatusesFromStorage();
+            setAvailableWorkStatuses(workStatusesFromStorage);
+          }
+        } else {
+          const workStatusesFromStorage = loadWorkStatusesFromStorage();
+          setAvailableWorkStatuses(workStatusesFromStorage);
+        }
+      } catch (e) {
+        console.error("Error loading work statuses:", e);
+        const workStatusesFromStorage = loadWorkStatusesFromStorage();
+        setAvailableWorkStatuses(workStatusesFromStorage);
+      }
     }
     
     // Load packages from localStorage

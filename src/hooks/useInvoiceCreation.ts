@@ -47,7 +47,9 @@ export function useInvoiceCreation(
     console.log("Total orders available:", orders.length);
     
     if (selectedVendor) {
-      // Improved filtering for vendor orders
+      // Fix: We need to show orders that need to be invoiced
+      // These are orders with the selected vendor that are PAID (Lunas)
+      // and have not been included in an invoice yet
       const filteredOrders = orders.filter(order => {
         const vendorMatch = order.vendor === selectedVendor;
         const paymentStatus = order.paymentStatus === 'Lunas';
@@ -58,7 +60,7 @@ export function useInvoiceCreation(
         return vendorMatch && paymentStatus && notInvoiced;
       });
       
-      console.log("Filtered orders:", filteredOrders.length);
+      console.log("Filtered orders for vendor:", filteredOrders);
       setVendorOrders(filteredOrders);
       setSelectedOrders([]); // Reset selections when vendor changes
     } else {

@@ -133,9 +133,10 @@ export const isOrderInvoiced = (orderId: string, invoices: Invoice[]): boolean =
 
 // Get available vendors with unpaid orders
 export const getVendorsWithUnpaidOrders = (orders: Order[], invoices: Invoice[]) => {
+  // Fix: We need to find paid (Lunas) orders that haven't been invoiced yet
   const uninvoicedOrders = getUninvoicedOrders(orders, invoices);
   
-  // Group unpaid orders by vendor ID
+  // Group paid orders by vendor ID
   const vendorOrderCount: Record<string, number> = {};
   
   uninvoicedOrders

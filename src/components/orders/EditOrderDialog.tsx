@@ -23,7 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CalendarIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -97,6 +97,8 @@ export function EditOrderDialog({
   }, [order, isOpen, form]);
 
   const onSubmit = (values: any) => {
+    if (!order) return;
+    
     const data: Partial<Order> = {
       customerName: values.customerName,
       clientName: values.clientName,
@@ -114,25 +116,22 @@ export function EditOrderDialog({
       addons: selectedAddons,
     };
 
-    if (order) {
-      onSave(order.id, data);
-    }
-
+    onSave(order.id, data);
     onClose();
   };
 
-  const handleAddonChange = (addonId: string) => {
+  const handleAddonChange = (addonName: string) => {
     setSelectedAddons((prevAddons) => {
-      if (prevAddons.includes(addonId)) {
-        return prevAddons.filter((id) => id !== addonId);
+      if (prevAddons.includes(addonName)) {
+        return prevAddons.filter((name) => name !== addonName);
       } else {
-        return [...prevAddons, addonId];
+        return [...prevAddons, addonName];
       }
     });
   };
 
-  const getAddonColor = (addonId: string) => {
-    const addon = addons.find(a => a.id === addonId);
+  const getAddonColor = (addonName: string) => {
+    const addon = addons.find(a => a.name === addonName);
     return addon?.color || '#6E6E6E';
   };
 
@@ -195,7 +194,7 @@ export function EditOrderDialog({
                             )}
                           >
                             {field.value ? (
-                              format(new Date(field.value), "MMM do, yyyy")
+                              format(new Date(field.value), "dd MMM yyyy")
                             ) : (
                               <span>Pilih tanggal</span>
                             )}
@@ -232,7 +231,7 @@ export function EditOrderDialog({
                             )}
                           >
                             {field.value ? (
-                              format(new Date(field.value), "MMM do, yyyy")
+                              format(new Date(field.value), "dd MMM yyyy")
                             ) : (
                               <span>Pilih tanggal</span>
                             )}
@@ -318,8 +317,8 @@ export function EditOrderDialog({
                   <div key={addon.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={`addon-${addon.id}`}
-                      checked={selectedAddons.includes(addon.id)}
-                      onCheckedChange={() => handleAddonChange(addon.id)}
+                      checked={selectedAddons.includes(addon.name)}
+                      onCheckedChange={() => handleAddonChange(addon.name)}
                     />
                     <label
                       htmlFor={`addon-${addon.id}`}
@@ -327,7 +326,7 @@ export function EditOrderDialog({
                     >
                       <div
                         className="w-2 h-2 rounded-full mr-2"
-                        style={{ backgroundColor: getAddonColor(addon.id) }}
+                        style={{ backgroundColor: addon.color }}
                       />
                       {addon.name}
                     </label>

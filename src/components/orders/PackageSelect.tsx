@@ -51,6 +51,9 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
     }
   }, [value]);
 
+  // Find package details for the currently selected package
+  const selectedPackage = packages.find(pkg => pkg.name === value);
+  
   return (
     <Select
       value={value}
@@ -58,7 +61,9 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
       disabled={isDisabled}
     >
       <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-        <SelectValue>{value}</SelectValue>
+        <SelectValue>
+          {value ? value : "Pilih paket"}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {packages.map(pkg => (

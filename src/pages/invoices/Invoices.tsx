@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -32,8 +33,13 @@ export default function Invoices() {
       const savedInvoices = localStorage.getItem('invoices');
       if (savedInvoices) {
         const parsedInvoices = JSON.parse(savedInvoices);
-        setInvoices(parsedInvoices);
-        applyFilters(parsedInvoices, filters);
+        // Make sure each invoice has a valid status type
+        const typedInvoices = parsedInvoices.map((invoice: any) => ({
+          ...invoice,
+          status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
+        }));
+        setInvoices(typedInvoices);
+        applyFilters(typedInvoices, filters);
       }
     } catch (e) {
       console.error("Error loading invoices:", e);
@@ -140,7 +146,7 @@ export default function Invoices() {
   const handleMarkAsPaid = (invoiceId: string) => {
     const updatedInvoices = invoices.map(invoice => {
       if (invoice.id === invoiceId) {
-        return { ...invoice, status: "Paid" };
+        return { ...invoice, status: "Paid" as "Paid" };
       }
       return invoice;
     });

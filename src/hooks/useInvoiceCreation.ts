@@ -142,7 +142,11 @@ export function useInvoiceCreation(
       
       // Save to localStorage
       const existingInvoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-      localStorage.setItem('invoices', JSON.stringify([...existingInvoices, newInvoice]));
+      const typedInvoices = existingInvoices.map((invoice: any) => ({
+        ...invoice,
+        status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
+      }));
+      localStorage.setItem('invoices', JSON.stringify([...typedInvoices, newInvoice]));
       
       toast.success(`Invoice #${invoiceNumber} berhasil dibuat`, {
         description: `Total invoice: ${new Intl.NumberFormat("id-ID", {

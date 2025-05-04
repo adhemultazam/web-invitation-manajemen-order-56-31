@@ -39,7 +39,6 @@ export function ThemeSettings() {
   const [formData, setFormData] = useState<Partial<Theme>>({
     name: "",
     category: "",
-    price: 150000,
     backgroundColor: "#F5F5F5"
   });
   
@@ -85,7 +84,6 @@ export function ThemeSettings() {
         name: "Elegant Gold",
         thumbnail: "",
         category: "Premium",
-        price: 250000,
         backgroundColor: "#FEF7CD"
       },
       {
@@ -93,7 +91,6 @@ export function ThemeSettings() {
         name: "Floral Pink",
         thumbnail: "",
         category: "Basic",
-        price: 150000,
         backgroundColor: "#FFDEE2"
       },
       {
@@ -101,7 +98,6 @@ export function ThemeSettings() {
         name: "Rustic Wood",
         thumbnail: "",
         category: "Premium",
-        price: 250000,
         backgroundColor: "#8B4513"
       },
       {
@@ -109,7 +105,6 @@ export function ThemeSettings() {
         name: "Minimalist",
         thumbnail: "",
         category: "Basic",
-        price: 150000,
         backgroundColor: "#F5F5F5"
       }
     ];
@@ -138,7 +133,6 @@ export function ThemeSettings() {
     setFormData({
       name: "",
       category: defaultCategory,
-      price: 150000,
       backgroundColor: "#F5F5F5"
     });
     setIsDialogOpen(true);
@@ -196,9 +190,8 @@ export function ThemeSettings() {
         name: formData.name || "Tema Baru",
         thumbnail: "",
         category: formData.category || (packages.length > 0 ? packages[0].name : "Basic"),
-        price: formData.price || 150000,
-        backgroundColor: formData.backgroundColor || "#F5F5F5",
-        description: formData.description || ""
+        backgroundColor: formData.backgroundColor,
+        description: formData.description
       };
       
       const updatedThemes = [...themes, newTheme];
@@ -259,7 +252,9 @@ export function ThemeSettings() {
                     <Badge variant={theme.category === "Premium" ? "default" : "secondary"}>
                       {theme.category}
                     </Badge>
-                    <span className="text-sm">Rp {theme.price?.toLocaleString()}</span>
+                    {theme.price && (
+                      <span className="text-sm">Rp {theme.price?.toLocaleString()}</span>
+                    )}
                   </div>
                 </div>
               </div>

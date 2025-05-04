@@ -104,8 +104,7 @@ export const generateInvoice = (
     dueDate,
     orders: invoiceOrders,
     totalAmount,
-    status: "Unpaid" as "Unpaid",
-    notes: ""
+    status: "Unpaid"
   };
 };
 

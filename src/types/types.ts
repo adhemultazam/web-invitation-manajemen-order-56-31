@@ -34,6 +34,9 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category?: string;
+  price?: number;
+  backgroundColor?: string;
+  description?: string;
 }
 
 export interface Addon {
@@ -67,6 +70,7 @@ export interface Vendor {
   contact?: string;
   email?: string;
   address?: string;
+  commission?: number;
 }
 
 export interface BankAccount {
@@ -92,6 +96,7 @@ export interface Invoice {
     amount: number;
   }[];
   paidDate?: string;
+  notes?: string;
 }
 
 export interface InvoiceFilter {

@@ -14,6 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string, remember: boolean) => boolean;
   logout: () => void;
+  updateUser: (updatedUser: User) => void; // Add the updateUser function type
 }
 
 // Create the context with default values
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: () => false,
   logout: () => {},
+  updateUser: () => {}, // Add the updateUser function default
 });
 
 // Define the provider component
@@ -78,8 +80,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("auth");
   };
 
+  // Update user function to modify user data
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    
+    // If user was remembered, update localStorage as well
+    const savedAuth = localStorage.getItem("auth");
+    if (savedAuth) {
+      try {
+        const parsedAuth = JSON.parse(savedAuth);
+        localStorage.setItem("auth", JSON.stringify({
+          ...parsedAuth,
+          user: updatedUser,
+        }));
+      } catch (error) {
+        console.error("Error updating saved user:", error);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

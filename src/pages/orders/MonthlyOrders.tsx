@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,8 @@ import { id } from "date-fns/locale";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { EditOrderDialog } from "@/components/orders/EditOrderDialog";
 import { OrderTable } from "@/components/orders/OrderTable";
+import { OrderFilter } from "@/components/orders/OrderFilter";
+import OrderStats from "@/components/orders/OrderStats";
 import MobileOrderCard from "@/components/orders/MobileOrderCard";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -37,6 +38,7 @@ export default function MonthlyOrders() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string | null>(null);
   const [vendorFilter, setVendorFilter] = useState<string | null>(null);
   
   // State for add/edit modals
@@ -193,6 +195,11 @@ export default function MonthlyOrders() {
         result = result.filter((order) => order.workStatus === statusFilter);
       }
       
+      // Apply payment status filter
+      if (paymentStatusFilter) {
+        result = result.filter((order) => order.paymentStatus === paymentStatusFilter);
+      }
+      
       // Apply vendor filter
       if (vendorFilter) {
         result = result.filter((order) => order.vendor === vendorFilter);
@@ -202,7 +209,7 @@ export default function MonthlyOrders() {
     };
     
     applyFilters();
-  }, [orders, searchQuery, statusFilter, vendorFilter]);
+  }, [orders, searchQuery, statusFilter, paymentStatusFilter, vendorFilter]);
   
   // Save orders to localStorage
   const saveOrders = (updatedOrders: Order[]) => {
@@ -339,7 +346,21 @@ export default function MonthlyOrders() {
   const clearFilters = () => {
     setSearchQuery("");
     setStatusFilter(null);
+    setPaymentStatusFilter(null);
     setVendorFilter(null);
+  };
+  
+  // Handle filter changes from OrderFilter component
+  const handleFilterChange = (filters: {
+    search: string;
+    workStatus: string;
+    paymentStatus: string;
+    vendor: string;
+  }) => {
+    setSearchQuery(filters.search);
+    setStatusFilter(filters.workStatus || null);
+    setPaymentStatusFilter(filters.paymentStatus || null);
+    setVendorFilter(filters.vendor || null);
   };
   
   // Get the title for the current month
@@ -364,123 +385,15 @@ export default function MonthlyOrders() {
         </Button>
       </div>
       
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cari pesanan..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto justify-between">
-                <span className="flex items-center">
-                  <Filter className="mr-2 h-4 w-4" />
-                  {statusFilter ? `Status: ${statusFilter}` : "Filter Status"}
-                </span>
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem
-                onClick={() => setStatusFilter(null)}
-                className="justify-between"
-              >
-                Semua Status
-                {!statusFilter && (
-                  <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                    Aktif
-                  </span>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {workStatuses.map((status) => (
-                <DropdownMenuItem
-                  key={status.id}
-                  onClick={() => setStatusFilter(status.name)}
-                  className="justify-between"
-                >
-                  <div className="flex items-center">
-                    <div
-                      className="w-2 h-2 mr-2 rounded-full"
-                      style={{ backgroundColor: status.color }}
-                    />
-                    {status.name}
-                  </div>
-                  {statusFilter === status.name && (
-                    <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                      Aktif
-                    </span>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto justify-between">
-                <span className="flex items-center">
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  {vendorFilter ? `Vendor: ${vendorFilter}` : "Filter Vendor"}
-                </span>
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem
-                onClick={() => setVendorFilter(null)}
-                className="justify-between"
-              >
-                Semua Vendor
-                {!vendorFilter && (
-                  <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                    Aktif
-                  </span>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {vendors.map((vendor) => (
-                <DropdownMenuItem
-                  key={vendor.id}
-                  onClick={() => setVendorFilter(vendor.id)}
-                  className="justify-between"
-                >
-                  <div className="flex items-center">
-                    <div
-                      className="w-2 h-2 mr-2 rounded-full"
-                      style={{ backgroundColor: vendor.color }}
-                    />
-                    {vendor.name}
-                  </div>
-                  {vendorFilter === vendor.id && (
-                    <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
-                      Aktif
-                    </span>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {(searchQuery || statusFilter || vendorFilter) && (
-            <Button variant="ghost" onClick={clearFilters} className="sm:flex hidden">
-              Reset
-            </Button>
-          )}
-        </div>
-        
-        {(searchQuery || statusFilter || vendorFilter) && (
-          <Button variant="ghost" onClick={clearFilters} className="sm:hidden flex">
-            Reset
-          </Button>
-        )}
-      </div>
+      {/* Order Statistics */}
+      <OrderStats orders={orders} formatCurrency={formatCurrency} />
+      
+      {/* Order Filters */}
+      <OrderFilter
+        onFilter={handleFilterChange}
+        vendors={vendors.map(v => v.id)}
+        workStatuses={workStatuses.map(s => s.name)}
+      />
       
       {filteredOrders.length === 0 ? (
         <div className="bg-muted rounded-lg p-8 text-center">

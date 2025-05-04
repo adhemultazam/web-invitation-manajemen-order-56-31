@@ -99,7 +99,7 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
           <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
             <SelectItem value="all">Semua Status Pembayaran</SelectItem>
             <SelectItem value="Lunas">Lunas</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Pending">Belum Lunas</SelectItem>
           </SelectContent>
         </Select>
 

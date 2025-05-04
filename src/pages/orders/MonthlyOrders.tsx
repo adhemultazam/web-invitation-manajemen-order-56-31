@@ -130,18 +130,8 @@ const saveOrdersToStorage = (month: string, orders: Order[]): void => {
   }
 };
 
-// Helper function to load vendors from localStorage
-const loadVendorsFromStorage = (): Vendor[] => {
-  try {
-    const storedVendors = localStorage.getItem('vendors');
-    if (storedVendors) {
-      return JSON.parse(storedVendors);
-    }
-  } catch (e) {
-    console.error("Error loading vendors from localStorage:", e);
-  }
-  return [];
-};
+// Removed the duplicate loadVendorsFromStorage function
+// We'll use the imported one from OrderUtils.tsx instead
 
 export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();

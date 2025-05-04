@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -25,7 +24,7 @@ import {
 
 interface OrderTableProps {
   orders: Order[];
-  vendors: Vendor[]; // Updated to Vendor[] to match what's passed from parent
+  vendors: Vendor[]; // This is an array of Vendor objects
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;
@@ -47,17 +46,27 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Load vendor colors from localStorage
-    try {
-      const parsedVendors = loadVendorsFromStorage();
+    // Use passed vendors prop instead of loading from localStorage again
+    if (vendors && vendors.length > 0) {
       const colors: Record<string, string> = {};
-      parsedVendors.forEach(vendor => {
-        colors[vendor.id] = vendor.color || '#6366f1'; // Store colors by ID instead of name
+      vendors.forEach(vendor => {
+        colors[vendor.id] = vendor.color || '#6366f1';
       });
       setVendorColors(colors);
-      setAvailableVendors(parsedVendors);
-    } catch (e) {
-      console.error("Error parsing vendors:", e);
+      setAvailableVendors(vendors);
+    } else {
+      // Fallback to localStorage only if vendors prop is empty
+      try {
+        const parsedVendors = loadVendorsFromStorage();
+        const colors: Record<string, string> = {};
+        parsedVendors.forEach(vendor => {
+          colors[vendor.id] = vendor.color || '#6366f1';
+        });
+        setVendorColors(colors);
+        setAvailableVendors(parsedVendors);
+      } catch (e) {
+        console.error("Error parsing vendors:", e);
+      }
     }
     
     // Update availableAddons when addons prop changes
@@ -128,7 +137,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     } catch (e) {
       console.error("Error parsing packages:", e);
     }
-  }, [addons]);
+  }, [vendors, addons]);
 
   const togglePaymentStatus = (order: Order) => {
     const newStatus = order.paymentStatus === 'Lunas' ? 'Pending' : 'Lunas';

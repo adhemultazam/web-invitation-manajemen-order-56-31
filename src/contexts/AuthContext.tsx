@@ -1,7 +1,7 @@
 
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from "react";
 
-// Define types for auth
+// Define types for our context
 interface User {
   id: string;
   name: string;
@@ -12,66 +12,59 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, rememberMe: boolean) => Promise<boolean>;
+  login: (email: string, password: string, remember: boolean) => boolean;
   logout: () => void;
-  updateUser: (userData: User) => void;
 }
 
-// Create the context
-const AuthContext = createContext<AuthContextType | null>(null);
+// Create the context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  login: () => false,
+  logout: () => {},
+});
 
-// Custom hook to use the auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// Mock user data (replace with real authentication later)
-const mockUser = {
-  id: '1',
-  name: 'Admin User',
-  email: 'admin@undangandigital.com',
-  role: 'admin',
-};
-
-// AuthProvider component
+// Define the provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Check for existing session on mount
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
+  // Check for saved authentication on component mount
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    const isRemembered = localStorage.getItem('rememberMe') === 'true';
-    
-    // Only restore the session if rememberMe was enabled or if it's a fresh login
-    if (storedUser && storedAuth === 'true') {
-      if (isRemembered) {
-        setUser(JSON.parse(storedUser));
+    const savedAuth = localStorage.getItem("auth");
+    if (savedAuth) {
+      try {
+        const parsedAuth = JSON.parse(savedAuth);
+        setUser(parsedAuth.user);
         setIsAuthenticated(true);
-      } else {
-        // If remember me not checked but still has data in localStorage, clear it
-        localStorage.removeItem('user');
-        localStorage.removeItem('isAuthenticated');
+      } catch (error) {
+        console.error("Error parsing saved auth:", error);
+        localStorage.removeItem("auth");
       }
     }
   }, []);
 
-  // Login function - mock implementation
-  const login = async (email: string, password: string, rememberMe: boolean): Promise<boolean> => {
-    // Mock validation (replace with real authentication)
-    if ((email === 'admin@undangandigital.com' || email === 'admin') && password === 'admin123') {
-      setUser(mockUser);
+  // Login function that accepts a remember parameter
+  const login = (email: string, password: string, remember: boolean): boolean => {
+    // This is a mock authentication - in a real app, this would call an API
+    if (email === "admin@example.com" && password === "password") {
+      const userData: User = {
+        id: "1",
+        name: "Admin",
+        email: "admin@example.com",
+        role: "admin",
+      };
+      
+      setUser(userData);
       setIsAuthenticated(true);
       
-      // Store in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
+      // Save to localStorage if remember is true
+      if (remember) {
+        localStorage.setItem("auth", JSON.stringify({
+          user: userData,
+          timestamp: new Date().getTime(),
+        }));
+      }
       
       return true;
     }
@@ -82,25 +75,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('user');
-    localStorage.removeItem('isAuthenticated');
-    // We keep the rememberMe preference for next login
+    localStorage.removeItem("auth");
   };
 
-  // Update user function
-  const updateUser = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  // Context provider value
-  const value = {
-    user,
-    isAuthenticated,
-    login,
-    logout,
-    updateUser,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+// Custom hook for using the auth context
+export function useAuth() {
+  return useContext(AuthContext);
 }

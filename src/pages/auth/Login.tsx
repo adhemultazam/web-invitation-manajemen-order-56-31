@@ -1,118 +1,104 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Lock, User } from "lucide-react";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true); // Default to true
+  const { isAuthenticated, login } = useAuth();
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("password");
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!username || !password) {
-      toast.error("Username dan password harus diisi");
-      return;
-    }
-    
     setIsLoading(true);
-    
-    try {
-      const success = await login(username, password, rememberMe);
-      
-      if (success) {
-        toast.success("Login berhasil!");
-        navigate("/");
-      } else {
-        toast.error("Username atau password salah");
-      }
-    } catch (error) {
-      toast.error("Terjadi kesalahan saat login");
-      console.error(error);
-    } finally {
+
+    setTimeout(() => {
+      const success = login(email, password, rememberMe);
       setIsLoading(false);
-    }
+
+      if (!success) {
+        toast.error("Login gagal", {
+          description: "Email atau password tidak valid.",
+        });
+      } else {
+        toast.success("Login berhasil", {
+          description: "Selamat datang kembali!",
+        });
+      }
+    }, 1000); // Simulate API call delay
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/30">
-      <Card className="w-[350px]">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Login Admin</CardTitle>
-          <CardDescription className="text-center">
-            Masukkan kredensial Anda untuk mengakses dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="username">Username</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="username"
-                    placeholder="admin"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 py-2">
-                <Checkbox 
-                  id="remember" 
-                  checked={rememberMe} 
-                  onCheckedChange={(checked) => setRememberMe(!!checked)} 
-                />
-                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                  Ingat saya
-                </Label>
-              </div>
-              <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Sedang memproses..." : "Login"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col">
-          <p className="mt-2 text-xs text-center text-muted-foreground">
-            <span className="font-semibold">Demo credentials:</span> admin / admin123
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-wedding-primary mb-2">
+            Undangan Digital
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Login ke Sistem Manajemen Pesanan
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Masukkan email Anda"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Masukkan password Anda"
+            />
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="remember" 
+              checked={rememberMe}
+              onCheckedChange={(checked) => setRememberMe(checked === true)} 
+            />
+            <Label htmlFor="remember" className="cursor-pointer">
+              Ingat Saya
+            </Label>
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Memproses..." : "Login"}
+          </Button>
+          
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <p>
+              Demo: admin@example.com / password
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

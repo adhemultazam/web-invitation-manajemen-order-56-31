@@ -286,6 +286,6 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default MobileOrderCard;

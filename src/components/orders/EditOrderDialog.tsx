@@ -189,7 +189,7 @@ export function EditOrderDialog({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-3 text-left font-normal w-full",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -208,6 +208,7 @@ export function EditOrderDialog({
                           selected={field.value ? new Date(field.value) : undefined}
                           onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                           initialFocus
+                          className="p-3 pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -226,7 +227,7 @@ export function EditOrderDialog({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-3 text-left font-normal w-full",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -245,6 +246,7 @@ export function EditOrderDialog({
                           selected={field.value ? new Date(field.value) : undefined}
                           onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                           initialFocus
+                          className="p-3 pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>

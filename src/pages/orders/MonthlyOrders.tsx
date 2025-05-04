@@ -141,6 +141,8 @@ export default function MonthlyOrders() {
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [availableThemes, setAvailableThemes] = useState<Theme[]>(themes);
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
+  // Create a derived state for vendor names
+  const [vendorNames, setVendorNames] = useState<string[]>(vendors);
   const isMobile = useIsMobile();
 
   // Capitalize the first letter of the month
@@ -173,6 +175,11 @@ export default function MonthlyOrders() {
     // Load vendors from localStorage
     const loadedVendors = loadVendorsFromStorage();
     setAvailableVendors(loadedVendors);
+    
+    // Update vendorNames when availableVendors changes
+    if (loadedVendors.length > 0) {
+      setVendorNames(loadedVendors.map(vendor => vendor.name));
+    }
     
     // Load addons from localStorage
     const storedAddons = localStorage.getItem('addons');
@@ -369,7 +376,7 @@ export default function MonthlyOrders() {
 
       <OrderFilter
         onFilter={handleFilter}
-        vendors={vendors}
+        vendors={vendorNames}
         workStatuses={workStatuses}
       />
 
@@ -386,7 +393,7 @@ export default function MonthlyOrders() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddOrder={handleAddOrder}
-        vendors={vendors} // This should remain as string[] for now
+        vendors={vendorNames} // This should remain as string[] for now
         workStatuses={workStatuses}
         addons={addons} // Pass addons to AddOrderModal
       />

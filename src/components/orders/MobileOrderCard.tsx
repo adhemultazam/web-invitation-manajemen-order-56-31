@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye } from "lucide-react";
-import { Order, WorkStatus } from "@/types/types";
+import { Order, WorkStatus, Vendor } from "@/types/types";
 import {
   Select,
   SelectContent,
@@ -19,7 +18,7 @@ interface MobileOrderCardProps {
   addonStyles: Record<string, { color: string }>;
   availableWorkStatuses: WorkStatus[];
   availablePackages: any[];
-  vendors: string[];
+  vendors: Vendor[]; // Changed from string[] to Vendor[]
   themes: string[];
   formatDate: (date: string) => string;
   isPastDate: (date: string) => boolean;
@@ -146,13 +145,13 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
             </SelectTrigger>
             <SelectContent>
               {vendors.map((vendor) => (
-                <SelectItem key={vendor} value={vendor} className="text-xs">
+                <SelectItem key={vendor.id} value={vendor.id} className="text-xs">
                   <div className="flex items-center">
                     <div
                       className="w-2 h-2 mr-1 rounded-full"
-                      style={{ backgroundColor: vendorColors[vendor] || '#6366f1' }}
+                      style={{ backgroundColor: vendor.color || '#6366f1' }}
                     />
-                    {vendor}
+                    {vendor.name}
                   </div>
                 </SelectItem>
               ))}

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -24,7 +25,7 @@ import {
 
 interface OrderTableProps {
   orders: Order[];
-  vendors: string[];
+  vendors: string[]; // This remains a string array as it comes from the parent
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;

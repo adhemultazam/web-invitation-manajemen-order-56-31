@@ -79,17 +79,21 @@ export function CreateInvoiceDialog({
               </div>
             </div>
             
-            {vendorOrders.length > 0 ? (
-              <OrderSelectionTable
-                orders={vendorOrders}
-                selectedOrders={selectedOrders}
-                onOrderSelection={handleOrderSelection}
-              />
+            {selectedVendor ? (
+              vendorOrders.length > 0 ? (
+                <OrderSelectionTable
+                  orders={vendorOrders}
+                  selectedOrders={selectedOrders}
+                  onOrderSelection={handleOrderSelection}
+                />
+              ) : (
+                <div className="border rounded-md p-4 text-center text-muted-foreground">
+                  Tidak ada pesanan yang tersedia untuk vendor ini
+                </div>
+              )
             ) : (
               <div className="border rounded-md p-4 text-center text-muted-foreground">
-                {selectedVendor
-                  ? "Tidak ada pesanan yang tersedia untuk vendor ini"
-                  : "Pilih vendor terlebih dahulu"}
+                Pilih vendor terlebih dahulu
               </div>
             )}
           </div>

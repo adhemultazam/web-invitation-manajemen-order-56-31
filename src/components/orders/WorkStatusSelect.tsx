@@ -32,7 +32,8 @@ const WorkStatusSelect: React.FC<WorkStatusSelectProps> = ({
     const color = status?.color || '#6366f1';
     return {
       backgroundColor: color,
-      color: '#fff'
+      color: '#fff',
+      border: 'none' // Remove border to make the color more prominent
     };
   };
 
@@ -50,12 +51,16 @@ const WorkStatusSelect: React.FC<WorkStatusSelectProps> = ({
           <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-white">
         {workStatuses.map((status) => (
           <DropdownMenuItem
             key={status.id}
             onClick={() => onChange(status.name)}
             className={status.name === value ? "font-medium" : ""}
+            style={{
+              borderLeft: `4px solid ${status.color}`,
+              paddingLeft: '10px'
+            }}
           >
             {status.name}
           </DropdownMenuItem>

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +18,7 @@ interface MobileOrderCardProps {
   addonStyles: Record<string, { color: string }>;
   availableWorkStatuses: WorkStatus[];
   availablePackages: any[];
-  vendors: Vendor[]; // Changed from string[] to Vendor[]
+  vendors: Vendor[]; 
   themes: string[];
   formatDate: (date: string) => string;
   isPastDate: (date: string) => boolean;
@@ -154,7 +153,7 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
                 <SelectValue>{order.vendor}</SelectValue>
               </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {vendors.map((vendor) => (
                 <SelectItem key={vendor.id} value={vendor.id} className="text-xs">
                   <div className="flex items-center">
@@ -259,18 +258,24 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
             onValueChange={(value) => handleWorkStatusChange(order.id, value)}
             disabled={updatingOrders.has(order.id)}
           >
-            <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
+            <SelectTrigger 
+              className="h-7 w-full text-xs px-2 mt-1 text-white"
+              style={{ backgroundColor: getStatusColor(order.workStatus) }}
+            >
               <div className="flex items-center">
-                <div
-                  className="w-2 h-2 mr-1 rounded-full"
-                  style={{ backgroundColor: getStatusColor(order.workStatus) }}
-                />
                 <SelectValue>{order.workStatus}</SelectValue>
               </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {availableWorkStatuses.map((status) => (
-                <SelectItem key={status.id} value={status.name} className="text-xs">
+                <SelectItem 
+                  key={status.id} 
+                  value={status.name} 
+                  className="text-xs" 
+                  style={{
+                    borderLeft: `4px solid ${status.color}`
+                  }}
+                >
                   <div className="flex items-center">
                     <div
                       className="w-2 h-2 mr-1 rounded-full"

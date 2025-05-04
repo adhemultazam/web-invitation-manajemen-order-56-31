@@ -22,7 +22,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { 
   formatCurrency, 
@@ -57,6 +56,13 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
   const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
   const isMobile = useIsMobile();
+
+  // Convert string[] workStatuses to WorkStatus[] if provided
+  const convertedWorkStatuses = workStatuses.map((status, index) => ({
+    id: `ws-${index}`,
+    name: status,
+    color: '#6366f1' // Default color if not specified
+  }));
 
   useEffect(() => {
     // Use passed vendors prop instead of loading from localStorage again
@@ -117,9 +123,13 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
       console.error("Error parsing themes:", e);
     }
     
-    // Load work statuses
-    const workStatuses = loadWorkStatusesFromStorage();
-    setAvailableWorkStatuses(workStatuses);
+    // Load work statuses - use converted workStatuses if provided, otherwise load from localStorage
+    if (convertedWorkStatuses && convertedWorkStatuses.length > 0) {
+      setAvailableWorkStatuses(convertedWorkStatuses);
+    } else {
+      const workStatuses = loadWorkStatusesFromStorage();
+      setAvailableWorkStatuses(workStatuses);
+    }
     
     // Load packages from localStorage
     try {
@@ -150,7 +160,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     } catch (e) {
       console.error("Error parsing packages:", e);
     }
-  }, [vendors, addons]);
+  }, [vendors, addons, convertedWorkStatuses]);
 
   const togglePaymentStatus = (order: Order) => {
     const newStatus = order.paymentStatus === 'Lunas' ? 'Pending' : 'Lunas';
@@ -269,8 +279,6 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const confirmDeleteOrder = () => {
     if (!orderToDelete) return;
     
-    // This is a problem - we're directly calling onUpdateOrder but not actually removing it from the orders array
-    // Instead, we need to pass information to the parent to handle the actual deletion
     onUpdateOrder(orderToDelete.id, { deleted: true });
     
     toast.success(`Pesanan ${orderToDelete.clientName} berhasil dihapus`);
@@ -327,7 +335,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           onClose={() => setEditModalOpen(false)}
           onSave={handleSaveEdit}
           vendors={vendors}
-          workStatuses={workStatuses}
+          workStatuses={availableWorkStatuses}
           themes={availableThemes}
           addons={availableAddons}
         />
@@ -414,7 +422,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
             onClose={() => setEditModalOpen(false)}
             onSave={handleSaveEdit}
             vendors={vendors}
-            workStatuses={workStatuses}
+            workStatuses={availableWorkStatuses}
             themes={availableThemes}
             addons={availableAddons}
           />

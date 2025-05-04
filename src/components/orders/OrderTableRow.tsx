@@ -1,3 +1,4 @@
+
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor } from "@/types/types";
@@ -12,6 +13,7 @@ import { WorkStatus, Package } from "@/types/types";
 
 interface OrderTableRowProps {
   order: Order;
+  index: number; // Add index for numbering
   updatingOrders: Set<string>;
   vendorColors: Record<string, string>;
   addonStyles: Record<string, { color: string }>;
@@ -34,6 +36,7 @@ interface OrderTableRowProps {
 
 const OrderTableRow: React.FC<OrderTableRowProps> = ({
   order,
+  index,
   updatingOrders,
   vendorColors,
   addonStyles,
@@ -58,8 +61,16 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
     return Array.isArray(order.addons) && order.addons.length > 0;
   };
 
+  // Check if client URL exists
+  const hasClientUrl = (): boolean => {
+    return !!order.clientUrl && order.clientUrl.trim() !== '';
+  };
+
   return (
     <TableRow>
+      <TableCell className="font-mono text-xs">
+        {index + 1}
+      </TableCell>
       <TableCell className="font-mono text-xs">
         {formatDate(order.orderDate)}
       </TableCell>
@@ -75,14 +86,18 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         {order.customerName}
       </TableCell>
       <TableCell>
-        <a 
-          href={order.clientUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-wedding-primary hover:underline cursor-pointer"
-        >
-          {order.clientName}
-        </a>
+        {hasClientUrl() ? (
+          <a 
+            href={order.clientUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline cursor-pointer"
+          >
+            {order.clientName}
+          </a>
+        ) : (
+          <span>{order.clientName}</span>
+        )}
       </TableCell>
       <TableCell>
         <VendorDropdown 

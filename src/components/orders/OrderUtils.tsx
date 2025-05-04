@@ -10,12 +10,17 @@ export const formatCurrency = (amount: number) => {
 };
 
 export const formatDate = (dateString: string) => {
-  // Updated format to be more compact: dd/mm/yy
-  return new Date(dateString).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit"
-  }).replace(/-/g, '/');
+  // Updated format to be dd/mm/yyyy
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }).replace(/-/g, '/');
+  } catch (error) {
+    return dateString;
+  }
 };
 
 export const isPastDate = (dateString: string) => {

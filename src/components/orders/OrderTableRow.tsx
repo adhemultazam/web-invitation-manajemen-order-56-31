@@ -30,6 +30,7 @@ interface OrderTableRowProps {
   handlePackageChange: (orderId: string, pkg: string) => void;
   handleViewOrderDetail: (order: Order) => void;
   handleOpenEditDialog: (order: Order) => void;
+  handleDeleteOrder: (order: Order) => void; // Added this prop
 }
 
 const OrderTableRow: React.FC<OrderTableRowProps> = ({
@@ -51,6 +52,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
   handlePackageChange,
   handleViewOrderDetail,
   handleOpenEditDialog,
+  handleDeleteOrder, // Added this prop to destructuring
 }) => {
   // Check if an order has any addons
   const hasAddons = (): boolean => {
@@ -135,6 +137,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           order={order}
           onView={handleViewOrderDetail}
           onEdit={handleOpenEditDialog}
+          onDelete={handleDeleteOrder} // Pass the delete handler to OrderActions
         />
       </TableCell>
     </TableRow>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -267,9 +268,9 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           const updatedOrders = parsedOrders.filter((o: Order) => o.id !== order.id);
           localStorage.setItem(monthKey, JSON.stringify(updatedOrders));
           
-          // Update the current orders list
-          const newOrders = orders.filter(o => o.id !== order.id);
-          onUpdateOrder(order.id, { deleted: true }); // Use this to signal deletion to parent
+          // Instead of using a non-existent 'deleted' property, we'll just notify the parent
+          // to update its state, by passing the ID to onUpdateOrder
+          onUpdateOrder(order.id, { id: order.id });
           
           toast.success(`Pesanan ${order.clientName} berhasil dihapus`);
         }

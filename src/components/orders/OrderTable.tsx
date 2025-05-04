@@ -24,7 +24,7 @@ import {
 
 interface OrderTableProps {
   orders: Order[];
-  vendors: Vendor[]; // This is an array of Vendor objects
+  vendors: Vendor[];  // Changed from string[] to Vendor[]
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;

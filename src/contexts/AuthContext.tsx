@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 // Define types for our context
 interface User {
@@ -14,7 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string, remember: boolean) => boolean;
   logout: () => void;
-  updateUser: (updatedUser: User) => void; // Add the updateUser function type
+  updateUser: (updatedUser: User) => void;
 }
 
 // Create the context with default values
@@ -23,11 +23,11 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: () => false,
   logout: () => {},
-  updateUser: () => {}, // Add the updateUser function default
+  updateUser: () => {},
 });
 
 // Define the provider component
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 // Custom hook for using the auth context
 export function useAuth() {

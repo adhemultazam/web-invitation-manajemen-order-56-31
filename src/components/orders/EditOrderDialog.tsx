@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Dialog,
@@ -25,7 +26,7 @@ interface EditOrderDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, data: Partial<Order>) => void;
-  vendors: Vendor[]; // Updated to accept Vendor[] instead of string[]
+  vendors: Vendor[];
   workStatuses: string[];
   themes: Theme[];
   addons: Addon[];
@@ -220,24 +221,15 @@ export function EditOrderDialog({
             />
             <div className="grid grid-cols-2 gap-2">
               {addons.map((addon) => (
-                <FormField
-                  key={addon.id}
-                  control={form.control}
-                  name={`addon_${addon.id}`}
-                  render={() => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <FormLabel className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                        {addon.name}
-                      </FormLabel>
-                      <FormControl>
-                        <Checkbox
-                          checked={selectedAddons.includes(addon.id)}
-                          onCheckedChange={() => handleAddonChange(addon.id)}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div key={addon.id} className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
+                    {addon.name}
+                  </label>
+                  <Checkbox
+                    checked={selectedAddons.includes(addon.id)}
+                    onCheckedChange={() => handleAddonChange(addon.id)}
+                  />
+                </div>
               ))}
             </div>
             <FormField

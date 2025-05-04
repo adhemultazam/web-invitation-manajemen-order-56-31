@@ -8,8 +8,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Filter as FilterIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface OrderFilterProps {
   onFilter: (filters: {
@@ -27,6 +33,11 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
   const [workStatus, setWorkStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [vendor, setVendor] = useState("all");
+
+  // Apply filters whenever any filter value changes
+  useEffect(() => {
+    handleSearch();
+  }, [search, workStatus, paymentStatus, vendor]);
 
   const handleSearch = () => {
     onFilter({
@@ -51,72 +62,108 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 p-3 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Filter Pesanan</h3>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleReset} className="text-xs h-7 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-            Reset
-          </Button>
-          <Button size="sm" onClick={handleSearch} className="text-xs h-7">
-            Terapkan Filter
-          </Button>
-        </div>
+    <div className="flex flex-col md:flex-row gap-2 mb-4">
+      {/* Search Input */}
+      <div className="relative flex-grow">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Cari pesanan..."
+          className="pl-8 pr-4 h-10"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Nama klien atau pemesan..."
-            className="pl-8 h-9 text-sm dark:bg-gray-800 dark:border-gray-700"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
 
-        <Select value={workStatus} onValueChange={setWorkStatus}>
-          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
-            <SelectValue placeholder="Status Pengerjaan" />
-          </SelectTrigger>
-          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-            <SelectItem value="all">Semua Status Pengerjaan</SelectItem>
-            {workStatuses.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Work Status Filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex gap-2 min-w-[150px]">
+            <FilterIcon className="h-4 w-4" />
+            <span>Filter Status</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem 
+            onClick={() => setWorkStatus("all")}
+            className={workStatus === "all" ? "bg-accent" : ""}
+          >
+            Semua Status
+          </DropdownMenuItem>
+          {workStatuses.map((status) => (
+            <DropdownMenuItem 
+              key={status} 
+              onClick={() => setWorkStatus(status)}
+              className={workStatus === status ? "bg-accent" : ""}
+            >
+              {status}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
-            <SelectValue placeholder="Status Pembayaran" />
-          </SelectTrigger>
-          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-            <SelectItem value="all">Semua Status Pembayaran</SelectItem>
-            <SelectItem value="Lunas">Lunas</SelectItem>
-            <SelectItem value="Pending">Belum Lunas</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Payment Status Filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex gap-2 min-w-[180px]">
+            <FilterIcon className="h-4 w-4" />
+            <span>Filter Pembayaran</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem 
+            onClick={() => setPaymentStatus("all")}
+            className={paymentStatus === "all" ? "bg-accent" : ""}
+          >
+            Semua Status Pembayaran
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => setPaymentStatus("Lunas")}
+            className={paymentStatus === "Lunas" ? "bg-accent" : ""}
+          >
+            Lunas
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => setPaymentStatus("Pending")}
+            className={paymentStatus === "Pending" ? "bg-accent" : ""}
+          >
+            Belum Lunas
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <Select value={vendor} onValueChange={setVendor}>
-          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
-            <SelectValue placeholder="Vendor/Reseller" />
-          </SelectTrigger>
-          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-            <SelectItem value="all">Semua Vendor</SelectItem>
-            {vendors.map((vendor) => (
-              <SelectItem key={vendor} value={vendor}>
-                {vendor}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Vendor Filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex gap-2 min-w-[160px]">
+            <FilterIcon className="h-4 w-4" />
+            <span>Filter Vendor</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem 
+            onClick={() => setVendor("all")}
+            className={vendor === "all" ? "bg-accent" : ""}
+          >
+            Semua Vendor
+          </DropdownMenuItem>
+          {vendors.map((vendorName) => (
+            <DropdownMenuItem 
+              key={vendorName} 
+              onClick={() => setVendor(vendorName)}
+              className={vendor === vendorName ? "bg-accent" : ""}
+            >
+              {vendorName}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Reset Button - Only show when filters are applied */}
+      {(search || workStatus !== "all" || paymentStatus !== "all" || vendor !== "all") && (
+        <Button variant="ghost" onClick={handleReset} className="px-3 h-10">
+          Reset
+        </Button>
+      )}
     </div>
   );
 }

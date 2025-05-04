@@ -1,474 +1,299 @@
-import { useState, useEffect } from "react";
+
+import React from "react";
 import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Order, Addon, Vendor, Theme, WorkStatus, Package } from "@/types/types";
-import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { OrderDetailModal } from "./OrderDetailModal";
-import { EditOrderDialog } from "./EditOrderDialog";
-import OrderTableHeader from "./OrderTableHeader";
-import OrderTableRow from "./OrderTableRow";
-import MobileOrderCard from "./MobileOrderCard";
+import { Order, WorkStatus, Vendor, Package, Theme } from "@/types/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Edit, Eye, Trash } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { 
-  formatCurrency, 
-  formatDate, 
-  isPastDate, 
-  loadVendorsFromStorage,
-  loadAddonsFromStorage,
-  loadWorkStatusesFromStorage
-} from "./OrderUtils";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface OrderTableProps {
   orders: Order[];
+  updatingOrders: Set<string>;
+  vendorColors: Record<string, string>;
+  addonStyles: Record<string, { color: string }>;
+  workStatuses: WorkStatus[];
   vendors: Vendor[];
-  workStatuses: string[];
-  themes: string[];
-  onUpdateOrder: (id: string, data: Partial<Order>) => void;
-  addons: Addon[];
+  packages: Package[];
+  themes: Theme[];
+  formatDate: (date: string) => string;
+  isPastDate: (date: string) => boolean;
+  formatCurrency: (amount: number) => string;
+  togglePaymentStatus: (order: Order) => void;
+  handleWorkStatusChange: (orderId: string, status: string) => void;
+  handleVendorChange: (orderId: string, vendor: string) => void;
+  handleThemeChange: (orderId: string, theme: string) => void;
+  handlePackageChange: (orderId: string, pkg: string) => void;
+  handleViewOrderDetail: (order: Order) => void;
+  handleOpenEditDialog: (order: Order) => void;
+  handleDeleteOrder: (order: Order) => void;
 }
 
-export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrder, addons }: OrderTableProps) {
-  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
-  const [vendorColors, setVendorColors] = useState<Record<string, string>>({});
-  const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
-  const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
-  const [availableAddons, setAvailableAddons] = useState<Addon[]>(addons || []);
-  const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
-  const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
-  const [availablePackages, setAvailablePackages] = useState<Package[]>([]);
-  const isMobile = useIsMobile();
-
-  // Convert string[] workStatuses to WorkStatus[] if provided
-  const convertedWorkStatuses = workStatuses.map((status, index) => ({
-    id: `ws-${index}`,
-    name: status,
-    color: '#6366f1' // Default color if not specified
-  }));
-
-  useEffect(() => {
-    // Use passed vendors prop instead of loading from localStorage again
-    if (vendors && vendors.length > 0) {
-      const colors: Record<string, string> = {};
-      vendors.forEach(vendor => {
-        colors[vendor.id] = vendor.color || '#6366f1';
-      });
-      setVendorColors(colors);
-      setAvailableVendors(vendors);
-    } else {
-      // Fallback to localStorage only if vendors prop is empty
-      try {
-        const parsedVendors = loadVendorsFromStorage();
-        const colors: Record<string, string> = {};
-        parsedVendors.forEach(vendor => {
-          colors[vendor.id] = vendor.color || '#6366f1';
-        });
-        setVendorColors(colors);
-        setAvailableVendors(parsedVendors);
-      } catch (e) {
-        console.error("Error parsing vendors:", e);
-      }
-    }
-    
-    // Update availableAddons when addons prop changes
-    if (addons && addons.length > 0) {
-      setAvailableAddons(addons);
-      
-      // Create addon styles from passed addons
-      const styles: Record<string, {color: string}> = {};
-      addons.forEach(addon => {
-        styles[addon.name] = { color: addon.color || '#6366f1' };
-      });
-      setAddonStyles(styles);
-    } else {
-      // Load addon styles from localStorage as fallback
-      try {
-        const parsedAddons = loadAddonsFromStorage();
-        const styles: Record<string, {color: string}> = {};
-        parsedAddons.forEach(addon => {
-          styles[addon.name] = { color: addon.color || '#6366f1' };
-        });
-        setAddonStyles(styles);
-        setAvailableAddons(parsedAddons);
-      } catch (e) {
-        console.error("Error parsing addons:", e);
-      }
-    }
-    
-    // Load themes from localStorage
-    try {
-      const storedThemes = localStorage.getItem('themes');
-      if (storedThemes) {
-        setAvailableThemes(JSON.parse(storedThemes));
-      }
-    } catch (e) {
-      console.error("Error parsing themes:", e);
-    }
-    
-    // Load work statuses - use converted workStatuses if provided, otherwise load from localStorage
-    if (convertedWorkStatuses && convertedWorkStatuses.length > 0) {
-      setAvailableWorkStatuses(convertedWorkStatuses);
-    } else {
-      // Load work statuses from localStorage directly
-      try {
-        const savedWorkStatuses = localStorage.getItem('workStatuses');
-        if (savedWorkStatuses) {
-          const parsedWorkStatuses = JSON.parse(savedWorkStatuses);
-          if (Array.isArray(parsedWorkStatuses) && parsedWorkStatuses.length > 0) {
-            setAvailableWorkStatuses(parsedWorkStatuses);
-          } else {
-            const workStatusesFromStorage = loadWorkStatusesFromStorage();
-            setAvailableWorkStatuses(workStatusesFromStorage);
-          }
-        } else {
-          const workStatusesFromStorage = loadWorkStatusesFromStorage();
-          setAvailableWorkStatuses(workStatusesFromStorage);
-        }
-      } catch (e) {
-        console.error("Error loading work statuses:", e);
-        const workStatusesFromStorage = loadWorkStatusesFromStorage();
-        setAvailableWorkStatuses(workStatusesFromStorage);
-      }
-    }
-    
-    // Load packages from localStorage
-    try {
-      const storedPackages = localStorage.getItem('packages');
-      if (storedPackages) {
-        setAvailablePackages(JSON.parse(storedPackages));
-      } else {
-        // Default packages if none are stored
-        const defaultPackages: Package[] = [
-          {
-            id: "1",
-            name: "Basic",
-            price: 150000,
-            description: "Paket basic untuk undangan digital sederhana.",
-            features: ["1 halaman", "Maksimal 10 foto", "Durasi 1 bulan"]
-          },
-          {
-            id: "2",
-            name: "Premium",
-            price: 250000,
-            description: "Paket premium dengan fitur tambahan.",
-            features: ["3 halaman", "Gallery foto tanpa batas", "Durasi 3 bulan", "Peta lokasi"]
-          }
-        ];
-        setAvailablePackages(defaultPackages);
-        localStorage.setItem('packages', JSON.stringify(defaultPackages));
-      }
-    } catch (e) {
-      console.error("Error parsing packages:", e);
-    }
-  }, [vendors, addons, convertedWorkStatuses]);
-
-  const togglePaymentStatus = (order: Order) => {
-    const newStatus = order.paymentStatus === 'Lunas' ? 'Pending' : 'Lunas';
-    setUpdatingOrders(prev => new Set(prev).add(order.id));
-    
-    onUpdateOrder(order.id, { 
-      paymentStatus: newStatus 
-    });
-    
-    setTimeout(() => {
-      setUpdatingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(order.id);
-        return newSet;
-      });
-      
-      toast.success(`Status pembayaran diubah menjadi ${newStatus}`, {
-        description: `Order: ${order.clientName}`
-      });
-    }, 500);
+export function OrderTable({
+  orders,
+  updatingOrders,
+  vendorColors,
+  addonStyles,
+  workStatuses,
+  vendors,
+  packages,
+  themes,
+  formatDate,
+  isPastDate,
+  formatCurrency,
+  togglePaymentStatus,
+  handleWorkStatusChange,
+  handleVendorChange,
+  handleThemeChange,
+  handlePackageChange,
+  handleViewOrderDetail,
+  handleOpenEditDialog,
+  handleDeleteOrder,
+}: OrderTableProps) {
+  
+  const getStatusColor = (statusName: string): string => {
+    const status = workStatuses.find(status => status.name === statusName);
+    return status?.color || "#6E6E6E"; // Default gray if not found
   };
-
-  const handleWorkStatusChange = (orderId: string, newStatus: string) => {
-    setUpdatingOrders(prev => new Set(prev).add(orderId));
-    
-    onUpdateOrder(orderId, {
-      workStatus: newStatus
-    });
-    
-    setTimeout(() => {
-      setUpdatingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(orderId);
-        return newSet;
-      });
-      
-      toast.success(`Status pengerjaan diubah menjadi ${newStatus}`);
-    }, 500);
+  
+  const getAddonStyle = (addonName: string) => {
+    const addonStyle = addonStyles[addonName];
+    return addonStyle?.color || "#6366f1";
   };
-
-  const handleVendorChange = (orderId: string, newVendor: string) => {
-    setUpdatingOrders(prev => new Set(prev).add(orderId));
-    
-    onUpdateOrder(orderId, {
-      vendor: newVendor
-    });
-    
-    setTimeout(() => {
-      setUpdatingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(orderId);
-        return newSet;
-      });
-      
-      // Find vendor name by ID for the toast message
-      const vendorName = availableVendors.find(v => v.id === newVendor)?.name || newVendor;
-      toast.success(`Vendor diubah menjadi ${vendorName}`);
-    }, 500);
-  };
-
-  const handleThemeChange = (orderId: string, newTheme: string) => {
-    setUpdatingOrders(prev => new Set(prev).add(orderId));
-    
-    onUpdateOrder(orderId, {
-      theme: newTheme
-    });
-    
-    setTimeout(() => {
-      setUpdatingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(orderId);
-        return newSet;
-      });
-      
-      toast.success(`Tema diubah menjadi ${newTheme}`);
-    }, 500);
-  };
-
-  const handlePackageChange = (orderId: string, newPackage: string) => {
-    setUpdatingOrders(prev => new Set(prev).add(orderId));
-    
-    onUpdateOrder(orderId, {
-      package: newPackage
-    });
-    
-    setTimeout(() => {
-      setUpdatingOrders(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(orderId);
-        return newSet;
-      });
-      
-      toast.success(`Paket diubah menjadi ${newPackage}`);
-    }, 500);
-  };
-
-  const handleViewOrderDetail = (order: Order) => {
-    setSelectedOrder(order);
-    setDetailModalOpen(true);
-  };
-
-  const handleOpenEditDialog = (order: Order) => {
-    setSelectedOrder(order);
-    setEditModalOpen(true);
-  };
-
-  const handleSaveEdit = (id: string, data: Partial<Order>) => {
-    onUpdateOrder(id, data);
-  };
-
-  const handleDeleteOrder = (order: Order) => {
-    setOrderToDelete(order);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteOrder = () => {
-    if (!orderToDelete) return;
-    
-    onUpdateOrder(orderToDelete.id, { deleted: true });
-    
-    toast.success(`Pesanan ${orderToDelete.clientName} berhasil dihapus`);
-    setDeleteDialogOpen(false);
-    setOrderToDelete(null);
-  };
-
-  // Render for mobile view
-  if (isMobile) {
-    return (
-      <>
-        <div className="space-y-4">
-          {orders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground border rounded-md">
-              Tidak ada data pesanan
-            </div>
-          ) : (
-            orders.map((order) => (
-              <MobileOrderCard
-                key={order.id}
-                order={order}
-                updatingOrders={updatingOrders}
-                vendorColors={vendorColors}
-                addonStyles={addonStyles}
-                availableWorkStatuses={availableWorkStatuses}
-                availablePackages={availablePackages}
-                vendors={availableVendors}
-                themes={themes}
-                formatDate={formatDate}
-                isPastDate={isPastDate}
-                formatCurrency={formatCurrency}
-                togglePaymentStatus={togglePaymentStatus}
-                handleWorkStatusChange={handleWorkStatusChange}
-                handleVendorChange={handleVendorChange}
-                handleThemeChange={handleThemeChange}
-                handlePackageChange={handlePackageChange}
-                handleViewOrderDetail={handleViewOrderDetail}
-                handleOpenEditDialog={handleOpenEditDialog}
-                handleDeleteOrder={handleDeleteOrder}
-              />
-            ))
-          )}
-        </div>
-        
-        <OrderDetailModal
-          order={selectedOrder}
-          onClose={() => setDetailModalOpen(false)}
-          isOpen={detailModalOpen}
-        />
-        
-        <EditOrderDialog
-          order={selectedOrder}
-          isOpen={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          onSave={handleSaveEdit}
-          vendors={vendors}
-          workStatuses={availableWorkStatuses}
-          themes={availableThemes}
-          addons={availableAddons}
-          packages={availablePackages}
-        />
-
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
-              <AlertDialogDescription>
-                Apakah Anda yakin ingin menghapus pesanan "{orderToDelete?.clientName}"? 
-                Tindakan ini tidak dapat dibatalkan.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Batal</AlertDialogCancel>
-              <AlertDialogAction 
-                className="bg-red-500 hover:bg-red-600"
-                onClick={confirmDeleteOrder}
-              >
-                Hapus
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </>
-    );
-  }
-
-  // Desktop view
+  
   return (
-    <>
-      <div className="rounded-md border overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <OrderTableHeader />
-            <TableBody>
-              {orders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                    Tidak ada data pesanan
-                  </TableCell>
-                </TableRow>
-              ) : (
-                orders.map((order) => (
-                  <OrderTableRow
-                    key={order.id}
-                    order={order}
-                    updatingOrders={updatingOrders}
-                    vendorColors={vendorColors}
-                    addonStyles={addonStyles}
-                    availableWorkStatuses={availableWorkStatuses}
-                    availablePackages={availablePackages}
-                    vendors={availableVendors}
-                    themes={themes}
-                    formatDate={formatDate}
-                    isPastDate={isPastDate}
-                    formatCurrency={formatCurrency}
-                    togglePaymentStatus={togglePaymentStatus}
-                    handleWorkStatusChange={handleWorkStatusChange}
-                    handleVendorChange={handleVendorChange}
-                    handleThemeChange={handleThemeChange}
-                    handlePackageChange={handlePackageChange}
-                    handleViewOrderDetail={handleViewOrderDetail}
-                    handleOpenEditDialog={handleOpenEditDialog}
-                    handleDeleteOrder={handleDeleteOrder}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-
-      {selectedOrder && (
-        <>
-          <OrderDetailModal
-            order={selectedOrder}
-            onClose={() => setDetailModalOpen(false)}
-            isOpen={detailModalOpen}
-          />
-          <EditOrderDialog
-            order={selectedOrder}
-            isOpen={editModalOpen}
-            onClose={() => setEditModalOpen(false)}
-            onSave={handleSaveEdit}
-            vendors={vendors}
-            workStatuses={availableWorkStatuses}
-            themes={availableThemes}
-            addons={availableAddons}
-            packages={availablePackages}
-          />
-        </>
-      )}
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
-            <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus pesanan "{orderToDelete?.clientName}"? 
-              Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-red-500 hover:bg-red-600"
-              onClick={confirmDeleteOrder}
-            >
-              Hapus
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <div className="rounded-md border overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[80px]">ID</TableHead>
+            <TableHead className="min-w-[150px]">Client</TableHead>
+            <TableHead className="hidden md:table-cell">Tgl Pesan</TableHead>
+            <TableHead className="hidden md:table-cell">Tgl Acara</TableHead>
+            <TableHead className="hidden md:table-cell">Countdown</TableHead>
+            <TableHead>Vendor</TableHead>
+            <TableHead className="hidden lg:table-cell">Paket</TableHead>
+            <TableHead className="hidden xl:table-cell">Tema</TableHead>
+            <TableHead className="hidden lg:table-cell">Addons</TableHead>
+            <TableHead>Pembayaran</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Aksi</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell className="font-mono text-xs">
+                  #{order.id.substring(0, 8)}
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{order.clientName}</div>
+                    <div className="text-xs text-muted-foreground">{order.customerName}</div>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell font-mono text-xs">
+                  {formatDate(order.orderDate)}
+                </TableCell>
+                <TableCell className="hidden md:table-cell font-mono text-xs">
+                  {formatDate(order.eventDate)}
+                </TableCell>
+                <TableCell className={cn(
+                  "hidden md:table-cell font-mono text-xs",
+                  isPastDate(order.eventDate) && "text-red-500 font-semibold"
+                )}>
+                  {order.countdownDays} hari
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={order.vendor}
+                    onValueChange={(value) => handleVendorChange(order.id, value)}
+                    disabled={updatingOrders.has(order.id)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <div className="flex items-center">
+                        <div
+                          className="w-2 h-2 mr-2 rounded-full"
+                          style={{ backgroundColor: vendorColors[order.vendor] || '#6366f1' }}
+                        />
+                        <SelectValue>{order.vendor}</SelectValue>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id} className="text-xs">
+                          <div className="flex items-center">
+                            <div
+                              className="w-2 h-2 mr-2 rounded-full"
+                              style={{ backgroundColor: vendor.color || '#6366f1' }}
+                            />
+                            {vendor.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  <Select
+                    value={order.package}
+                    onValueChange={(value) => handlePackageChange(order.id, value)}
+                    disabled={updatingOrders.has(order.id)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue>{order.package}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packages.map((pkg) => (
+                        <SelectItem key={pkg.id} value={pkg.name} className="text-xs">
+                          {pkg.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell className="hidden xl:table-cell">
+                  <Select
+                    value={order.theme}
+                    onValueChange={(value) => handleThemeChange(order.id, value)}
+                    disabled={updatingOrders.has(order.id)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue>{order.theme}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themes.map((theme) => (
+                        <SelectItem key={theme.id} value={theme.name} className="text-xs">
+                          {theme.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  {order.addons && order.addons.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {order.addons.map((addon, index) => (
+                        <Badge 
+                          key={index} 
+                          style={{ backgroundColor: getAddonStyle(addon) }}
+                          className="text-[10px] px-1.5 py-0 rounded-full text-white"
+                        >
+                          {addon}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-0 h-6"
+                    onClick={() => togglePaymentStatus(order)}
+                  >
+                    <Badge 
+                      className={cn(
+                        order.paymentStatus === "Lunas" ? "bg-green-500" : "bg-amber-500"
+                      )}
+                    >
+                      {updatingOrders.has(order.id) ? (
+                        <span className="animate-pulse">Menyimpan...</span>
+                      ) : (
+                        order.paymentStatus
+                      )}
+                    </Badge>
+                  </Button>
+                  <div className="text-xs font-mono">
+                    {formatCurrency(order.paymentAmount)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={order.workStatus}
+                    onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+                    disabled={updatingOrders.has(order.id)}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <div className="flex items-center">
+                        <div
+                          className="w-2 h-2 mr-2 rounded-full"
+                          style={{ backgroundColor: getStatusColor(order.workStatus) }}
+                        />
+                        <SelectValue>{order.workStatus}</SelectValue>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {workStatuses.map((status) => (
+                        <SelectItem key={status.id} value={status.name} className="text-xs">
+                          <div className="flex items-center">
+                            <div
+                              className="w-2 h-2 mr-2 rounded-full"
+                              style={{ backgroundColor: status.color }}
+                            />
+                            {status.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleViewOrderDetail(order)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-wedding-primary hover:text-blue-600 hover:bg-blue-50"
+                      onClick={() => handleOpenEditDialog(order)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => handleDeleteOrder(order)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={12} className="h-24 text-center">
+                Tidak ada data pesanan
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

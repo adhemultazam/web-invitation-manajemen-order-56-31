@@ -1,335 +1,240 @@
+
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { OrderTable } from "@/components/orders/OrderTable";
-import { OrderFilter } from "@/components/orders/OrderFilter";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, CircleDollarSign, Check, X } from "lucide-react";
-import { Order, Addon, Theme, Vendor, WorkStatus } from "@/types/types";
+import { Input } from "@/components/ui/input";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Order, Vendor, WorkStatus, Theme, Package, Addon } from "@/types/types";
+import { PlusCircle, Search, SlidersHorizontal, Filter, ChevronDown } from "lucide-react";
+import { format, parseISO, differenceInDays, isBefore } from "date-fns";
+import { id } from "date-fns/locale";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
+import { EditOrderDialog } from "@/components/orders/EditOrderDialog";
+import { OrderTable } from "@/components/orders/OrderTable";
+import MobileOrderCard from "@/components/orders/MobileOrderCard";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { loadVendorsFromStorage, loadWorkStatusesFromStorage } from "@/components/orders/OrderUtils";
 
-// Mock data for orders
-const mockOrders: Order[] = [
-  {
-    id: "1",
-    orderDate: "2024-09-01",
-    eventDate: "2024-10-15",
-    countdownDays: 45,
-    customerName: "Ahmad Rizki",
-    clientName: "Rizki & Putri",
-    clientUrl: "https://undangandigital.com/rizki-putri",
-    vendor: "Vendor Utama",
-    package: "Premium",
-    addons: ["Foto Pre-Wedding", "Undangan Fisik"],
-    bonuses: ["Video Opening"],
-    theme: "Elegant Gold",
-    paymentStatus: "Lunas",
-    paymentAmount: 350000,
-    workStatus: "Progress",
-    postPermission: true,
-    notes: "Klien meminta perubahan minor pada foto"
-  },
-  {
-    id: "2",
-    orderDate: "2024-09-05",
-    eventDate: "2024-11-20",
-    countdownDays: 75,
-    customerName: "Budi Santoso",
-    clientName: "Budi & Anisa",
-    clientUrl: "https://undangandigital.com/budi-anisa",
-    vendor: "Reseller Premium",
-    package: "Basic",
-    addons: [],
-    bonuses: [],
-    theme: "Minimalist",
-    paymentStatus: "Pending",
-    paymentAmount: 150000,
-    workStatus: "Data Belum",
-    postPermission: false,
-    notes: ""
-  },
-  {
-    id: "3",
-    orderDate: "2024-09-10",
-    eventDate: "2024-09-30",
-    countdownDays: 20,
-    customerName: "Dewi Kartika",
-    clientName: "Kartika & Rendra",
-    clientUrl: "https://undangandigital.com/kartika-rendra",
-    vendor: "Vendor Utama",
-    package: "Premium",
-    addons: ["Background Music", "Galeri 20 Foto"],
-    bonuses: ["Quotes Islami"],
-    theme: "Floral Pink",
-    paymentStatus: "Lunas",
-    paymentAmount: 400000,
-    workStatus: "Review",
-    postPermission: true,
-    notes: "Urgent - Pernikahan di-reschedule"
-  }
+const indonesianMonths = [
+  "januari", "februari", "maret", "april", "mei", "juni",
+  "juli", "agustus", "september", "oktober", "november", "desember"
 ];
-
-// Mock vendors and work statuses
-const vendors = ["Vendor Utama", "Reseller Premium"];
-const workStatuses = ["Selesai", "Progress", "Review", "Revisi", "Data Belum"];
-const themes: Theme[] = [
-  {
-    id: "1",
-    name: "Elegant Gold",
-    thumbnail: "https://placehold.co/200x280/e9d985/ffffff?text=Elegant+Gold",
-    category: "Premium"
-  },
-  {
-    id: "2",
-    name: "Floral Pink",
-    thumbnail: "https://placehold.co/200x280/ffb6c1/ffffff?text=Floral+Pink",
-    category: "Basic"
-  },
-  {
-    id: "3",
-    name: "Rustic Wood",
-    thumbnail: "https://placehold.co/200x280/8b4513/ffffff?text=Rustic+Wood",
-    category: "Premium"
-  },
-  {
-    id: "4",
-    name: "Minimalist",
-    thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Minimalist",
-    category: "Basic"
-  }
-];
-
-// Mock addons data
-const defaultAddons: Addon[] = [
-  { id: "1", name: "Express", color: "#3b82f6" },
-  { id: "2", name: "Super Express", color: "#f97316" },
-  { id: "3", name: "Custom Desain", color: "#8b5cf6" },
-  { id: "4", name: "Custom Domain", color: "#16a34a" }
-];
-
-// Helper function to load orders from localStorage
-const loadOrdersFromStorage = (month: string): Order[] => {
-  try {
-    const storedOrders = localStorage.getItem(`orders_${month}`);
-    if (storedOrders) {
-      return JSON.parse(storedOrders);
-    }
-  } catch (e) {
-    console.error("Error loading orders from localStorage:", e);
-  }
-  return [];
-};
-
-// Helper function to save orders to localStorage
-const saveOrdersToStorage = (month: string, orders: Order[]): void => {
-  try {
-    localStorage.setItem(`orders_${month}`, JSON.stringify(orders));
-  } catch (e) {
-    console.error("Error saving orders to localStorage:", e);
-  }
-};
-
-// Removed the duplicate loadVendorsFromStorage function
-// We'll use the imported one from OrderUtils.tsx instead
 
 export default function MonthlyOrders() {
-  const { month = "" } = useParams<{ month: string }>();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addons, setAddons] = useState<Addon[]>(defaultAddons);
-  const [availableThemes, setAvailableThemes] = useState<Theme[]>(themes);
-  const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
-  const [availableWorkStatuses, setAvailableWorkStatuses] = useState<WorkStatus[]>([]);
-  // Create a derived state for vendor names
-  const [vendorNames, setVendorNames] = useState<string[]>(vendors);
-  // Create a derived state for work status names
-  const [workStatusNames, setWorkStatusNames] = useState<string[]>(workStatuses);
+  const { month = "januari" } = useParams<{ month: string }>();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Capitalize the first letter of the month
-  const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
-
-  // Set orders based on month and load from localStorage
+  // State for orders and UI
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [vendorFilter, setVendorFilter] = useState<string | null>(null);
+  
+  // State for add/edit modals
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  
+  // State for available data
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [workStatuses, setWorkStatuses] = useState<WorkStatus[]>([]);
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [addons, setAddons] = useState<Addon[]>([]);
+  
+  // State for UI updates
+  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  const [vendorColors, setVendorColors] = useState<Record<string, string>>({});
+  const [addonStyles, setAddonStyles] = useState<Record<string, { color: string }>>({});
+  const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  
+  // Check if month is valid
   useEffect(() => {
-    const storedOrders = loadOrdersFromStorage(month);
-    
-    // If there are stored orders, use them; otherwise use the mock data and save it
-    if (storedOrders && storedOrders.length > 0) {
-      setOrders(storedOrders);
-      setFilteredOrders(storedOrders);
-    } else {
-      setOrders(mockOrders);
-      setFilteredOrders(mockOrders);
-      saveOrdersToStorage(month, mockOrders);
+    const normalizedMonth = month.toLowerCase();
+    if (!indonesianMonths.includes(normalizedMonth)) {
+      navigate("/bulan/januari", { replace: true });
     }
-  }, [month]);
-
-  // Save orders to localStorage whenever they change
+  }, [month, navigate]);
+  
+  // Load orders from localStorage
   useEffect(() => {
-    if (orders.length > 0) {
-      saveOrdersToStorage(month, orders);
-    }
-  }, [orders, month]);
-
-  // Load vendors, addons, and themes from storage
-  useEffect(() => {
-    // Load vendors from localStorage
-    const loadedVendors = loadVendorsFromStorage();
-    setAvailableVendors(loadedVendors);
-    
-    // Update vendorNames when availableVendors changes
-    if (loadedVendors.length > 0) {
-      setVendorNames(loadedVendors.map(vendor => vendor.name));
-    }
-    
-    // Load addons from localStorage
-    const storedAddons = localStorage.getItem('addons');
-    if (storedAddons) {
+    const loadOrders = () => {
       try {
-        const parsedAddons = JSON.parse(storedAddons);
-        if (Array.isArray(parsedAddons) && parsedAddons.length > 0) {
-          setAddons(parsedAddons);
-        }
-      } catch (e) {
-        console.error("Error parsing addons:", e);
-      }
-    }
-    
-    // Load themes from localStorage
-    const storedThemes = localStorage.getItem('themes');
-    if (storedThemes) {
-      try {
-        const parsedThemes = JSON.parse(storedThemes);
-        if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
-          setAvailableThemes(parsedThemes);
-        }
-      } catch (e) {
-        console.error("Error parsing themes:", e);
-      }
-    }
-    
-    // Load work statuses from localStorage
-    try {
-      const savedWorkStatuses = localStorage.getItem('workStatuses');
-      if (savedWorkStatuses) {
-        const parsedWorkStatuses = JSON.parse(savedWorkStatuses);
-        if (Array.isArray(parsedWorkStatuses) && parsedWorkStatuses.length > 0) {
-          setAvailableWorkStatuses(parsedWorkStatuses);
-          setWorkStatusNames(parsedWorkStatuses.map(status => status.name));
+        const normalizedMonth = month.toLowerCase();
+        const storageKey = `orders_${normalizedMonth}`;
+        const storedOrders = localStorage.getItem(storageKey);
+        
+        if (storedOrders) {
+          const parsedOrders = JSON.parse(storedOrders);
+          setOrders(parsedOrders);
+          setFilteredOrders(parsedOrders);
         } else {
-          const workStatusesFromStorage = loadWorkStatusesFromStorage();
-          setAvailableWorkStatuses(workStatusesFromStorage);
-          setWorkStatusNames(workStatusesFromStorage.map(status => status.name));
+          setOrders([]);
+          setFilteredOrders([]);
         }
-      } else {
-        const workStatusesFromStorage = loadWorkStatusesFromStorage();
-        setAvailableWorkStatuses(workStatusesFromStorage);
-        setWorkStatusNames(workStatusesFromStorage.map(status => status.name));
+      } catch (error) {
+        console.error("Error loading orders:", error);
+        toast.error("Gagal memuat data pesanan");
       }
-    } catch (e) {
-      console.error("Error loading work statuses:", e);
-    }
-  }, []);
-
-  const handleFilter = (filters: {
-    search: string;
-    workStatus: string;
-    paymentStatus: string;
-    vendor: string;
-  }) => {
-    let result = orders;
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter(
-        (order) =>
-          order.clientName.toLowerCase().includes(searchLower) ||
-          order.customerName.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (filters.workStatus && filters.workStatus !== "all") {
-      result = result.filter((order) => order.workStatus === filters.workStatus);
-    }
-
-    if (filters.paymentStatus && filters.paymentStatus !== "all") {
-      result = result.filter(
-        (order) => order.paymentStatus === filters.paymentStatus
-      );
-    }
-
-    if (filters.vendor && filters.vendor !== "all") {
-      result = result.filter((order) => order.vendor === filters.vendor);
-    }
-
-    setFilteredOrders(result);
-  };
-
-  const handleUpdateOrder = (id: string, data: Partial<Order>) => {
-    // Check if this is a delete operation
-    if (data.deleted) {
-      console.log("Deleting order:", id);
-      // Filter out the order with the matching ID
-      const updatedOrders = orders.filter(order => order.id !== id);
-      setOrders(updatedOrders);
-      setFilteredOrders(updatedOrders.filter(order => 
-        filteredOrders.some(fo => fo.id === order.id)
-      ));
-      
-      // Save to localStorage
-      saveOrdersToStorage(month, updatedOrders);
-      return;
-    }
-    
-    // This is a regular update operation
-    const updatedOrders = orders.map(order => 
-      order.id === id ? { ...order, ...data } : order
-    );
-    
-    setOrders(updatedOrders);
-    setFilteredOrders(updatedOrders.filter(order => 
-      filteredOrders.some(fo => fo.id === order.id)
-    ));
-    
-    // Save to localStorage
-    saveOrdersToStorage(month, updatedOrders);
-  };
-
-  const handleAddOrder = (orderData: Omit<Order, "id">) => {
-    const newOrder: Order = {
-      ...orderData,
-      id: (orders.length + 1).toString(),
     };
     
-    const updatedOrders = [...orders, newOrder];
-    setOrders(updatedOrders);
-    setFilteredOrders(updatedOrders);
-    setIsAddModalOpen(false);
+    loadOrders();
+  }, [month]);
+  
+  // Load vendors, work statuses, themes, and packages from localStorage
+  useEffect(() => {
+    const loadVendors = () => {
+      try {
+        const storedVendors = localStorage.getItem("vendors");
+        if (storedVendors) {
+          const parsedVendors = JSON.parse(storedVendors);
+          setVendors(parsedVendors);
+          
+          // Create a map of vendor IDs to colors
+          const colors: Record<string, string> = {};
+          parsedVendors.forEach((vendor: Vendor) => {
+            colors[vendor.id] = vendor.color || '#6366f1';
+          });
+          setVendorColors(colors);
+        }
+      } catch (error) {
+        console.error("Error loading vendors:", error);
+      }
+    };
     
-    // Save to localStorage
-    saveOrdersToStorage(month, updatedOrders);
+    const loadWorkStatuses = () => {
+      try {
+        const storedStatuses = localStorage.getItem("workStatuses");
+        if (storedStatuses) {
+          const parsedStatuses = JSON.parse(storedStatuses);
+          setWorkStatuses(parsedStatuses);
+        }
+      } catch (error) {
+        console.error("Error loading work statuses:", error);
+      }
+    };
+    
+    const loadThemes = () => {
+      try {
+        const storedThemes = localStorage.getItem("themes");
+        if (storedThemes) {
+          const parsedThemes = JSON.parse(storedThemes);
+          setThemes(parsedThemes);
+        }
+      } catch (error) {
+        console.error("Error loading themes:", error);
+      }
+    };
+    
+    const loadPackages = () => {
+      try {
+        const storedPackages = localStorage.getItem("packages");
+        if (storedPackages) {
+          const parsedPackages = JSON.parse(storedPackages);
+          setPackages(parsedPackages);
+        }
+      } catch (error) {
+        console.error("Error loading packages:", error);
+      }
+    };
+    
+    const loadAddons = () => {
+      try {
+        const storedAddons = localStorage.getItem("addons");
+        if (storedAddons) {
+          const parsedAddons = JSON.parse(storedAddons);
+          setAddons(parsedAddons);
+          
+          // Create a map of addon names to styles
+          const styles: Record<string, { color: string }> = {};
+          parsedAddons.forEach((addon: Addon) => {
+            styles[addon.name] = { color: addon.color || '#6366f1' };
+          });
+          setAddonStyles(styles);
+        }
+      } catch (error) {
+        console.error("Error loading addons:", error);
+      }
+    };
+    
+    loadVendors();
+    loadWorkStatuses();
+    loadThemes();
+    loadPackages();
+    loadAddons();
+  }, []);
+  
+  // Apply filters when search query or filters change
+  useEffect(() => {
+    const applyFilters = () => {
+      let result = [...orders];
+      
+      // Apply search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        result = result.filter(
+          (order) =>
+            order.clientName.toLowerCase().includes(query) ||
+            order.customerName.toLowerCase().includes(query) ||
+            order.id.toLowerCase().includes(query)
+        );
+      }
+      
+      // Apply status filter
+      if (statusFilter) {
+        result = result.filter((order) => order.workStatus === statusFilter);
+      }
+      
+      // Apply vendor filter
+      if (vendorFilter) {
+        result = result.filter((order) => order.vendor === vendorFilter);
+      }
+      
+      setFilteredOrders(result);
+    };
+    
+    applyFilters();
+  }, [orders, searchQuery, statusFilter, vendorFilter]);
+  
+  // Save orders to localStorage
+  const saveOrders = (updatedOrders: Order[]) => {
+    try {
+      const normalizedMonth = month.toLowerCase();
+      const storageKey = `orders_${normalizedMonth}`;
+      localStorage.setItem(storageKey, JSON.stringify(updatedOrders));
+    } catch (error) {
+      console.error("Error saving orders:", error);
+      toast.error("Gagal menyimpan data pesanan");
+    }
   };
-
-  // Calculate statistics
-  const totalOrders = orders.length;
-  const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
-  const unpaidOrders = orders.filter(order => order.paymentStatus !== "Lunas").length;
   
-  const totalRevenue = orders
-    .filter(order => order.paymentStatus === "Lunas")
-    .reduce((sum, order) => sum + order.paymentAmount, 0);
+  // Utility functions
+  const formatDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      return format(date, "dd MMM yyyy", { locale: id });
+    } catch (error) {
+      return dateString;
+    }
+  };
   
-  const paidAmount = orders
-    .filter(order => order.paymentStatus === "Lunas")
-    .reduce((sum, order) => sum + order.paymentAmount, 0);
-    
-  const unpaidAmount = orders
-    .filter(order => order.paymentStatus === "Pending")
-    .reduce((sum, order) => sum + order.paymentAmount, 0);
-
-  // Format currency
+  const isPastDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      return isBefore(date, new Date());
+    } catch (error) {
+      return false;
+    }
+  };
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -337,123 +242,334 @@ export default function MonthlyOrders() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
-
+  
+  // Order actions
+  const handleAddOrder = (orderData: Omit<Order, "id">) => {
+    const newOrder: Order = {
+      id: uuidv4(),
+      ...orderData,
+    };
+    
+    const updatedOrders = [...orders, newOrder];
+    setOrders(updatedOrders);
+    saveOrders(updatedOrders);
+    
+    setIsAddOrderOpen(false);
+    toast.success("Pesanan berhasil ditambahkan");
+  };
+  
+  const handleUpdateOrder = (orderId: string, data: Partial<Order>) => {
+    const orderIndex = orders.findIndex((order) => order.id === orderId);
+    
+    if (orderIndex !== -1) {
+      setUpdatingOrders((prev) => new Set(prev).add(orderId));
+      
+      const updatedOrders = [...orders];
+      updatedOrders[orderIndex] = { ...updatedOrders[orderIndex], ...data };
+      
+      setOrders(updatedOrders);
+      saveOrders(updatedOrders);
+      
+      setTimeout(() => {
+        setUpdatingOrders((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(orderId);
+          return newSet;
+        });
+      }, 500);
+    }
+  };
+  
+  const handleDeleteOrder = (order: Order) => {
+    if (confirm(`Hapus pesanan "${order.clientName}"?`)) {
+      const updatedOrders = orders.filter((o) => o.id !== order.id);
+      setOrders(updatedOrders);
+      saveOrders(updatedOrders);
+      toast.success("Pesanan berhasil dihapus");
+    }
+  };
+  
+  // Event handlers
+  const togglePaymentStatus = (order: Order) => {
+    const newStatus = order.paymentStatus === "Lunas" ? "Pending" : "Lunas";
+    handleUpdateOrder(order.id, { paymentStatus: newStatus });
+  };
+  
+  const handleWorkStatusChange = (orderId: string, status: string) => {
+    handleUpdateOrder(orderId, { workStatus: status });
+  };
+  
+  const handleVendorChange = (orderId: string, vendor: string) => {
+    handleUpdateOrder(orderId, { vendor });
+  };
+  
+  const handleThemeChange = (orderId: string, theme: string) => {
+    handleUpdateOrder(orderId, { theme });
+  };
+  
+  const handlePackageChange = (orderId: string, pkg: string) => {
+    // Find the package to get its price
+    const packageObj = packages.find((p) => p.name === pkg);
+    
+    if (packageObj) {
+      handleUpdateOrder(orderId, { 
+        package: pkg,
+        paymentAmount: packageObj.price 
+      });
+    } else {
+      handleUpdateOrder(orderId, { package: pkg });
+    }
+  };
+  
+  const handleViewOrderDetail = (order: Order) => {
+    setViewingOrder(order);
+    // In a real app, this would open a modal with order details
+    toast.info(`Melihat detail pesanan: ${order.clientName}`);
+  };
+  
+  const handleOpenEditDialog = (order: Order) => {
+    setEditingOrder(order);
+  };
+  
+  const handleSaveOrder = (orderId: string, data: Partial<Order>) => {
+    handleUpdateOrder(orderId, data);
+    toast.success("Pesanan berhasil diperbarui");
+  };
+  
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter(null);
+    setVendorFilter(null);
+  };
+  
+  // Get the title for the current month
+  const getMonthTitle = () => {
+    const normalizedMonth = month.toLowerCase();
+    const index = indonesianMonths.findIndex(m => m === normalizedMonth);
+    
+    if (index !== -1) {
+      return normalizedMonth.charAt(0).toUpperCase() + normalizedMonth.slice(1);
+    }
+    
+    return "Pesanan Bulanan";
+  };
+  
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Pesanan Bulan {capitalizedMonth}</h1>
-          <p className="text-muted-foreground text-sm">
-            Kelola pesanan undangan untuk bulan {capitalizedMonth}
-          </p>
-        </div>
-        <Button onClick={() => setIsAddModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">Pesanan {getMonthTitle()}</h1>
+        <Button onClick={() => setIsAddOrderOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
           Tambah Pesanan
         </Button>
       </div>
-
-      <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
-          {/* Statistics cards - only showing Total Orders, Revenue, Paid, Unpaid */}
-          {/* Total Orders */}
-          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
-            <div className="text-xs text-muted-foreground">Total Pesanan</div>
-            <div className="text-lg font-bold mt-1">{totalOrders}</div>
-          </div>
-          
-          {/* Total Revenue */}
-          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <CircleDollarSign className="h-3 w-3 text-muted-foreground" />
-              <div className="text-xs text-muted-foreground">Total Omset</div>
-            </div>
-            <div className="text-sm font-bold mt-1 text-wedding-primary">
-              {formatCurrency(totalRevenue)}
-            </div>
-          </div>
-          
-          {/* Paid Orders */}
-          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Check className="h-3 w-3 text-green-500" />
-              <div className="text-xs text-muted-foreground">Sudah Lunas</div>
-            </div>
-            <div className="text-sm font-bold mt-1 text-green-500">
-              {paidOrders} ({formatCurrency(paidAmount)})
-            </div>
-          </div>
-          
-          {/* Unpaid Orders */}
-          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <X className="h-3 w-3 text-red-500" />
-              <div className="text-xs text-muted-foreground">Belum Lunas</div>
-            </div>
-            <div className="text-sm font-bold mt-1 text-red-500">
-              {unpaidOrders} ({formatCurrency(unpaidAmount)})
-            </div>
-          </div>
+      
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari pesanan..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto justify-between">
+                <span className="flex items-center">
+                  <Filter className="mr-2 h-4 w-4" />
+                  {statusFilter ? `Status: ${statusFilter}` : "Filter Status"}
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem
+                onClick={() => setStatusFilter(null)}
+                className="justify-between"
+              >
+                Semua Status
+                {!statusFilter && (
+                  <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                    Aktif
+                  </span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {workStatuses.map((status) => (
+                <DropdownMenuItem
+                  key={status.id}
+                  onClick={() => setStatusFilter(status.name)}
+                  className="justify-between"
+                >
+                  <div className="flex items-center">
+                    <div
+                      className="w-2 h-2 mr-2 rounded-full"
+                      style={{ backgroundColor: status.color }}
+                    />
+                    {status.name}
+                  </div>
+                  {statusFilter === status.name && (
+                    <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full sm:w-auto justify-between">
+                <span className="flex items-center">
+                  <SlidersHorizontal className="mr-2 h-4 w-4" />
+                  {vendorFilter ? `Vendor: ${vendorFilter}` : "Filter Vendor"}
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem
+                onClick={() => setVendorFilter(null)}
+                className="justify-between"
+              >
+                Semua Vendor
+                {!vendorFilter && (
+                  <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                    Aktif
+                  </span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {vendors.map((vendor) => (
+                <DropdownMenuItem
+                  key={vendor.id}
+                  onClick={() => setVendorFilter(vendor.id)}
+                  className="justify-between"
+                >
+                  <div className="flex items-center">
+                    <div
+                      className="w-2 h-2 mr-2 rounded-full"
+                      style={{ backgroundColor: vendor.color }}
+                    />
+                    {vendor.name}
+                  </div>
+                  {vendorFilter === vendor.id && (
+                    <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                      Aktif
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {(searchQuery || statusFilter || vendorFilter) && (
+            <Button variant="ghost" onClick={clearFilters} className="sm:flex hidden">
+              Reset
+            </Button>
+          )}
+        </div>
+        
+        {(searchQuery || statusFilter || vendorFilter) && (
+          <Button variant="ghost" onClick={clearFilters} className="sm:hidden flex">
+            Reset
+          </Button>
+        )}
       </div>
-
-      <OrderFilter
-        onFilter={handleFilter}
-        vendors={vendorNames}
-        workStatuses={workStatusNames}
-      />
-
-      <OrderTable 
-        orders={filteredOrders} 
-        vendors={availableVendors} 
-        workStatuses={workStatusNames}
-        themes={availableThemes.map(theme => theme.name)} 
-        onUpdateOrder={handleUpdateOrder}
-        addons={addons} 
+      
+      {filteredOrders.length === 0 ? (
+        <div className="bg-muted rounded-lg p-8 text-center">
+          <h3 className="text-lg font-medium mb-2">Tidak ada pesanan</h3>
+          <p className="text-muted-foreground mb-4">
+            Belum ada pesanan untuk {getMonthTitle()} atau tidak ada pesanan yang cocok dengan filter.
+          </p>
+          <Button variant="outline" onClick={() => setIsAddOrderOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Tambah Pesanan Pertama
+          </Button>
+        </div>
+      ) : (
+        <>
+          {isMobile ? (
+            <div className="grid gap-4">
+              {filteredOrders.map((order) => (
+                <MobileOrderCard
+                  key={order.id}
+                  order={order}
+                  updatingOrders={updatingOrders}
+                  vendorColors={vendorColors}
+                  addonStyles={addonStyles}
+                  availableWorkStatuses={workStatuses}
+                  availablePackages={packages}
+                  vendors={vendors}
+                  themes={themes.map(t => t.name)}
+                  formatDate={formatDate}
+                  isPastDate={isPastDate}
+                  formatCurrency={formatCurrency}
+                  togglePaymentStatus={togglePaymentStatus}
+                  handleWorkStatusChange={handleWorkStatusChange}
+                  handleVendorChange={handleVendorChange}
+                  handleThemeChange={handleThemeChange}
+                  handlePackageChange={handlePackageChange}
+                  handleViewOrderDetail={handleViewOrderDetail}
+                  handleOpenEditDialog={handleOpenEditDialog}
+                  handleDeleteOrder={handleDeleteOrder}
+                />
+              ))}
+            </div>
+          ) : (
+            <OrderTable
+              orders={filteredOrders}
+              updatingOrders={updatingOrders}
+              vendorColors={vendorColors}
+              addonStyles={addonStyles}
+              workStatuses={workStatuses}
+              vendors={vendors}
+              packages={packages}
+              themes={themes}
+              formatDate={formatDate}
+              isPastDate={isPastDate}
+              formatCurrency={formatCurrency}
+              togglePaymentStatus={togglePaymentStatus}
+              handleWorkStatusChange={handleWorkStatusChange}
+              handleVendorChange={handleVendorChange}
+              handleThemeChange={handleThemeChange}
+              handlePackageChange={handlePackageChange}
+              handleViewOrderDetail={handleViewOrderDetail}
+              handleOpenEditDialog={handleOpenEditDialog}
+              handleDeleteOrder={handleDeleteOrder}
+            />
+          )}
+        </>
+      )}
+      
+      {/* Modals */}
+      <AddOrderModal
+        isOpen={isAddOrderOpen}
+        onClose={() => setIsAddOrderOpen(false)}
+        onAddOrder={handleAddOrder}
+        vendors={vendors.map(v => v.id)}
+        workStatuses={workStatuses.map(s => s.name)}
+        addons={addons}
       />
       
-      <AddOrderModal 
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddOrder={handleAddOrder}
-        vendors={vendorNames} 
-        workStatuses={workStatusNames}
-        addons={addons} 
-      />
-
-      {/* Mobile Navigation */}
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 px-4 z-10">
-          <Button variant="ghost" size="sm" className="flex flex-col items-center text-xs">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-            </svg>
-            <span>Dashboard</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center text-xs text-wedding-primary">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-            </svg>
-            <span>Pesanan</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex flex-col items-center text-xs"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            <span>Tambah</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center text-xs">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <span>Pengaturan</span>
-          </Button>
-        </div>
+      {editingOrder && (
+        <EditOrderDialog
+          order={editingOrder}
+          isOpen={!!editingOrder}
+          onClose={() => setEditingOrder(null)}
+          onSave={handleSaveOrder}
+          vendors={vendors}
+          workStatuses={workStatuses}
+          themes={themes}
+          addons={addons}
+          packages={packages}
+        />
       )}
     </div>
   );

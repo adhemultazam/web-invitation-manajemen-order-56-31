@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -258,24 +259,18 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
             onValueChange={(value) => handleWorkStatusChange(order.id, value)}
             disabled={updatingOrders.has(order.id)}
           >
-            <SelectTrigger 
-              className="h-7 w-full text-xs px-2 mt-1 text-white"
-              style={{ backgroundColor: getStatusColor(order.workStatus) }}
-            >
+            <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
               <div className="flex items-center">
+                <div
+                  className="w-2 h-2 mr-1 rounded-full"
+                  style={{ backgroundColor: getStatusColor(order.workStatus) }}
+                />
                 <SelectValue>{order.workStatus}</SelectValue>
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent>
               {availableWorkStatuses.map((status) => (
-                <SelectItem 
-                  key={status.id} 
-                  value={status.name} 
-                  className="text-xs" 
-                  style={{
-                    borderLeft: `4px solid ${status.color}`
-                  }}
-                >
+                <SelectItem key={status.id} value={status.name} className="text-xs">
                   <div className="flex items-center">
                     <div
                       className="w-2 h-2 mr-1 rounded-full"
@@ -291,6 +286,6 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
       </div>
     </div>
   );
-}
+};
 
 export default MobileOrderCard;

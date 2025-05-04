@@ -27,6 +27,7 @@ export const loadAllOrders = (): Order[] => {
     }
   });
   
+  console.log("All orders loaded:", allOrders.length);
   return allOrders;
 };
 
@@ -37,10 +38,12 @@ export const loadInvoices = (): Invoice[] => {
     if (savedInvoices) {
       const parsedInvoices = JSON.parse(savedInvoices);
       // Ensure each invoice has the correct status type
-      return parsedInvoices.map((invoice: any) => ({
+      const typedInvoices = parsedInvoices.map((invoice: any) => ({
         ...invoice,
         status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
       }));
+      console.log("Loaded invoices:", typedInvoices.length);
+      return typedInvoices;
     }
   } catch (error) {
     console.error('Error loading invoices:', error);
@@ -126,14 +129,16 @@ export const markInvoiceAsPaid = (invoiceId: string): boolean => {
 
 // Check if an order is already included in any invoice
 export const isOrderInvoiced = (orderId: string, invoices: Invoice[]): boolean => {
+  if (!invoices || invoices.length === 0) return false;
+  
   return invoices.some(invoice => 
-    invoice.orders.some(order => order.orderId === orderId)
+    invoice.orders && invoice.orders.some(order => order.orderId === orderId)
   );
 };
 
 // Get available vendors with unpaid orders
 export const getVendorsWithUnpaidOrders = (orders: Order[], invoices: Invoice[]) => {
-  // Fix: We need to find paid (Lunas) orders that haven't been invoiced yet
+  // Find paid (Lunas) orders that haven't been invoiced yet
   const uninvoicedOrders = getUninvoicedOrders(orders, invoices);
   
   // Group paid orders by vendor ID
@@ -147,7 +152,8 @@ export const getVendorsWithUnpaidOrders = (orders: Order[], invoices: Invoice[])
       }
       vendorOrderCount[order.vendor]++;
     });
-    
+  
+  console.log("Vendor order counts:", vendorOrderCount);
   return vendorOrderCount;
 };
 

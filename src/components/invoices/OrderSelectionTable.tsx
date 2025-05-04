@@ -24,6 +24,9 @@ export function OrderSelectionTable({
   selectedOrders, 
   onOrderSelection 
 }: OrderSelectionTableProps) {
+  // Add debug log
+  console.log("OrderSelectionTable rendering with orders:", orders.length);
+  
   return (
     <div className="border rounded-md overflow-hidden">
       <Table>

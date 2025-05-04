@@ -5,7 +5,7 @@ import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { InvoiceFilter } from "@/components/invoices/InvoiceFilter";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { Plus } from "lucide-react";
-import { Invoice, Vendor, InvoiceFilter as InvoiceFilterType } from "@/types/types";
+import { Invoice, Vendor, InvoiceFilter as InvoiceFilterType, Order } from "@/types/types";
 import { toast } from "sonner";
 import { 
   loadInvoices, 
@@ -20,7 +20,7 @@ export default function Invoices() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [vendorsWithOrders, setVendorsWithOrders] = useState<Record<string, number>>({});
 
@@ -36,12 +36,15 @@ export default function Invoices() {
       // Load vendors from localStorage
       const storedVendors = localStorage.getItem("vendors");
       if (storedVendors) {
-        setVendors(JSON.parse(storedVendors));
+        const parsedVendors = JSON.parse(storedVendors);
+        setVendors(parsedVendors);
+        console.log("Loaded vendors:", parsedVendors.length);
       }
       
       // Load orders from all months
       const allOrders = loadAllOrders();
       setOrders(allOrders);
+      console.log("Loaded all orders in Invoices page:", allOrders.length);
       
       // Load invoices
       const savedInvoices = loadInvoices();

@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Order } from "@/types/types";
 import { InvoiceCurrency } from "./InvoiceCurrency";
 
@@ -36,6 +37,7 @@ export function OrderSelectionTable({
             <TableHead>ID</TableHead>
             <TableHead>Client</TableHead>
             <TableHead>Tgl Pesanan</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead className="text-right">Jumlah</TableHead>
           </TableRow>
         </TableHeader>
@@ -54,6 +56,11 @@ export function OrderSelectionTable({
                 <TableCell>{order.id.substring(0, 8)}</TableCell>
                 <TableCell>{order.clientName}</TableCell>
                 <TableCell>{format(new Date(order.orderDate), "dd MMM yyyy")}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                    {order.paymentStatus}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right font-medium">
                   <InvoiceCurrency amount={order.paymentAmount} />
                 </TableCell>
@@ -61,7 +68,7 @@ export function OrderSelectionTable({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                 Tidak ada pesanan untuk vendor ini
               </TableCell>
             </TableRow>

@@ -44,7 +44,7 @@ export function VendorSelectionDropdown({
                 </div>
                 {vendorOrderCounts[vendor.id] > 0 && (
                   <Badge variant="secondary" className="ml-2">
-                    {vendorOrderCounts[vendor.id]} pesanan
+                    {vendorOrderCounts[vendor.id]} pesanan pending
                   </Badge>
                 )}
               </div>

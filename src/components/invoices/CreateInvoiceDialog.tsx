@@ -65,7 +65,7 @@ export function CreateInvoiceDialog({
         <DialogHeader>
           <DialogTitle>Buat Invoice Baru</DialogTitle>
           <DialogDescription>
-            Pilih vendor dan pesanan untuk membuat invoice baru
+            Pilih vendor dan pesanan belum dibayar (Pending) untuk membuat invoice baru
           </DialogDescription>
         </DialogHeader>
 
@@ -79,7 +79,7 @@ export function CreateInvoiceDialog({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Daftar Pesanan</Label>
+              <Label>Daftar Pesanan Belum Dibayar</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="selectAll" 
@@ -102,7 +102,7 @@ export function CreateInvoiceDialog({
                 />
               ) : (
                 <div className="border rounded-md p-4 text-center text-muted-foreground">
-                  Tidak ada pesanan yang tersedia untuk vendor ini
+                  Tidak ada pesanan yang belum dibayar untuk vendor ini
                 </div>
               )
             ) : (

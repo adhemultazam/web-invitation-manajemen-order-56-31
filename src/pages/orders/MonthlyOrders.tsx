@@ -243,6 +243,22 @@ export default function MonthlyOrders() {
   };
 
   const handleUpdateOrder = (id: string, data: Partial<Order>) => {
+    // Check if this is a delete operation
+    if (data.deleted) {
+      console.log("Deleting order:", id);
+      // Filter out the order with the matching ID
+      const updatedOrders = orders.filter(order => order.id !== id);
+      setOrders(updatedOrders);
+      setFilteredOrders(updatedOrders.filter(order => 
+        filteredOrders.some(fo => fo.id === order.id)
+      ));
+      
+      // Save to localStorage
+      saveOrdersToStorage(month, updatedOrders);
+      return;
+    }
+    
+    // This is a regular update operation
     const updatedOrders = orders.map(order => 
       order.id === id ? { ...order, ...data } : order
     );

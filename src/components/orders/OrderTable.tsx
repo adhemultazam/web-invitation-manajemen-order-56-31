@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -270,35 +269,13 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const confirmDeleteOrder = () => {
     if (!orderToDelete) return;
     
-    // Find current month from order date
-    const orderDate = new Date(orderToDelete.orderDate);
-    const monthNames = [
-      "januari", "februari", "maret", "april", "mei", "juni",
-      "juli", "agustus", "september", "oktober", "november", "desember"
-    ];
-    const monthIndex = orderDate.getMonth();
-    const monthKey = `orders_${monthNames[monthIndex]}`;
+    // This is a problem - we're directly calling onUpdateOrder but not actually removing it from the orders array
+    // Instead, we need to pass information to the parent to handle the actual deletion
+    onUpdateOrder(orderToDelete.id, { deleted: true });
     
-    try {
-      // Get all orders for the month
-      const storedOrders = localStorage.getItem(monthKey);
-      if (storedOrders) {
-        const parsedOrders = JSON.parse(storedOrders);
-        const updatedOrders = parsedOrders.filter((o: Order) => o.id !== orderToDelete.id);
-        localStorage.setItem(monthKey, JSON.stringify(updatedOrders));
-        
-        // Notify parent component to update its state
-        onUpdateOrder(orderToDelete.id, { id: orderToDelete.id });
-        
-        toast.success(`Pesanan ${orderToDelete.clientName} berhasil dihapus`);
-      }
-    } catch (e) {
-      console.error("Error deleting order:", e);
-      toast.error("Gagal menghapus pesanan");
-    } finally {
-      setDeleteDialogOpen(false);
-      setOrderToDelete(null);
-    }
+    toast.success(`Pesanan ${orderToDelete.clientName} berhasil dihapus`);
+    setDeleteDialogOpen(false);
+    setOrderToDelete(null);
   };
 
   // Render for mobile view

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Order } from "@/types/types";
+import { Order, Vendor } from "@/types/types";
 import OrderAddons from "./OrderAddons";
 import PaymentStatusBadge from "./PaymentStatusBadge";
 import WorkStatusSelect from "./WorkStatusSelect";
@@ -18,7 +18,7 @@ interface OrderTableRowProps {
   addonStyles: Record<string, { color: string }>;
   availableWorkStatuses: WorkStatus[];
   availablePackages: Package[];
-  vendors: string[];
+  vendors: Vendor[];
   themes: string[];
   formatDate: (date: string) => string;
   isPastDate: (date: string) => boolean;
@@ -88,7 +88,6 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           vendor={order.vendor} 
           vendors={vendors}
           isDisabled={updatingOrders.has(order.id)}
-          vendorColors={vendorColors}
           onChange={(value) => handleVendorChange(order.id, value)}
         />
       </TableCell>

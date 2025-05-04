@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -52,7 +51,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
       const parsedVendors = loadVendorsFromStorage();
       const colors: Record<string, string> = {};
       parsedVendors.forEach(vendor => {
-        colors[vendor.name] = vendor.color || '#6366f1'; // Default to indigo if no color
+        colors[vendor.id] = vendor.color || '#6366f1'; // Store colors by ID instead of name
       });
       setVendorColors(colors);
       setAvailableVendors(parsedVendors);
@@ -183,7 +182,9 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
         return newSet;
       });
       
-      toast.success(`Vendor diubah menjadi ${newVendor}`);
+      // Find vendor name by ID for the toast message
+      const vendorName = availableVendors.find(v => v.id === newVendor)?.name || newVendor;
+      toast.success(`Vendor diubah menjadi ${vendorName}`);
     }, 500);
   };
 
@@ -237,6 +238,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     onUpdateOrder(id, data);
   };
 
+  // Render for mobile view
   if (isMobile) {
     return (
       <>
@@ -255,7 +257,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 addonStyles={addonStyles}
                 availableWorkStatuses={availableWorkStatuses}
                 availablePackages={availablePackages}
-                vendors={vendors}
+                vendors={availableVendors}
                 themes={themes}
                 formatDate={formatDate}
                 isPastDate={isPastDate}
@@ -292,6 +294,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     );
   }
 
+  // Desktop view
   return (
     <>
       <div className="rounded-md border overflow-hidden">
@@ -315,7 +318,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     addonStyles={addonStyles}
                     availableWorkStatuses={availableWorkStatuses}
                     availablePackages={availablePackages}
-                    vendors={vendors}
+                    vendors={availableVendors}
                     themes={themes}
                     formatDate={formatDate}
                     isPastDate={isPastDate}

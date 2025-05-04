@@ -8,24 +8,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Vendor } from "@/types/types";
 
 interface VendorDropdownProps {
   vendor: string;
-  vendors: string[];
+  vendors: Vendor[];
   isDisabled: boolean;
-  vendorColors: Record<string, string>;
-  onChange: (vendor: string) => void;
+  onChange: (vendorId: string) => void;
 }
 
 const VendorDropdown: React.FC<VendorDropdownProps> = ({
   vendor,
   vendors,
   isDisabled,
-  vendorColors,
   onChange,
 }) => {
-  const getVendorColorStyle = (vendor: string) => {
-    const color = vendorColors[vendor] || '#6366f1';
+  // Find the selected vendor object from the vendor ID
+  const selectedVendor = vendors.find(v => v.id === vendor);
+  
+  // Get vendor color for styling
+  const getVendorColorStyle = (vendorId: string) => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    const color = vendor?.color || '#6366f1';
     return {
       backgroundColor: color,
       color: '#fff'
@@ -42,18 +46,18 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
           style={getVendorColorStyle(vendor)}
           disabled={isDisabled}
         >
-          <span className="truncate">{vendor}</span>
+          <span className="truncate">{selectedVendor?.name || "Not set"}</span>
           <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {vendors.map((vendorOption) => (
           <DropdownMenuItem
-            key={vendorOption}
-            onClick={() => onChange(vendorOption)}
-            className={vendorOption === vendor ? "font-medium" : ""}
+            key={vendorOption.id}
+            onClick={() => onChange(vendorOption.id)}
+            className={vendorOption.id === vendor ? "font-medium" : ""}
           >
-            {vendorOption}
+            {vendorOption.name}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

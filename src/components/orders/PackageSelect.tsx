@@ -22,6 +22,24 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
   isDisabled,
   onChange,
 }) => {
+  // Try to load last selected package from localStorage when initializing
+  useEffect(() => {
+    if (!value && packages.length > 0) {
+      try {
+        const lastPackage = localStorage.getItem('last_selected_package');
+        if (lastPackage) {
+          // Check if the stored package exists in the current packages list
+          const exists = packages.some(pkg => pkg.name === lastPackage);
+          if (exists) {
+            onChange(lastPackage);
+          }
+        }
+      } catch (e) {
+        console.error("Error loading package from localStorage:", e);
+      }
+    }
+  }, [packages, value, onChange]);
+
   // Save selected package to localStorage when it changes
   useEffect(() => {
     try {

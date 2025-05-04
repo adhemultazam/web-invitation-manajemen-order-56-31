@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -51,25 +51,50 @@ export function EditOrderDialog({
   addons,
   packages = []
 }: EditOrderDialogProps) {
-  const [selectedAddons, setSelectedAddons] = useState<string[]>(order?.addons || []);
-
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  
+  // Initialize the form with default values
   const form = useForm({
     defaultValues: {
-      customerName: order?.customerName || "",
-      clientName: order?.clientName || "",
-      clientUrl: order?.clientUrl || "",
-      orderDate: order?.orderDate || "",
-      eventDate: order?.eventDate || "",
-      vendor: order?.vendor || "",
-      package: order?.package || "",
-      theme: order?.theme || "",
-      paymentStatus: order?.paymentStatus || "Pending",
-      paymentAmount: order?.paymentAmount || 0,
-      workStatus: order?.workStatus || "",
-      postPermission: order?.postPermission || false,
-      notes: order?.notes || "",
+      customerName: "",
+      clientName: "",
+      clientUrl: "",
+      orderDate: "",
+      eventDate: "",
+      vendor: "",
+      package: "",
+      theme: "",
+      paymentStatus: "Pending",
+      paymentAmount: 0,
+      workStatus: "",
+      postPermission: false,
+      notes: "",
     },
   });
+  
+  // Update form values when order changes or dialog opens
+  useEffect(() => {
+    if (order && isOpen) {
+      form.reset({
+        customerName: order.customerName || "",
+        clientName: order.clientName || "",
+        clientUrl: order.clientUrl || "",
+        orderDate: order.orderDate || "",
+        eventDate: order.eventDate || "",
+        vendor: order.vendor || "",
+        package: order.package || "",
+        theme: order.theme || "",
+        paymentStatus: order.paymentStatus || "Pending",
+        paymentAmount: order.paymentAmount || 0,
+        workStatus: order.workStatus || "",
+        postPermission: order.postPermission || false,
+        notes: order.notes || "",
+      });
+      
+      // Initialize selected addons from order
+      setSelectedAddons(order.addons || []);
+    }
+  }, [order, isOpen, form]);
 
   const onSubmit = (values: any) => {
     const data: Partial<Order> = {
@@ -109,6 +134,12 @@ export function EditOrderDialog({
   const getAddonColor = (addonId: string) => {
     const addon = addons.find(a => a.id === addonId);
     return addon?.color || '#6E6E6E';
+  };
+
+  // Find the correct vendor name for display
+  const getVendorName = (vendorId: string) => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    return vendor ? vendor.name : vendorId;
   };
 
   return (
@@ -229,15 +260,25 @@ export function EditOrderDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Vendor</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Pilih vendor" />
+                          <SelectValue placeholder="Pilih vendor">
+                            {field.value ? getVendorName(field.value) : "Pilih vendor"}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {vendors.map((vendor) => (
-                          <SelectItem key={vendor.id} value={vendor.id}>{vendor.name}</SelectItem>
+                          <SelectItem key={vendor.id} value={vendor.id}>
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-2 rounded-full"
+                                style={{ backgroundColor: vendor.color }}
+                              />
+                              {vendor.name}
+                            </div>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -250,7 +291,7 @@ export function EditOrderDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Paket</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih paket" />
@@ -306,7 +347,7 @@ export function EditOrderDialog({
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex items-center space-x-4"
                       >
                         <div className="flex items-center space-x-2">
@@ -347,7 +388,7 @@ export function EditOrderDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status Pengerjaan</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih status" />
@@ -355,7 +396,15 @@ export function EditOrderDialog({
                       </FormControl>
                       <SelectContent>
                         {workStatuses.map((status) => (
-                          <SelectItem key={status.id} value={status.name}>{status.name}</SelectItem>
+                          <SelectItem key={status.id} value={status.name}>
+                            <div className="flex items-center">
+                              <div
+                                className="w-2 h-2 mr-2 rounded-full"
+                                style={{ backgroundColor: status.color }}
+                              />
+                              {status.name}
+                            </div>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -368,7 +417,7 @@ export function EditOrderDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tema</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih tema" />

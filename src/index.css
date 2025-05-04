@@ -174,4 +174,25 @@
   @apply bg-white/90 text-wedding-primary font-semibold;
 }
 
-/* Keep other styles unaffected */
+/* Styling for vendor and work status dropdowns */
+.work-status-dropdown button {
+  @apply h-8 text-xs py-0 px-2;
+}
+
+.vendor-select-trigger {
+  @apply h-8 text-xs py-0 px-2;
+}
+
+/* Better dropdown styling for dark mode */
+.dark .dropdown-menu-content {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .dropdown-menu-item {
+  @apply hover:bg-gray-700;
+}
+
+/* Fix for button-style dropdowns in dark mode */
+.dark .dropdown-button {
+  @apply border-gray-700;
+}

@@ -1,13 +1,12 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Vendor } from "@/types/types";
 
 interface VendorDropdownProps {
@@ -26,42 +25,35 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
   // Find the selected vendor object from the vendor ID
   const selectedVendor = vendors.find(v => v.id === vendor);
   
-  // Get vendor color for styling
-  const getVendorColorStyle = (vendorId: string) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    const color = vendor?.color || '#6366f1';
-    return {
-      backgroundColor: color,
-      color: '#fff'
-    };
-  };
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex justify-between w-full min-w-[120px]"
-          style={getVendorColorStyle(vendor)}
-          disabled={isDisabled}
-        >
-          <span className="truncate">{selectedVendor?.name || "Not set"}</span>
-          <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+    <Select
+      value={vendor}
+      onValueChange={onChange}
+      disabled={isDisabled}
+    >
+      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+        <div className="flex items-center">
+          <div
+            className="w-2 h-2 mr-1 rounded-full"
+            style={{ backgroundColor: selectedVendor?.color || '#6E6E6E' }}
+          />
+          <SelectValue>{selectedVendor?.name || "Not set"}</SelectValue>
+        </div>
+      </SelectTrigger>
+      <SelectContent>
         {vendors.map((vendorOption) => (
-          <DropdownMenuItem
-            key={vendorOption.id}
-            onClick={() => onChange(vendorOption.id)}
-            className={vendorOption.id === vendor ? "font-medium" : ""}
-          >
-            {vendorOption.name}
-          </DropdownMenuItem>
+          <SelectItem key={vendorOption.id} value={vendorOption.id}>
+            <div className="flex items-center">
+              <div
+                className="w-2 h-2 mr-2 rounded-full"
+                style={{ backgroundColor: vendorOption.color }}
+              />
+              {vendorOption.name}
+            </div>
+          </SelectItem>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </SelectContent>
+    </Select>
   );
 };
 

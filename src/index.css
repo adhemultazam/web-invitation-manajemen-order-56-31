@@ -134,6 +134,16 @@
   @apply bg-gray-800 text-white border-gray-700;
 }
 
+/* Fix for select components in dark mode */
+.dark [data-radix-select-trigger],
+.dark [data-radix-select-content] {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark [data-radix-select-item] {
+  @apply text-white hover:bg-gray-700;
+}
+
 /* Make invoices more readable in dark mode */
 .dark .invoice-content {
   @apply text-white;

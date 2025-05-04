@@ -51,91 +51,71 @@ export function OrderFilter({ onFilter, vendors, workStatuses }: OrderFilterProp
   };
 
   return (
-    <div className="bg-white rounded-md border p-4 mb-4 space-y-4">
-      <div className="flex items-center gap-2">
-        <Filter className="h-5 w-5 text-muted-foreground" />
-        <h3 className="font-medium">Filter Pesanan</h3>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="space-y-1.5">
-          <label htmlFor="search" className="text-sm font-medium">
-            Cari
-          </label>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search"
-              placeholder="Nama klien atau pemesan..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+    <div className="bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 p-3 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-medium">Filter Pesanan</h3>
         </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="status" className="text-sm font-medium">
-            Status Pengerjaan
-          </label>
-          <Select value={workStatus} onValueChange={setWorkStatus}>
-            <SelectTrigger id="status">
-              <SelectValue placeholder="Semua status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              {workStatuses.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="payment" className="text-sm font-medium">
-            Status Pembayaran
-          </label>
-          <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-            <SelectTrigger id="payment">
-              <SelectValue placeholder="Semua status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="Lunas">Lunas</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="vendor" className="text-sm font-medium">
-            Vendor/Reseller
-          </label>
-          <Select value={vendor} onValueChange={setVendor}>
-            <SelectTrigger id="vendor">
-              <SelectValue placeholder="Semua vendor" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Vendor</SelectItem>
-              {vendors.map((vendor) => (
-                <SelectItem key={vendor} value={vendor}>
-                  {vendor}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleReset} className="text-xs h-7 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+            Reset
+          </Button>
+          <Button size="sm" onClick={handleSearch} className="text-xs h-7">
+            Terapkan Filter
+          </Button>
         </div>
       </div>
       
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={handleReset}>
-          Reset
-        </Button>
-        <Button onClick={handleSearch}>
-          Terapkan Filter
-        </Button>
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Nama klien atau pemesan..."
+            className="pl-8 h-9 text-sm dark:bg-gray-800 dark:border-gray-700"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <Select value={workStatus} onValueChange={setWorkStatus}>
+          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
+            <SelectValue placeholder="Status Pengerjaan" />
+          </SelectTrigger>
+          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+            <SelectItem value="all">Semua Status Pengerjaan</SelectItem>
+            {workStatuses.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
+            <SelectValue placeholder="Status Pembayaran" />
+          </SelectTrigger>
+          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+            <SelectItem value="all">Semua Status Pembayaran</SelectItem>
+            <SelectItem value="Lunas">Lunas</SelectItem>
+            <SelectItem value="Pending">Pending</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={vendor} onValueChange={setVendor}>
+          <SelectTrigger className="h-9 text-sm dark:bg-gray-800 dark:border-gray-700">
+            <SelectValue placeholder="Vendor/Reseller" />
+          </SelectTrigger>
+          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+            <SelectItem value="all">Semua Vendor</SelectItem>
+            {vendors.map((vendor) => (
+              <SelectItem key={vendor} value={vendor}>
+                {vendor}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

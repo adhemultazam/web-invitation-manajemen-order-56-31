@@ -289,8 +289,6 @@ export default function MonthlyOrders() {
 
   // Calculate statistics
   const totalOrders = orders.length;
-  const completedOrders = orders.filter(order => order.workStatus === "Selesai").length;
-  const inProgressOrders = orders.filter(order => order.workStatus !== "Selesai").length;
   const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
   const unpaidOrders = orders.filter(order => order.paymentStatus !== "Lunas").length;
   
@@ -331,32 +329,16 @@ export default function MonthlyOrders() {
       </div>
 
       <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-          {/* Statistics cards */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2">
+          {/* Statistics cards - only showing Total Orders, Revenue, Paid, Unpaid */}
           {/* Total Orders */}
-          <div className="bg-white border rounded-md p-2 text-center">
+          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
             <div className="text-xs text-muted-foreground">Total Pesanan</div>
             <div className="text-lg font-bold mt-1">{totalOrders}</div>
           </div>
           
-          {/* Completed Orders */}
-          <div className="bg-white border rounded-md p-2 text-center">
-            <div className="text-xs text-muted-foreground">Selesai</div>
-            <div className="text-lg font-bold mt-1 text-green-500">
-              {completedOrders}
-            </div>
-          </div>
-          
-          {/* In Progress Orders */}
-          <div className="bg-white border rounded-md p-2 text-center">
-            <div className="text-xs text-muted-foreground">Progress</div>
-            <div className="text-lg font-bold mt-1 text-blue-500">
-              {inProgressOrders}
-            </div>
-          </div>
-          
           {/* Total Revenue */}
-          <div className="bg-white border rounded-md p-2 text-center">
+          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
             <div className="flex items-center justify-center gap-1">
               <CircleDollarSign className="h-3 w-3 text-muted-foreground" />
               <div className="text-xs text-muted-foreground">Total Omset</div>
@@ -367,7 +349,7 @@ export default function MonthlyOrders() {
           </div>
           
           {/* Paid Orders */}
-          <div className="bg-white border rounded-md p-2 text-center">
+          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
             <div className="flex items-center justify-center gap-1">
               <Check className="h-3 w-3 text-green-500" />
               <div className="text-xs text-muted-foreground">Sudah Lunas</div>
@@ -378,7 +360,7 @@ export default function MonthlyOrders() {
           </div>
           
           {/* Unpaid Orders */}
-          <div className="bg-white border rounded-md p-2 text-center">
+          <div className="bg-white dark:bg-gray-800 border rounded-md p-2 text-center">
             <div className="flex items-center justify-center gap-1">
               <X className="h-3 w-3 text-red-500" />
               <div className="text-xs text-muted-foreground">Belum Lunas</div>
@@ -398,20 +380,20 @@ export default function MonthlyOrders() {
 
       <OrderTable 
         orders={filteredOrders} 
-        vendors={availableVendors} // Pass vendor objects here
+        vendors={availableVendors} 
         workStatuses={workStatuses}
-        themes={availableThemes.map(theme => theme.name)} // Convert Theme[] to string[]
+        themes={availableThemes.map(theme => theme.name)} 
         onUpdateOrder={handleUpdateOrder}
-        addons={addons} // Now this properly matches the updated OrderTableProps interface
+        addons={addons} 
       />
       
       <AddOrderModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddOrder={handleAddOrder}
-        vendors={vendorNames} // This should remain as string[] for now
+        vendors={vendorNames} 
         workStatuses={workStatuses}
-        addons={addons} // Pass addons to AddOrderModal
+        addons={addons} 
       />
 
       {/* Mobile Navigation */}

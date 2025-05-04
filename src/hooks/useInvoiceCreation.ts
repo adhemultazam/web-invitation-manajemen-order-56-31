@@ -20,7 +20,6 @@ export function useInvoiceCreation(
   const [selectedVendor, setSelectedVendor] = useState<string>("");
   const [vendorOrders, setVendorOrders] = useState<Order[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [dueDate, setDueDate] = useState<Date>(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)); // 14 days from now
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [existingInvoices, setExistingInvoices] = useState([]);
   const [vendorOrderCounts, setVendorOrderCounts] = useState<Record<string, number>>({});
@@ -44,14 +43,22 @@ export function useInvoiceCreation(
 
   // Filter orders when vendor changes
   useEffect(() => {
+    console.log("Selected vendor changed:", selectedVendor);
+    console.log("Total orders available:", orders.length);
+    
     if (selectedVendor) {
-      // Use proper filtering for vendor orders
+      // Improved filtering for vendor orders
       const filteredOrders = orders.filter(order => {
-        return order.vendor === selectedVendor && 
-               order.paymentStatus === 'Lunas' && 
-               !isOrderInvoiced(order.id, existingInvoices);
+        const vendorMatch = order.vendor === selectedVendor;
+        const paymentStatus = order.paymentStatus === 'Lunas';
+        const notInvoiced = !isOrderInvoiced(order.id, existingInvoices);
+        
+        console.log(`Order ${order.id} - vendor match: ${vendorMatch}, payment status: ${paymentStatus}, not invoiced: ${notInvoiced}`);
+        
+        return vendorMatch && paymentStatus && notInvoiced;
       });
       
+      console.log("Filtered orders:", filteredOrders.length);
       setVendorOrders(filteredOrders);
       setSelectedOrders([]); // Reset selections when vendor changes
     } else {
@@ -76,8 +83,8 @@ export function useInvoiceCreation(
   };
 
   const handleCreateInvoice = () => {
-    if (!selectedVendor || selectedOrders.length === 0 || !dueDate) {
-      toast.error("Pilih vendor, pesanan, dan tanggal jatuh tempo");
+    if (!selectedVendor || selectedOrders.length === 0) {
+      toast.error("Pilih vendor dan pesanan");
       return;
     }
 
@@ -92,6 +99,10 @@ export function useInvoiceCreation(
       }
 
       const ordersToInvoice = vendorOrders.filter(order => selectedOrders.includes(order.id));
+      
+      // Generate invoice with current date + 14 days as due date
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 14); // 14 days from today
       
       const invoice = generateInvoice(
         selectedVendorObj.id,
@@ -125,8 +136,6 @@ export function useInvoiceCreation(
     setSelectedVendor,
     vendorOrders,
     selectedOrders,
-    dueDate,
-    setDueDate,
     isLoading,
     vendorOrderCounts,
     handleSelectAll,

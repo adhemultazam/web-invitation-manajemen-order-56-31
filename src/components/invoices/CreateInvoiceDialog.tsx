@@ -15,7 +15,6 @@ import { Order, Vendor } from "@/types/types";
 import { useInvoiceCreation } from "@/hooks/useInvoiceCreation";
 import { OrderSelectionTable } from "./OrderSelectionTable";
 import { VendorSelectionDropdown } from "./VendorSelectionDropdown";
-import { DueDatePicker } from "./DueDatePicker";
 import { InvoiceCurrency } from "./InvoiceCurrency";
 
 interface CreateInvoiceDialogProps {
@@ -38,8 +37,6 @@ export function CreateInvoiceDialog({
     setSelectedVendor,
     vendorOrders,
     selectedOrders,
-    dueDate,
-    setDueDate,
     isLoading,
     vendorOrderCounts,
     handleSelectAll,
@@ -64,11 +61,6 @@ export function CreateInvoiceDialog({
             selectedVendor={selectedVendor}
             vendorOrderCounts={vendorOrderCounts}
             onVendorChange={setSelectedVendor}
-          />
-
-          <DueDatePicker 
-            dueDate={dueDate} 
-            onDateChange={(date) => date && setDueDate(date)} 
           />
 
           <div className="space-y-2">

@@ -338,6 +338,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           workStatuses={availableWorkStatuses}
           themes={availableThemes}
           addons={availableAddons}
+          packages={availablePackages}
         />
 
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -425,6 +426,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
             workStatuses={availableWorkStatuses}
             themes={availableThemes}
             addons={availableAddons}
+            packages={availablePackages}
           />
         </>
       )}

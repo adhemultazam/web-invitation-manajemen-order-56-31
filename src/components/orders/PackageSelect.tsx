@@ -45,7 +45,7 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
       <SelectContent>
         {packages.map(pkg => (
           <SelectItem key={pkg.id} value={pkg.name}>
-            {pkg.name}
+            {pkg.name} - Rp {pkg.price?.toLocaleString()}
           </SelectItem>
         ))}
       </SelectContent>

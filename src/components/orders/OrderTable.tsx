@@ -12,14 +12,8 @@ import { Order, WorkStatus, Vendor, Package, Theme } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, Trash } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import VendorDropdown from "./VendorDropdown";
 
 interface OrderTableProps {
   orders: Order[];
@@ -120,34 +114,12 @@ export function OrderTable({
                   {order.countdownDays} hari
                 </TableCell>
                 <TableCell>
-                  <Select
-                    value={order.vendor}
-                    onValueChange={(value) => handleVendorChange(order.id, value)}
-                    disabled={updatingOrders.has(order.id)}
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <div className="flex items-center">
-                        <div
-                          className="w-2 h-2 mr-2 rounded-full"
-                          style={{ backgroundColor: vendorColors[order.vendor] || '#6366f1' }}
-                        />
-                        <SelectValue>{order.vendor}</SelectValue>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map((vendor) => (
-                        <SelectItem key={vendor.id} value={vendor.id} className="text-xs">
-                          <div className="flex items-center">
-                            <div
-                              className="w-2 h-2 mr-2 rounded-full"
-                              style={{ backgroundColor: vendor.color || '#6366f1' }}
-                            />
-                            {vendor.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <VendorDropdown
+                    vendor={order.vendor}
+                    vendors={vendors}
+                    isDisabled={updatingOrders.has(order.id)}
+                    onChange={(value) => handleVendorChange(order.id, value)}
+                  />
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   <Select
@@ -297,3 +269,12 @@ export function OrderTable({
     </div>
   );
 }
+
+// Missing import for Select components
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";

@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 
 export function PasswordSettingsForm() {
   const { user } = useAuth();
@@ -27,6 +27,9 @@ export function PasswordSettingsForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -75,6 +78,20 @@ export function PasswordSettingsForm() {
       console.error(error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    switch (field) {
+      case 'current':
+        setShowCurrentPassword(!showCurrentPassword);
+        break;
+      case 'new':
+        setShowNewPassword(!showNewPassword);
+        break;
+      case 'confirm':
+        setShowConfirmPassword(!showConfirmPassword);
+        break;
     }
   };
 
@@ -146,39 +163,93 @@ export function PasswordSettingsForm() {
       
       <div className="space-y-2">
         <Label htmlFor="current-password">Password Saat Ini</Label>
-        <Input
-          id="current-password"
-          name="currentPassword"
-          type="password"
-          value={formData.currentPassword}
-          onChange={handleChange}
-          required
-        />
+        <div className="relative">
+          <Input
+            id="current-password"
+            name="currentPassword"
+            type={showCurrentPassword ? "text" : "password"}
+            value={formData.currentPassword}
+            onChange={handleChange}
+            required
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
+            onClick={() => togglePasswordVisibility('current')}
+          >
+            {showCurrentPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+            <span className="sr-only">
+              {showCurrentPassword ? "Sembunyikan password" : "Tampilkan password"}
+            </span>
+          </Button>
+        </div>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="new-password">Password Baru</Label>
-          <Input
-            id="new-password"
-            name="newPassword"
-            type="password"
-            value={formData.newPassword}
-            onChange={handleChange}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="new-password"
+              name="newPassword"
+              type={showNewPassword ? "text" : "password"}
+              value={formData.newPassword}
+              onChange={handleChange}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
+              onClick={() => togglePasswordVisibility('new')}
+            >
+              {showNewPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {showNewPassword ? "Sembunyikan password" : "Tampilkan password"}
+              </span>
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="confirm-password">Konfirmasi Password</Label>
-          <Input
-            id="confirm-password"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="confirm-password"
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
+              onClick={() => togglePasswordVisibility('confirm')}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {showConfirmPassword ? "Sembunyikan password" : "Tampilkan password"}
+              </span>
+            </Button>
+          </div>
         </div>
       </div>
       

@@ -1,156 +1,199 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { InvoiceFilter } from "@/components/invoices/InvoiceFilter";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
-import { Plus } from "lucide-react";
-import { Invoice, Vendor, InvoiceFilter as InvoiceFilterType, Order } from "@/types/types";
-import { toast } from "sonner";
 import { 
-  loadInvoices, 
-  saveInvoices, 
-  loadAllOrders, 
-  markInvoiceAsPaid, 
-  getVendorsWithUnpaidOrders 
-} from "@/lib/invoiceUtils";
+  Invoice, 
+  Vendor, 
+  Order, 
+  InvoiceFilter as InvoiceFilterType 
+} from "@/types/types";
+import { toast } from "sonner";
+import { monthsInIndonesian } from "@/lib/utils";
 
 export default function Invoices() {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [vendorsWithOrders, setVendorsWithOrders] = useState<Record<string, number>>({});
+  const [filters, setFilters] = useState<InvoiceFilterType>({
+    vendor: undefined,
+    status: 'All',
+    sortBy: 'dueDate',
+    sortDirection: 'asc'
+  });
 
-  // Load data on component mount
-  useEffect(() => {
-    loadData();
-  }, []);
-  
-  const loadData = () => {
-    setIsLoading(true);
-    
+  // Load invoices from localStorage
+  const loadInvoices = () => {
     try {
-      // Load vendors from localStorage
-      const storedVendors = localStorage.getItem("vendors");
-      if (storedVendors) {
-        const parsedVendors = JSON.parse(storedVendors);
-        setVendors(parsedVendors);
-        console.log("Loaded vendors:", parsedVendors.length);
+      const savedInvoices = localStorage.getItem('invoices');
+      if (savedInvoices) {
+        const parsedInvoices = JSON.parse(savedInvoices);
+        setInvoices(parsedInvoices);
+        applyFilters(parsedInvoices, filters);
       }
-      
-      // Load orders from all months
-      const allOrders = loadAllOrders();
-      setOrders(allOrders);
-      console.log("Loaded all orders in Invoices page:", allOrders.length);
-      
-      // Load invoices
-      const savedInvoices = loadInvoices();
-      // Ensure the status property is correctly typed
-      const typedInvoices: Invoice[] = savedInvoices.map(invoice => ({
-        ...invoice,
-        status: (invoice.status === "Paid" ? "Paid" : "Unpaid") as "Paid" | "Unpaid"
-      }));
-      
-      setInvoices(typedInvoices);
-      setFilteredInvoices(typedInvoices);
-      
-      // Calculate vendors with uninvoiced orders
-      const vendorOrderCounts = getVendorsWithUnpaidOrders(allOrders, savedInvoices);
-      setVendorsWithOrders(vendorOrderCounts);
-      
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Gagal memuat data");
-    } finally {
-      setIsLoading(false);
+    } catch (e) {
+      console.error("Error loading invoices:", e);
+      toast.error("Gagal memuat data invoice");
     }
   };
-
-  const handleFilterChange = (filters: InvoiceFilterType) => {
-    let filtered = [...invoices];
+  
+  // Load vendors from localStorage
+  const loadVendors = () => {
+    try {
+      const savedVendors = localStorage.getItem('vendors');
+      if (savedVendors) {
+        setVendors(JSON.parse(savedVendors));
+      } else {
+        // Initialize with defaults if not found
+        const defaultVendors = [
+          { id: "v1", name: "Rizki Design", code: "RD", color: "#3b82f6" },
+          { id: "v2", name: "Putri Digital", code: "PD", color: "#8b5cf6" }
+        ];
+        localStorage.setItem('vendors', JSON.stringify(defaultVendors));
+        setVendors(defaultVendors);
+      }
+    } catch (e) {
+      console.error("Error loading vendors:", e);
+    }
+  };
+  
+  // Load orders from all months
+  const loadAllOrders = () => {
+    try {
+      const allOrders: Order[] = [];
+      
+      // Load orders from each month
+      monthsInIndonesian.forEach(month => {
+        const monthKey = `orders_${month.toLowerCase()}`;
+        const savedOrders = localStorage.getItem(monthKey);
+        
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
+          if (Array.isArray(parsedOrders)) {
+            // Map vendor name to vendorId if vendorId doesn't exist
+            const processedOrders = parsedOrders.map(order => {
+              // If order already has vendorId, use it
+              if (order.vendorId) return order;
+              
+              // Otherwise, try to find vendorId by vendor name
+              const vendor = vendors.find(v => v.name === order.vendor);
+              if (vendor) {
+                return { ...order, vendorId: vendor.id };
+              }
+              return order;
+            });
+            
+            allOrders.push(...processedOrders);
+          }
+        }
+      });
+      
+      console.log(`Loaded ${allOrders.length} orders from all months`);
+      setOrders(allOrders);
+    } catch (e) {
+      console.error("Error loading orders:", e);
+    }
+  };
+  
+  // Apply filters to invoices
+  const applyFilters = (invoiceList: Invoice[], currentFilters: InvoiceFilterType) => {
+    let filtered = [...invoiceList];
     
     // Filter by vendor
-    if (filters.vendor && filters.vendor !== "all") {
-      filtered = filtered.filter((invoice) => invoice.vendorId === filters.vendor);
+    if (currentFilters.vendor && currentFilters.vendor !== 'all') {
+      filtered = filtered.filter(invoice => invoice.vendorId === currentFilters.vendor);
     }
     
     // Filter by status
-    if (filters.status && filters.status !== "All") {
-      filtered = filtered.filter((invoice) => invoice.status === filters.status);
+    if (currentFilters.status !== 'All') {
+      filtered = filtered.filter(invoice => invoice.status === currentFilters.status);
     }
     
-    // Sort
-    if (filters.sortBy === "dueDate") {
-      filtered.sort((a, b) => {
-        const dateA = new Date(a.dueDate).getTime();
-        const dateB = new Date(b.dueDate).getTime();
-        return filters.sortDirection === "asc" ? dateA - dateB : dateB - dateA;
-      });
-    } else if (filters.sortBy === "amount") {
-      filtered.sort((a, b) => {
-        return filters.sortDirection === "asc"
-          ? a.totalAmount - b.totalAmount
-          : b.totalAmount - a.totalAmount;
-      });
+    // Sort by selected field
+    filtered.sort((a, b) => {
+      if (currentFilters.sortBy === 'dueDate') {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      } else {
+        return a.totalAmount - b.totalAmount;
+      }
+    });
+    
+    // Apply sort direction
+    if (currentFilters.sortDirection === 'desc') {
+      filtered.reverse();
     }
     
     setFilteredInvoices(filtered);
   };
-
+  
+  // Handle filter changes
+  const handleFilterChange = (newFilters: InvoiceFilterType) => {
+    setFilters(newFilters);
+    applyFilters(invoices, newFilters);
+  };
+  
+  // Mark invoice as paid
   const handleMarkAsPaid = (invoiceId: string) => {
-    const success = markInvoiceAsPaid(invoiceId);
-    if (success) {
-      // Update local state after marking as paid
-      const updatedInvoices = invoices.map((invoice) =>
-        invoice.id === invoiceId ? { ...invoice, status: "Paid" as "Paid" } : invoice
-      );
-      setInvoices(updatedInvoices);
-      setFilteredInvoices(
-        filteredInvoices.map((invoice) =>
-          invoice.id === invoiceId ? { ...invoice, status: "Paid" as "Paid" } : invoice
-        )
-      );
-      toast.success("Invoice berhasil ditandai sebagai lunas");
-    } else {
-      toast.error("Gagal mengubah status invoice");
+    const updatedInvoices = invoices.map(invoice => {
+      if (invoice.id === invoiceId) {
+        return { ...invoice, status: "Paid" };
+      }
+      return invoice;
+    });
+    
+    setInvoices(updatedInvoices);
+    applyFilters(updatedInvoices, filters);
+    
+    // Update local storage
+    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+    toast.success("Invoice berhasil ditandai sebagai lunas");
+  };
+  
+  // Load all data on component mount
+  useEffect(() => {
+    loadVendors();
+  }, []);
+  
+  useEffect(() => {
+    if (vendors.length > 0) {
+      loadAllOrders();
+      loadInvoices();
     }
-  };
-
-  const handleInvoiceCreated = () => {
-    loadData(); // Reload all data after creating a new invoice
-  };
-
-  // Count vendors with available orders
-  const vendorsWithAvailableOrders = Object.keys(vendorsWithOrders).length;
-
+  }, [vendors]);
+  
+  useEffect(() => {
+    applyFilters(invoices, filters);
+  }, [invoices, filters]);
+  
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Invoice</h1>
-          {vendorsWithAvailableOrders > 0 && (
-            <p className="text-sm text-muted-foreground">
-              {vendorsWithAvailableOrders} vendor memiliki pesanan yang belum dibuatkan invoice
-            </p>
-          )}
+          <h1 className="text-2xl font-bold tracking-tight">Invoice</h1>
+          <p className="text-muted-foreground">
+            Kelola semua invoice vendor
+          </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Buat Invoice Baru
+        <Button 
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="sm:w-auto w-full"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" /> Buat Invoice
         </Button>
       </div>
       
       <InvoiceFilter 
-        vendors={vendors}
+        vendors={vendors} 
         onFilterChange={handleFilterChange} 
       />
       
       <InvoiceTable 
         invoices={filteredInvoices} 
-        vendors={vendors}
+        vendors={vendors} 
         onMarkAsPaid={handleMarkAsPaid} 
       />
       
@@ -159,7 +202,7 @@ export default function Invoices() {
         onClose={() => setIsCreateDialogOpen(false)}
         vendors={vendors}
         orders={orders}
-        onInvoiceCreated={handleInvoiceCreated}
+        onInvoiceCreated={loadInvoices}
       />
     </div>
   );

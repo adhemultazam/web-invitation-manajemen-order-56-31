@@ -40,24 +40,32 @@ export function OrderSelectionTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell>
-                <Checkbox
-                  checked={selectedOrders.includes(order.id)}
-                  onCheckedChange={(checked) =>
-                    onOrderSelection(order.id, !!checked)
-                  }
-                />
-              </TableCell>
-              <TableCell>{order.id.substring(0, 8)}</TableCell>
-              <TableCell>{order.clientName}</TableCell>
-              <TableCell>{format(new Date(order.orderDate), "dd MMM yyyy")}</TableCell>
-              <TableCell className="text-right font-medium">
-                <InvoiceCurrency amount={order.paymentAmount} />
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedOrders.includes(order.id)}
+                    onCheckedChange={(checked) =>
+                      onOrderSelection(order.id, !!checked)
+                    }
+                  />
+                </TableCell>
+                <TableCell>{order.id.substring(0, 8)}</TableCell>
+                <TableCell>{order.clientName}</TableCell>
+                <TableCell>{format(new Date(order.orderDate), "dd MMM yyyy")}</TableCell>
+                <TableCell className="text-right font-medium">
+                  <InvoiceCurrency amount={order.paymentAmount} />
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                Tidak ada pesanan untuk vendor ini
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

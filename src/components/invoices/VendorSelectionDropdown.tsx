@@ -18,6 +18,9 @@ export function VendorSelectionDropdown({
   vendorOrderCounts,
   onVendorChange
 }: VendorSelectionDropdownProps) {
+  // Log for debugging
+  console.log("Vendor order counts:", vendorOrderCounts);
+  
   return (
     <div className="space-y-2">
       <Label htmlFor="vendor">Vendor</Label>
@@ -32,7 +35,13 @@ export function VendorSelectionDropdown({
           {vendors.map((vendor) => (
             <SelectItem key={vendor.id} value={vendor.id}>
               <div className="flex items-center justify-between w-full">
-                <span>{vendor.name}</span>
+                <div className="flex items-center">
+                  <div 
+                    className="w-2 h-2 rounded-full mr-2" 
+                    style={{ backgroundColor: vendor.color || "#6366f1" }}
+                  ></div>
+                  <span>{vendor.name}</span>
+                </div>
                 {vendorOrderCounts[vendor.id] > 0 && (
                   <Badge variant="secondary" className="ml-2">
                     {vendorOrderCounts[vendor.id]} pesanan
@@ -41,6 +50,11 @@ export function VendorSelectionDropdown({
               </div>
             </SelectItem>
           ))}
+          {vendors.length === 0 && (
+            <SelectItem value="no-vendor" disabled>
+              Tidak ada vendor tersedia
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
     </div>

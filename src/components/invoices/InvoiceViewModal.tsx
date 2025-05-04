@@ -172,12 +172,6 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
                       {invoice.status === "Paid" ? "LUNAS" : "BELUM LUNAS"}
                     </span>
                   </div>
-                  {invoice.status !== "Paid" && (
-                    <div className="flex justify-between mt-1 text-sm">
-                      <span>Jatuh Tempo:</span>
-                      <span>{format(new Date(invoice.dueDate), "dd MMMM yyyy")}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

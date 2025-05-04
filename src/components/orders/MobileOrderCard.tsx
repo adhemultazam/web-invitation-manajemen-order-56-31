@@ -1,7 +1,8 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, Trash } from "lucide-react";
 import { Order, WorkStatus, Vendor } from "@/types/types";
 import {
   Select,
@@ -30,6 +31,7 @@ interface MobileOrderCardProps {
   handlePackageChange: (orderId: string, pkg: string) => void;
   handleViewOrderDetail: (order: Order) => void;
   handleOpenEditDialog: (order: Order) => void;
+  handleDeleteOrder: (order: Order) => void;
 }
 
 const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
@@ -51,6 +53,7 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
   handlePackageChange,
   handleViewOrderDetail,
   handleOpenEditDialog,
+  handleDeleteOrder,
 }) => {
   const getPaymentStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -106,6 +109,14 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
             onClick={() => handleOpenEditDialog(order)}
           >
             <Edit className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+            onClick={() => handleDeleteOrder(order)}
+          >
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       </div>

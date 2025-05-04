@@ -1,16 +1,17 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, Trash } from "lucide-react";
 import { Order } from "@/types/types";
 
 interface OrderActionsProps {
   order: Order;
   onView: (order: Order) => void;
   onEdit: (order: Order) => void;
+  onDelete: (order: Order) => void;
 }
 
-const OrderActions: React.FC<OrderActionsProps> = ({ order, onView, onEdit }) => {
+const OrderActions: React.FC<OrderActionsProps> = ({ order, onView, onEdit, onDelete }) => {
   return (
     <div className="flex items-center justify-end gap-1">
       <Button
@@ -28,6 +29,14 @@ const OrderActions: React.FC<OrderActionsProps> = ({ order, onView, onEdit }) =>
         onClick={() => onEdit(order)}
       >
         <Edit className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+        onClick={() => onDelete(order)}
+      >
+        <Trash className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

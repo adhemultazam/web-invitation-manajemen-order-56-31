@@ -12,16 +12,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Eye, Check } from "lucide-react";
+import { Eye, Check, Trash } from "lucide-react";
 import { InvoiceViewModal } from "./InvoiceViewModal";
 
 interface InvoiceTableProps {
   invoices: Invoice[];
   vendors: Vendor[];
   onMarkAsPaid: (invoiceId: string) => void;
+  onDeleteInvoice: (invoiceId: string) => void;
 }
 
-export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTableProps) {
+export function InvoiceTable({ invoices, vendors, onMarkAsPaid, onDeleteInvoice }: InvoiceTableProps) {
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
   const [defaultAddons, setDefaultAddons] = useState<Addon[]>([]);
@@ -57,14 +58,6 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
     }).format(amount);
   };
   
-  const getDaysRemaining = (dueDate: string): number => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-  
   // Function to get addon style based on its name
   const getAddonStyle = (addonName: string) => {
     const addonStyle = addonStyles[addonName];
@@ -81,7 +74,6 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
               <TableHead>Invoice #</TableHead>
               <TableHead>Jumlah Pesanan</TableHead>
               <TableHead className="text-right">Total</TableHead>
-              <TableHead>Jatuh Tempo</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
@@ -89,8 +81,6 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
           <TableBody>
             {invoices.length > 0 ? (
               invoices.map((invoice) => {
-                const daysRemaining = getDaysRemaining(invoice.dueDate);
-                
                 return (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">
@@ -100,21 +90,6 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
                     <TableCell>{invoice.orders.length} pesanan</TableCell>
                     <TableCell className="text-right font-medium">
                       {formatCurrency(invoice.totalAmount)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span>{format(new Date(invoice.dueDate), "dd MMM yyyy")}</span>
-                        {invoice.status === "Unpaid" && (
-                          <Badge 
-                            variant={daysRemaining < 0 ? "destructive" : daysRemaining <= 7 ? "default" : "outline"}
-                            className="w-fit mt-1"
-                          >
-                            {daysRemaining < 0 
-                              ? `Terlambat ${Math.abs(daysRemaining)} hari` 
-                              : `${daysRemaining} hari lagi`}
-                          </Badge>
-                        )}
-                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge 
@@ -144,6 +119,14 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
                             <Check className="h-4 w-4" />
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-600 border-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => onDeleteInvoice(invoice.id)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -151,7 +134,7 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid }: InvoiceTablePr
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Tidak ada data invoice
                 </TableCell>
               </TableRow>

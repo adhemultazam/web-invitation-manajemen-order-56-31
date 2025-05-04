@@ -13,6 +13,7 @@ import {
 } from "@/types/types";
 import { toast } from "sonner";
 import { monthsInIndonesian } from "@/lib/utils";
+import { markInvoiceAsPaid } from "@/lib/invoiceUtils";
 
 export default function Invoices() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -122,7 +123,7 @@ export default function Invoices() {
     // Sort by selected field
     filtered.sort((a, b) => {
       if (currentFilters.sortBy === 'dueDate') {
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        return new Date(a.dateIssued).getTime() - new Date(b.dateIssued).getTime();
       } else {
         return a.totalAmount - b.totalAmount;
       }
@@ -144,19 +145,32 @@ export default function Invoices() {
   
   // Mark invoice as paid
   const handleMarkAsPaid = (invoiceId: string) => {
-    const updatedInvoices = invoices.map(invoice => {
-      if (invoice.id === invoiceId) {
-        return { ...invoice, status: "Paid" as "Paid" };
-      }
-      return invoice;
-    });
-    
-    setInvoices(updatedInvoices);
-    applyFilters(updatedInvoices, filters);
-    
-    // Update local storage
-    localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
-    toast.success("Invoice berhasil ditandai sebagai lunas");
+    if (markInvoiceAsPaid(invoiceId)) {
+      loadInvoices(); // Reload all invoices after marking one as paid
+      toast.success("Invoice berhasil ditandai sebagai lunas");
+    } else {
+      toast.error("Gagal menandai invoice sebagai lunas");
+    }
+  };
+
+  // Delete invoice
+  const handleDeleteInvoice = (invoiceId: string) => {
+    try {
+      // Filter out the invoice to be deleted
+      const updatedInvoices = invoices.filter(invoice => invoice.id !== invoiceId);
+      
+      // Update state and localStorage
+      setInvoices(updatedInvoices);
+      localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+      
+      // Update filtered list
+      applyFilters(updatedInvoices, filters);
+      
+      toast.success("Invoice berhasil dihapus");
+    } catch (e) {
+      console.error("Error deleting invoice:", e);
+      toast.error("Gagal menghapus invoice");
+    }
   };
   
   // Load all data on component mount
@@ -200,7 +214,8 @@ export default function Invoices() {
       <InvoiceTable 
         invoices={filteredInvoices} 
         vendors={vendors} 
-        onMarkAsPaid={handleMarkAsPaid} 
+        onMarkAsPaid={handleMarkAsPaid}
+        onDeleteInvoice={handleDeleteInvoice}
       />
       
       <CreateInvoiceDialog

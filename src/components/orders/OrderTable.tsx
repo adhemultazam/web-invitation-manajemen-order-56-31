@@ -248,6 +248,38 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
     onUpdateOrder(id, data);
   };
 
+  const handleDeleteOrder = (order: Order) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus pesanan "${order.clientName}"?`)) {
+      // Find current month from order date
+      const orderDate = new Date(order.orderDate);
+      const monthNames = [
+        "januari", "februari", "maret", "april", "mei", "juni",
+        "juli", "agustus", "september", "oktober", "november", "desember"
+      ];
+      const monthIndex = orderDate.getMonth();
+      const monthKey = `orders_${monthNames[monthIndex]}`;
+      
+      try {
+        // Get all orders for the month
+        const storedOrders = localStorage.getItem(monthKey);
+        if (storedOrders) {
+          const parsedOrders = JSON.parse(storedOrders);
+          const updatedOrders = parsedOrders.filter((o: Order) => o.id !== order.id);
+          localStorage.setItem(monthKey, JSON.stringify(updatedOrders));
+          
+          // Update the current orders list
+          const newOrders = orders.filter(o => o.id !== order.id);
+          onUpdateOrder(order.id, { deleted: true }); // Use this to signal deletion to parent
+          
+          toast.success(`Pesanan ${order.clientName} berhasil dihapus`);
+        }
+      } catch (e) {
+        console.error("Error deleting order:", e);
+        toast.error("Gagal menghapus pesanan");
+      }
+    }
+  };
+
   // Render for mobile view
   if (isMobile) {
     return (
@@ -279,6 +311,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                 handlePackageChange={handlePackageChange}
                 handleViewOrderDetail={handleViewOrderDetail}
                 handleOpenEditDialog={handleOpenEditDialog}
+                handleDeleteOrder={handleDeleteOrder}
               />
             ))
           )}
@@ -340,6 +373,7 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
                     handlePackageChange={handlePackageChange}
                     handleViewOrderDetail={handleViewOrderDetail}
                     handleOpenEditDialog={handleOpenEditDialog}
+                    handleDeleteOrder={handleDeleteOrder}
                   />
                 ))
               )}

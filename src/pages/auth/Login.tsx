@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Lock, User } from "lucide-react";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true); // Default to true
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ export default function Login() {
     setIsLoading(true);
     
     try {
-      const success = await login(username, password);
+      const success = await login(username, password, rememberMe);
       
       if (success) {
         toast.success("Login berhasil!");
@@ -88,6 +90,16 @@ export default function Login() {
                     className="pl-9"
                   />
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 py-2">
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe} 
+                  onCheckedChange={(checked) => setRememberMe(!!checked)} 
+                />
+                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                  Ingat saya
+                </Label>
               </div>
               <Button className="w-full" type="submit" disabled={isLoading}>
                 {isLoading ? "Sedang memproses..." : "Login"}

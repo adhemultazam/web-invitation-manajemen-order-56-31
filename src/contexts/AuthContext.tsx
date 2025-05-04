@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Define types for auth
@@ -12,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<boolean>;
   logout: () => void;
   updateUser: (userData: User) => void;
 }
@@ -46,15 +45,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedAuth = localStorage.getItem('isAuthenticated');
+    const isRemembered = localStorage.getItem('rememberMe') === 'true';
     
-    if (storedUser && storedAuth === 'true') {
+    // Only restore the session if rememberMe was enabled
+    if (storedUser && storedAuth === 'true' && isRemembered) {
       setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
     }
   }, []);
 
   // Login function - mock implementation
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, rememberMe: boolean): Promise<boolean> => {
     // Mock validation (replace with real authentication)
     if ((email === 'admin@undangandigital.com' || email === 'admin') && password === 'admin123') {
       setUser(mockUser);
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Store in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(mockUser));
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('rememberMe', rememberMe ? 'true' : 'false');
       
       return true;
     }
@@ -75,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     localStorage.removeItem('isAuthenticated');
+    // We keep the rememberMe preference for next login
   };
 
   // Update user function

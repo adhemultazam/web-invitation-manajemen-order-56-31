@@ -149,3 +149,19 @@ export const getVendorsWithUnpaidOrders = (orders: Order[], invoices: Invoice[])
     
   return vendorOrderCount;
 };
+
+// Get vendor names from vendor IDs
+export const getVendorNames = (vendorIds: string[], vendors: any[]): Record<string, string> => {
+  const vendorNames: Record<string, string> = {};
+  
+  vendorIds.forEach(id => {
+    const vendor = vendors.find(v => v.id === id);
+    if (vendor) {
+      vendorNames[id] = vendor.name;
+    } else {
+      vendorNames[id] = 'Unknown Vendor';
+    }
+  });
+  
+  return vendorNames;
+};

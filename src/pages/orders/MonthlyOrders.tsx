@@ -1,13 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { OrderTable } from "@/components/orders/OrderTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { Button } from "@/components/ui/button";
 import { Plus, CircleDollarSign, Check, X } from "lucide-react";
-import { Order, Addon, Theme } from "@/types/types";
+import { Order, Addon, Theme, Vendor } from "@/types/types";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { loadVendorsFromStorage } from "@/components/orders/OrderUtils";
 
 // Mock data for orders
 const mockOrders: Order[] = [
@@ -130,6 +130,19 @@ const saveOrdersToStorage = (month: string, orders: Order[]): void => {
   }
 };
 
+// Helper function to load vendors from localStorage
+const loadVendorsFromStorage = (): Vendor[] => {
+  try {
+    const storedVendors = localStorage.getItem('vendors');
+    if (storedVendors) {
+      return JSON.parse(storedVendors);
+    }
+  } catch (e) {
+    console.error("Error loading vendors from localStorage:", e);
+  }
+  return [];
+};
+
 export default function MonthlyOrders() {
   const { month = "" } = useParams<{ month: string }>();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -137,6 +150,7 @@ export default function MonthlyOrders() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [availableThemes, setAvailableThemes] = useState<Theme[]>(themes);
+  const [availableVendors, setAvailableVendors] = useState<Vendor[]>([]);
   const isMobile = useIsMobile();
 
   // Capitalize the first letter of the month
@@ -164,8 +178,12 @@ export default function MonthlyOrders() {
     }
   }, [orders, month]);
 
-  // Try to fetch addons from settings
+  // Load vendors, addons, and themes from storage
   useEffect(() => {
+    // Load vendors from localStorage
+    const loadedVendors = loadVendorsFromStorage();
+    setAvailableVendors(loadedVendors);
+    
     // Load addons from localStorage
     const storedAddons = localStorage.getItem('addons');
     if (storedAddons) {
@@ -367,7 +385,7 @@ export default function MonthlyOrders() {
 
       <OrderTable 
         orders={filteredOrders} 
-        vendors={vendors}
+        vendors={availableVendors} // Pass vendor objects here
         workStatuses={workStatuses}
         themes={availableThemes.map(theme => theme.name)} // Convert Theme[] to string[]
         onUpdateOrder={handleUpdateOrder}
@@ -378,7 +396,7 @@ export default function MonthlyOrders() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddOrder={handleAddOrder}
-        vendors={vendors}
+        vendors={vendors} // This should remain as string[] for now
         workStatuses={workStatuses}
         addons={addons} // Pass addons to AddOrderModal
       />

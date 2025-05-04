@@ -27,7 +27,7 @@ interface EditOrderDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, data: Partial<Order>) => void;
-  vendors: string[];
+  vendors: string[]; // Keep as string[] for compatibility
   workStatuses: string[];
   themes: Theme[];
   addons: Addon[];

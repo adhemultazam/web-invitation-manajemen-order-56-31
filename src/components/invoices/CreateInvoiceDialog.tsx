@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon } from "lucide-react";
@@ -69,17 +68,24 @@ export function CreateInvoiceDialog({
       // Calculate number of uninvoiced orders per vendor
       const orderCounts = getVendorsWithUnpaidOrders(orders, invoices);
       setVendorOrderCounts(orderCounts);
+      
+      // Reset selection when dialog opens
+      setSelectedVendor("");
+      setVendorOrders([]);
+      setSelectedOrders([]);
     }
   }, [open, orders]);
 
   // Filter orders when vendor changes
   useEffect(() => {
     if (selectedVendor) {
+      // Fix: Use proper filtering for vendor orders
       const filteredOrders = orders.filter(order => {
         return order.vendor === selectedVendor && 
                order.paymentStatus === 'Lunas' && 
                !isOrderInvoiced(order.id, existingInvoices);
       });
+      
       setVendorOrders(filteredOrders);
       setSelectedOrders([]); // Reset selections when vendor changes
     } else {

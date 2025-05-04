@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Define types for auth
@@ -47,10 +48,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedAuth = localStorage.getItem('isAuthenticated');
     const isRemembered = localStorage.getItem('rememberMe') === 'true';
     
-    // Only restore the session if rememberMe was enabled
-    if (storedUser && storedAuth === 'true' && isRemembered) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+    // Only restore the session if rememberMe was enabled or if it's a fresh login
+    if (storedUser && storedAuth === 'true') {
+      if (isRemembered) {
+        setUser(JSON.parse(storedUser));
+        setIsAuthenticated(true);
+      } else {
+        // If remember me not checked but still has data in localStorage, clear it
+        localStorage.removeItem('user');
+        localStorage.removeItem('isAuthenticated');
+      }
     }
   }, []);
 

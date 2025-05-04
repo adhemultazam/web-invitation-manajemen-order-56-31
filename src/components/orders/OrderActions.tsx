@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, Trash } from "lucide-react";
+import { Edit, Eye, Trash2 } from "lucide-react";
 import { Order } from "@/types/types";
 
 interface OrderActionsProps {
@@ -36,7 +36,7 @@ const OrderActions: React.FC<OrderActionsProps> = ({ order, onView, onEdit, onDe
         className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
         onClick={() => onDelete(order)}
       >
-        <Trash className="h-3.5 w-3.5" />
+        <Trash2 className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

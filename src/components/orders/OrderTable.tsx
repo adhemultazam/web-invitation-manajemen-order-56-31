@@ -14,6 +14,17 @@ import { EditOrderDialog } from "./EditOrderDialog";
 import OrderTableHeader from "./OrderTableHeader";
 import OrderTableRow from "./OrderTableRow";
 import MobileOrderCard from "./MobileOrderCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { 
   formatCurrency, 
   formatDate, 
@@ -25,7 +36,7 @@ import {
 
 interface OrderTableProps {
   orders: Order[];
-  vendors: Vendor[];  // Changed from string[] to Vendor[]
+  vendors: Vendor[];
   workStatuses: string[];
   themes: string[];
   onUpdateOrder: (id: string, data: Partial<Order>) => void;
@@ -37,6 +48,8 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [vendorColors, setVendorColors] = useState<Record<string, string>>({});
   const [addonStyles, setAddonStyles] = useState<Record<string, {color: string}>>({});
   const [availableThemes, setAvailableThemes] = useState<Theme[]>([]);
@@ -250,34 +263,41 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
   };
 
   const handleDeleteOrder = (order: Order) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus pesanan "${order.clientName}"?`)) {
-      // Find current month from order date
-      const orderDate = new Date(order.orderDate);
-      const monthNames = [
-        "januari", "februari", "maret", "april", "mei", "juni",
-        "juli", "agustus", "september", "oktober", "november", "desember"
-      ];
-      const monthIndex = orderDate.getMonth();
-      const monthKey = `orders_${monthNames[monthIndex]}`;
-      
-      try {
-        // Get all orders for the month
-        const storedOrders = localStorage.getItem(monthKey);
-        if (storedOrders) {
-          const parsedOrders = JSON.parse(storedOrders);
-          const updatedOrders = parsedOrders.filter((o: Order) => o.id !== order.id);
-          localStorage.setItem(monthKey, JSON.stringify(updatedOrders));
-          
-          // Instead of using a non-existent 'deleted' property, we'll just notify the parent
-          // to update its state, by passing the ID to onUpdateOrder
-          onUpdateOrder(order.id, { id: order.id });
-          
-          toast.success(`Pesanan ${order.clientName} berhasil dihapus`);
-        }
-      } catch (e) {
-        console.error("Error deleting order:", e);
-        toast.error("Gagal menghapus pesanan");
+    setOrderToDelete(order);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteOrder = () => {
+    if (!orderToDelete) return;
+    
+    // Find current month from order date
+    const orderDate = new Date(orderToDelete.orderDate);
+    const monthNames = [
+      "januari", "februari", "maret", "april", "mei", "juni",
+      "juli", "agustus", "september", "oktober", "november", "desember"
+    ];
+    const monthIndex = orderDate.getMonth();
+    const monthKey = `orders_${monthNames[monthIndex]}`;
+    
+    try {
+      // Get all orders for the month
+      const storedOrders = localStorage.getItem(monthKey);
+      if (storedOrders) {
+        const parsedOrders = JSON.parse(storedOrders);
+        const updatedOrders = parsedOrders.filter((o: Order) => o.id !== orderToDelete.id);
+        localStorage.setItem(monthKey, JSON.stringify(updatedOrders));
+        
+        // Notify parent component to update its state
+        onUpdateOrder(orderToDelete.id, { id: orderToDelete.id });
+        
+        toast.success(`Pesanan ${orderToDelete.clientName} berhasil dihapus`);
       }
+    } catch (e) {
+      console.error("Error deleting order:", e);
+      toast.error("Gagal menghapus pesanan");
+    } finally {
+      setDeleteDialogOpen(false);
+      setOrderToDelete(null);
     }
   };
 
@@ -334,6 +354,27 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           themes={availableThemes}
           addons={availableAddons}
         />
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+              <AlertDialogDescription>
+                Apakah Anda yakin ingin menghapus pesanan "{orderToDelete?.clientName}"? 
+                Tindakan ini tidak dapat dibatalkan.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction 
+                className="bg-red-500 hover:bg-red-600"
+                onClick={confirmDeleteOrder}
+              >
+                Hapus
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </>
     );
   }
@@ -402,6 +443,27 @@ export function OrderTable({ orders, vendors, workStatuses, themes, onUpdateOrde
           />
         </>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus pesanan "{orderToDelete?.clientName}"? 
+              Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-500 hover:bg-red-600"
+              onClick={confirmDeleteOrder}
+            >
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

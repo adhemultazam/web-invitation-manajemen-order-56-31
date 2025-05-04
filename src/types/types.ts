@@ -11,6 +11,7 @@ export interface Vendor {
   phoneNumber?: string;
   email?: string;
   address?: string;
+  commission?: number; // Adding the missing commission property
 }
 
 // WorkStatus type
@@ -18,6 +19,7 @@ export interface WorkStatus {
   id: string;
   name: string;
   color: string;
+  description?: string;
 }
 
 // Theme type
@@ -26,6 +28,9 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category: string;
+  price?: number; // Adding missing price property
+  backgroundColor?: string; // Adding missing backgroundColor property
+  description?: string; // Adding missing description property
 }
 
 // Package type
@@ -33,6 +38,7 @@ export interface Package {
   id: string;
   name: string;
   price: number;
+  description?: string; // Adding missing description property
   features?: string[];
 }
 
@@ -42,6 +48,7 @@ export interface Addon {
   name: string;
   price?: number;
   color?: string;
+  description?: string;
 }
 
 // Order type
@@ -101,6 +108,8 @@ export interface Invoice {
   orders: InvoiceOrderItem[];
   totalAmount: number;
   status: "Paid" | "Unpaid";
+  paidDate?: string;
+  notes?: string;
 }
 
 // Invoice Filter type
@@ -109,4 +118,23 @@ export interface InvoiceFilter {
   status: "Paid" | "Unpaid" | "All";
   sortBy: "dueDate" | "amount";
   sortDirection: "asc" | "desc";
+}
+
+// Invoice Settings type
+export interface InvoiceSettings {
+  logoUrl?: string;
+  brandName?: string;
+  businessAddress?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  bankAccounts?: BankAccount[];
+  invoiceFooter?: string;
+}
+
+// User type
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
 }

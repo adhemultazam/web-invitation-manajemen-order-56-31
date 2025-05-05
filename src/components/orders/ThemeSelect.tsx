@@ -40,6 +40,11 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
   
   const [open, setOpen] = useState(false);
 
+  const handleSelect = (themeValue: string) => {
+    onChange(themeValue);
+    setOpen(false);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -54,7 +59,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" align="start">
         <Command>
           <CommandInput placeholder="Cari tema..." className="h-9" />
           <CommandList>
@@ -64,11 +69,8 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
                 <CommandItem
                   key={theme}
                   value={theme}
-                  onSelect={() => {
-                    onChange(theme);
-                    setOpen(false);
-                  }}
-                  className="text-sm"
+                  onSelect={() => handleSelect(theme)}
+                  className="text-sm cursor-pointer"
                 >
                   <Check
                     className={cn(

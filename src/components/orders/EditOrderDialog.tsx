@@ -8,25 +8,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { Order, Theme, Addon, Vendor, WorkStatus, Package } from "@/types/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CalendarIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { format, parse } from "date-fns";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
+import { Order, Theme, Addon, Vendor, WorkStatus, Package } from "@/types/types";
 
 interface EditOrderDialogProps {
   order: Order | null;
@@ -51,36 +45,37 @@ export function EditOrderDialog({
   addons,
   packages = []
 }: EditOrderDialogProps) {
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
-  
-  // Initialize the form with default values
-  const form = useForm({
-    defaultValues: {
-      customerName: "",
-      clientName: "",
-      clientUrl: "",
-      orderDate: "",
-      eventDate: "",
-      vendor: "",
-      package: "",
-      theme: "",
-      paymentStatus: "Pending",
-      paymentAmount: 0,
-      workStatus: "",
-      postPermission: false,
-      notes: "",
-    },
+  const [formData, setFormData] = useState<Partial<Order> & {
+    orderDate: string | Date;
+    eventDate: string | Date;
+  }>({
+    customerName: "",
+    clientName: "",
+    clientUrl: "",
+    orderDate: new Date(),
+    eventDate: new Date(),
+    vendor: "",
+    package: "",
+    theme: "",
+    paymentStatus: "Pending",
+    paymentAmount: 0,
+    workStatus: "",
+    postPermission: false,
+    notes: "",
+    addons: [],
   });
   
-  // Update form values when order changes or dialog opens
+  const [themeOpen, setThemeOpen] = useState(false);
+  
+  // Initialize form data when order changes or dialog opens
   useEffect(() => {
     if (order && isOpen) {
-      form.reset({
+      setFormData({
         customerName: order.customerName || "",
         clientName: order.clientName || "",
         clientUrl: order.clientUrl || "",
-        orderDate: order.orderDate || "",
-        eventDate: order.eventDate || "",
+        orderDate: order.orderDate ? parseISO(order.orderDate) : new Date(),
+        eventDate: order.eventDate ? parseISO(order.eventDate) : new Date(),
         vendor: order.vendor || "",
         package: order.package || "",
         theme: order.theme || "",
@@ -89,418 +84,406 @@ export function EditOrderDialog({
         workStatus: order.workStatus || "",
         postPermission: order.postPermission || false,
         notes: order.notes || "",
+        addons: order.addons || [],
       });
-      
-      // Initialize selected addons from order
-      setSelectedAddons(order.addons || []);
     }
-  }, [order, isOpen, form]);
+  }, [order, isOpen]);
 
-  const onSubmit = (values: any) => {
-    if (!order) return;
-    
-    const data: Partial<Order> = {
-      customerName: values.customerName,
-      clientName: values.clientName,
-      clientUrl: values.clientUrl,
-      orderDate: values.orderDate,
-      eventDate: values.eventDate,
-      vendor: values.vendor,
-      package: values.package,
-      theme: values.theme,
-      paymentStatus: values.paymentStatus,
-      paymentAmount: values.paymentAmount,
-      workStatus: values.workStatus,
-      postPermission: values.postPermission,
-      notes: values.notes,
-      addons: selectedAddons,
-    };
-
-    onSave(order.id, data);
-    onClose();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddonChange = (addonName: string) => {
-    setSelectedAddons((prevAddons) => {
-      if (prevAddons.includes(addonName)) {
-        return prevAddons.filter((name) => name !== addonName);
+  const handleSelectChange = (value: string, name: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // If package changes, update the payment amount
+    if (name === "package") {
+      const selectedPackage = packages.find(pkg => pkg.name === value);
+      if (selectedPackage) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [name]: value,
+          paymentAmount: selectedPackage.price
+        }));
+      }
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean, name: string) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleAddonToggle = (addonName: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentAddons = prev.addons || [];
+      if (checked) {
+        return { ...prev, addons: [...currentAddons, addonName] };
       } else {
-        return [...prevAddons, addonName];
+        return { ...prev, addons: currentAddons.filter(name => name !== addonName) };
       }
     });
   };
-
-  const getAddonColor = (addonName: string) => {
-    const addon = addons.find(a => a.name === addonName);
-    return addon?.color || '#6E6E6E';
-  };
-
-  // Find the correct vendor name for display
+  
   const getVendorName = (vendorId: string) => {
     const vendor = vendors.find(v => v.id === vendorId);
     return vendor ? vendor.name : vendorId;
   };
 
+  const getVendorColor = (vendorId: string) => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    return vendor ? vendor.color : '#6E6E6E';
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order) return;
+    
+    const updatedData: Partial<Order> = {
+      ...formData,
+      orderDate: formData.orderDate instanceof Date 
+        ? format(formData.orderDate, 'yyyy-MM-dd') 
+        : formData.orderDate,
+      eventDate: formData.eventDate instanceof Date 
+        ? format(formData.eventDate, 'yyyy-MM-dd') 
+        : formData.eventDate,
+    };
+
+    onSave(order.id, updatedData);
+    onClose();
+  };
+
+  if (!order) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] md:max-w-[600px] overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Pesanan</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Row 1 */}
-              <FormField
-                control={form.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama Pemesan</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nama pemesan" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="clientName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Client</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Contoh: Rizki & Putri" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              {/* Row 2 */}
-              <FormField
-                control={form.control}
-                name="orderDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Pemesanan</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "pl-3 text-left font-normal w-full",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(new Date(field.value), "dd MMM yyyy")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="eventDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Acara</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "pl-3 text-left font-normal w-full",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(new Date(field.value), "dd MMM yyyy")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value ? new Date(field.value) : undefined}
-                          onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )}
-              />
-              
-              {/* Row 3 */}
-              <FormField
-                control={form.control}
-                name="vendor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vendor</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih vendor">
-                            {field.value ? getVendorName(field.value) : "Pilih vendor"}
-                          </SelectValue>
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {vendors.map((vendor) => (
-                          <SelectItem key={vendor.id} value={vendor.id}>
-                            <div className="flex items-center">
-                              <div
-                                className="w-2 h-2 mr-2 rounded-full"
-                                style={{ backgroundColor: vendor.color }}
-                              />
-                              {vendor.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+        <form onSubmit={onSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <FormLabel>Paket & Tema</FormLabel>
+                <Label htmlFor="customerName">Nama Pemesan</Label>
+                <Input
+                  id="customerName"
+                  name="customerName"
+                  value={formData.customerName}
+                  onChange={handleInputChange}
+                  placeholder="Nama pemesan"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Client</Label>
+                <Input
+                  id="clientName"
+                  name="clientName"
+                  value={formData.clientName}
+                  onChange={handleInputChange}
+                  placeholder="Contoh: Rizki & Putri"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="orderDate">Tanggal Pemesanan</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.orderDate instanceof Date
+                        ? format(formData.orderDate, "PPP") 
+                        : formData.orderDate 
+                          ? format(parseISO(formData.orderDate), "PPP")
+                          : "Pilih tanggal"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.orderDate instanceof Date 
+                        ? formData.orderDate 
+                        : formData.orderDate ? parseISO(formData.orderDate) : undefined}
+                      onSelect={(date) => date && setFormData({...formData, orderDate: date})}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="eventDate">Tanggal Acara</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.eventDate instanceof Date
+                        ? format(formData.eventDate, "PPP") 
+                        : formData.eventDate 
+                          ? format(parseISO(formData.eventDate), "PPP")
+                          : "Pilih tanggal"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.eventDate instanceof Date 
+                        ? formData.eventDate 
+                        : formData.eventDate ? parseISO(formData.eventDate) : undefined}
+                      onSelect={(date) => date && setFormData({...formData, eventDate: date})}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="vendor">Vendor</Label>
+                <Select 
+                  value={formData.vendor} 
+                  onValueChange={(value) => handleSelectChange(value, "vendor")}
+                >
+                  <SelectTrigger id="vendor">
+                    <SelectValue>
+                      <div className="flex items-center">
+                        {formData.vendor && (
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: getVendorColor(formData.vendor) }}
+                          />
+                        )}
+                        {formData.vendor ? getVendorName(formData.vendor) : "Pilih vendor"}
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vendors.map((vendor) => (
+                      <SelectItem key={vendor.id} value={vendor.id}>
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: vendor.color }}
+                          />
+                          {vendor.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="package">Paket & Tema</Label>
                 <div className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="package"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih paket" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {packages.map((pkg) => (
-                              <SelectItem key={pkg.id} value={pkg.name}>
-                                {pkg.name} - Rp {pkg.price?.toLocaleString()}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="theme"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih tema" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                  <Select 
+                    value={formData.package} 
+                    onValueChange={(value) => handleSelectChange(value, "package")}
+                  >
+                    <SelectTrigger id="package">
+                      <SelectValue placeholder="Pilih paket" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packages.map((pkg) => (
+                        <SelectItem key={pkg.id} value={pkg.name}>
+                          {pkg.name} - {new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR", minimumFractionDigits: 0}).format(pkg.price)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Theme selection with search */}
+                  <Popover open={themeOpen} onOpenChange={setThemeOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={themeOpen}
+                        className="w-full justify-between"
+                      >
+                        {formData.theme ? 
+                          `${formData.theme} ${themes.find(t => t.name === formData.theme)?.category ? `(${themes.find(t => t.name === formData.theme)?.category})` : ''}` : 
+                          "Pilih tema"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Cari tema..." />
+                        <CommandList>
+                          <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
+                          <CommandGroup>
                             {themes.map((theme) => (
-                              <SelectItem key={theme.id} value={theme.name}>
+                              <CommandItem
+                                key={theme.id}
+                                value={theme.name}
+                                onSelect={(value) => {
+                                  setFormData({...formData, theme: value});
+                                  setThemeOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.theme === theme.name ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
                                 {theme.name} {theme.category ? `(${theme.category})` : ''}
-                              </SelectItem>
+                              </CommandItem>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </div>
-
-            {/* Addons */}
-            <div>
-              <FormLabel>Addons</FormLabel>
-              <div className="grid grid-cols-2 gap-4 mt-2">
+            
+            <div className="space-y-2">
+              <Label>Addons</Label>
+              <div className="grid grid-cols-2 gap-2">
                 {addons.map((addon) => (
                   <div key={addon.id} className="flex items-center space-x-2">
-                    <Checkbox
+                    <Checkbox 
                       id={`addon-${addon.id}`}
-                      checked={selectedAddons.includes(addon.name)}
-                      onCheckedChange={() => handleAddonChange(addon.name)}
+                      checked={formData.addons?.includes(addon.name)}
+                      onCheckedChange={(checked) => 
+                        handleAddonToggle(addon.name, checked === true)
+                      }
                     />
-                    <label
+                    <Label 
                       htmlFor={`addon-${addon.id}`}
-                      className="text-sm font-medium leading-none flex items-center"
+                      className="flex items-center space-x-2 cursor-pointer"
                     >
-                      <div
-                        className="w-2 h-2 rounded-full mr-2"
-                        style={{ backgroundColor: addon.color }}
-                      />
-                      {addon.name}
-                    </label>
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: addon.color }}></div>
+                      <span>{addon.name}</span>
+                    </Label>
                   </div>
                 ))}
+                {addons.length === 0 && (
+                  <p className="text-sm text-muted-foreground col-span-2">
+                    Tidak ada addon yang tersedia. Tambahkan addon di pengaturan.
+                  </p>
+                )}
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Row 4 */}
-              <FormField
-                control={form.control}
-                name="paymentStatus"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel>Status Pembayaran</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className="flex items-center space-x-4"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Lunas" id="lunas" />
-                          <label htmlFor="lunas" className="text-sm">Lunas</label>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="paymentStatus">Status Pembayaran</Label>
+                <RadioGroup
+                  value={formData.paymentStatus}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, paymentStatus: value as "Lunas" | "Pending" })
+                  }
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Lunas" id="payment-lunas" />
+                    <Label htmlFor="payment-lunas">Lunas</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Pending" id="payment-pending" />
+                    <Label htmlFor="payment-pending">Pending</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="paymentAmount">Jumlah Pembayaran (Rp)</Label>
+                <Input
+                  id="paymentAmount"
+                  name="paymentAmount"
+                  type="number"
+                  value={formData.paymentAmount}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="workStatus">Status Pengerjaan</Label>
+                <Select 
+                  value={formData.workStatus} 
+                  onValueChange={(value) => handleSelectChange(value, "workStatus")}
+                >
+                  <SelectTrigger id="workStatus">
+                    <SelectValue placeholder="Pilih status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {workStatuses.map((status) => (
+                      <SelectItem key={status.id} value={status.name}>
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: status.color }}
+                          />
+                          {status.name}
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="Pending" id="pending" />
-                          <label htmlFor="pending" className="text-sm">Pending</label>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="paymentAmount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jumlah Pembayaran (Rp)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              {/* Row 5 */}
-              <FormField
-                control={form.control}
-                name="workStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status Pengerjaan</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {workStatuses.map((status) => (
-                          <SelectItem key={status.id} value={status.name}>
-                            <div className="flex items-center">
-                              <div
-                                className="w-2 h-2 mr-2 rounded-full"
-                                style={{ backgroundColor: status.color }}
-                              />
-                              {status.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="clientUrl">URL Undangan</Label>
+              <Input
+                id="clientUrl"
+                name="clientUrl"
+                value={formData.clientUrl}
+                onChange={handleInputChange}
+                placeholder="https://undangandigital.com/nama-mempelai"
               />
             </div>
-
-            {/* URL */}
-            <FormField
-              control={form.control}
-              name="clientUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL Undangan</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://undangandigital.com/nama-mempelai" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
             
-            {/* Post Permission */}
-            <FormField
-              control={form.control}
-              name="postPermission"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-2">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Izin posting sebagai portfolio
-                    </FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="postPermission"
+                  checked={formData.postPermission}
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange(!!checked, "postPermission")
+                  }
+                />
+                <Label htmlFor="postPermission">Izin posting sebagai portfolio</Label>
+              </div>
+            </div>
             
-            {/* Notes */}
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Catatan</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Catatan tambahan" 
-                      className="resize-none" 
-                      {...field} 
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter className="pt-4 flex justify-between">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Batal
-              </Button>
-              <Button type="submit">Simpan</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Catatan</Label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Catatan tambahan"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Batal
+            </Button>
+            <Button type="submit">Simpan</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

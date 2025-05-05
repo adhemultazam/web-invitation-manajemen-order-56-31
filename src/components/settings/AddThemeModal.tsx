@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,6 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Theme } from "@/types/types";
-import { Combobox } from "@/components/ui/combobox";
 
 interface AddThemeModalProps {
   isOpen: boolean;

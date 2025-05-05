@@ -1,9 +1,9 @@
 
-// Types for the wedding digital order management system
+// Order Type
 export interface Order {
   id: string;
-  customerName: string;
   clientName: string;
+  customerName: string;
   clientUrl?: string;
   orderDate: string;
   eventDate: string;
@@ -11,7 +11,7 @@ export interface Order {
   vendor: string;
   package: string;
   theme: string;
-  addons?: string[];
+  addons: string[];
   bonuses?: string[];
   paymentStatus: "Lunas" | "Pending";
   paymentAmount: number;
@@ -20,69 +20,81 @@ export interface Order {
   notes?: string;
 }
 
-export interface Theme {
-  id: string;
-  name: string;
-  thumbnail?: string;
-  category?: string;
-  price?: number;
-  description?: string;
-}
-
-export interface Addon {
-  id: string;
-  name: string;
-  price?: number; // Made optional since there are addons without price
-  color?: string;
-}
-
+// Vendor Type
 export interface Vendor {
   id: string;
   name: string;
   code: string;
   color: string;
-  commission?: number; // Added commission property
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  address?: string;
+  notes?: string;
 }
 
+// Work Status Type
 export interface WorkStatus {
   id: string;
   name: string;
   color: string;
+  order: number;
 }
 
+// Addon Type
+export interface Addon {
+  id: string;
+  name: string;
+  color: string;
+  price?: number;
+  description?: string;
+}
+
+// Theme Type
+export interface Theme {
+  id: string;
+  name: string;
+  thumbnail: string;
+  category?: string;
+}
+
+// Package Type
 export interface Package {
   id: string;
   name: string;
   price: number;
   description?: string;
-  features?: string[]; // Added features property
+  features?: string[];
 }
 
-export interface ChartData {
-  name: string;
-  value: number;
-}
-
-export type ChartDataArray = ChartData[];
-
+// Invoice Type
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  vendor: string;
   vendorId: string;
+  vendor: string;
   dateIssued: string;
-  dueDate: string;
-  status: "Paid" | "Unpaid";
-  totalAmount: number;
+  dateDue: string;
   orders: {
     orderId: string;
     clientName: string;
     orderDate: string;
     amount: number;
   }[];
+  totalAmount: number;
+  status: "Paid" | "Unpaid";
   notes?: string;
 }
 
+// Invoice Filter Type
+export interface InvoiceFilter {
+  vendor?: string;
+  status: 'Paid' | 'Unpaid' | 'All';
+  sortBy: 'dueDate' | 'amount';
+  sortDirection: 'asc' | 'desc';
+}
+
+// Bank Account Type
 export interface BankAccount {
   id: string;
   bankName: string;
@@ -90,9 +102,10 @@ export interface BankAccount {
   accountHolderName: string;
 }
 
-export interface InvoiceFilter {
-  vendor: string | undefined;
-  status: 'Paid' | 'Unpaid' | 'All';
-  sortBy: 'dueDate' | 'amount';
-  sortDirection: 'asc' | 'desc';
+// Chart Data Types
+export interface ChartData {
+  name: string;
+  value: number;
 }
+
+export type ChartDataArray = ChartData[];

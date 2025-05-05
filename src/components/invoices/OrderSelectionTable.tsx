@@ -42,7 +42,7 @@ export function OrderSelectionTable({
   
   return (
     <div className="border rounded-md overflow-hidden">
-      <Table>
+      <Table compact className="w-full">
         <TableHeader>
           <TableRow>
             <TableHead className="w-12"></TableHead>
@@ -56,24 +56,25 @@ export function OrderSelectionTable({
         <TableBody>
           {orders.length > 0 ? (
             orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell>
+              <TableRow key={order.id} className="h-10">
+                <TableCell className="py-1.5">
                   <Checkbox
                     checked={selectedOrders.includes(order.id)}
                     onCheckedChange={(checked) =>
                       onOrderSelection(order.id, !!checked)
                     }
+                    className="h-4 w-4"
                   />
                 </TableCell>
-                <TableCell>{order.id.substring(0, 8)}</TableCell>
-                <TableCell>{order.clientName}</TableCell>
-                <TableCell>{format(new Date(order.orderDate), "dd MMM yyyy")}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                <TableCell className="font-mono text-xs py-1.5">{order.id.substring(0, 8)}</TableCell>
+                <TableCell className="py-1.5 text-xs">{order.clientName}</TableCell>
+                <TableCell className="py-1.5 text-xs">{format(new Date(order.orderDate), "dd MMM yyyy")}</TableCell>
+                <TableCell className="py-1.5">
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 text-[11px] py-0.5 px-2">
                     {order.paymentStatus}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium">
+                <TableCell className="text-right font-medium py-1.5 text-xs">
                   <InvoiceCurrency amount={getNumericAmount(order.paymentAmount)} />
                 </TableCell>
               </TableRow>

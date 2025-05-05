@@ -78,66 +78,68 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
   };
 
   return (
-    <TableRow>
+    <TableRow className="h-12 hover:bg-gray-50/80">
       {/* No */}
-      <TableCell className="font-mono text-xs">
+      <TableCell className="font-mono text-xs py-2 px-2">
         {index + 1}
       </TableCell>
       
       {/* Tgl Pesan */}
-      <TableCell className="font-mono text-xs">
+      <TableCell className="font-mono text-xs py-2 px-2">
         {formatDate(order.orderDate)}
       </TableCell>
       
       {/* Tgl Acara */}
-      <TableCell className="font-mono text-xs">
+      <TableCell className="font-mono text-xs py-2 px-2">
         {formatDate(order.eventDate)}
       </TableCell>
       
       {/* Countdown */}
-      <TableCell className="font-mono text-xs">
+      <TableCell className="font-mono text-xs py-2 px-2">
         <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
           {order.countdownDays} hari
         </span>
       </TableCell>
       
       {/* Client & Nama combined - SWAPPED ORDER */}
-      <TableCell>
-        <div className="space-y-1">
+      <TableCell className="py-2 px-2">
+        <div className="flex flex-col gap-0.5">
           {hasClientUrl() ? (
             <a 
               href={order.clientUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-500 hover:underline cursor-pointer font-medium"
+              className="text-xs text-blue-500 hover:underline cursor-pointer font-medium leading-tight"
             >
               {order.clientName}
             </a>
           ) : (
-            <div className="text-sm font-medium">{order.clientName}</div>
+            <div className="text-xs font-medium leading-tight">{order.clientName}</div>
           )}
-          <div className="text-xs text-muted-foreground">{order.customerName}</div>
+          <div className="text-[11px] text-muted-foreground leading-tight">{order.customerName}</div>
         </div>
       </TableCell>
       
       {/* Vendor */}
-      <TableCell>
+      <TableCell className="py-2 px-2">
         <VendorDropdown 
           vendor={order.vendor} 
           vendors={vendors}
           isDisabled={updatingOrders.has(order.id)}
           onChange={(value) => handleVendorChange(order.id, value)}
+          compact={true}
         />
       </TableCell>
       
       {/* Paket & Tema combined */}
-      <TableCell>
-        <div className="flex flex-col space-y-1">
+      <TableCell className="py-2 px-2">
+        <div className="flex flex-col gap-1">
           <PackageSelect
             value={order.package}
             packages={availablePackages}
             isDisabled={updatingOrders.has(order.id)}
             onChange={(value) => handlePackageChange(order.id, value)}
+            compact={true}
           />
           <ThemeSelect
             value={order.theme}
@@ -145,46 +147,51 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
             isDisabled={updatingOrders.has(order.id)}
             onChange={(value) => handleThemeChange(order.id, value)}
             packageCategory={packageCategory}
+            compact={true}
           />
         </div>
       </TableCell>
       
       {/* Addons */}
-      <TableCell>
+      <TableCell className="py-2 px-2">
         <OrderAddons 
           addons={order.addons} 
-          addonStyles={addonStyles} 
+          addonStyles={addonStyles}
+          compact={true}
         />
       </TableCell>
       
       {/* Pembayaran */}
-      <TableCell>
+      <TableCell className="py-2 px-2">
         <PaymentStatusBadge 
           status={order.paymentStatus}
           amount={order.paymentAmount}
           isUpdating={updatingOrders.has(order.id)}
           onToggle={() => togglePaymentStatus(order)}
           formatCurrency={formatCurrency}
+          compact={true}
         />
       </TableCell>
       
       {/* Status */}
-      <TableCell>
+      <TableCell className="py-2 px-2">
         <WorkStatusSelect
           value={order.workStatus}
           isDisabled={updatingOrders.has(order.id)}
           workStatuses={availableWorkStatuses}
           onChange={(value) => handleWorkStatusChange(order.id, value)}
+          compact={true}
         />
       </TableCell>
       
       {/* Aksi */}
-      <TableCell>
+      <TableCell className="py-2 px-2">
         <OrderActions
           order={order}
           onView={handleViewOrderDetail}
           onEdit={handleOpenEditDialog}
           onDelete={handleDeleteOrder}
+          compact={true}
         />
       </TableCell>
     </TableRow>

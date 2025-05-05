@@ -46,6 +46,34 @@ export function Layout({ children }: LayoutProps) {
       </div>
       <Toaster />
       <Sonner />
+
+      {/* Global styles for compact table */}
+      <style jsx global>{`
+        .compact-table th {
+          height: auto;
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+          font-size: 0.75rem;
+        }
+        
+        .compact-table td {
+          padding-top: 0.375rem;
+          padding-bottom: 0.375rem;
+        }
+        
+        .compact-table .small-select {
+          font-size: 0.75rem;
+          height: 1.75rem;
+          min-height: 1.75rem;
+        }
+        
+        .compact-badge {
+          font-size: 0.6875rem;
+          padding: 0.125rem 0.375rem;
+          line-height: 1.2;
+          border-radius: 0.25rem;
+        }
+      `}</style>
     </SidebarProvider>
   );
 }

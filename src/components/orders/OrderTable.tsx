@@ -80,7 +80,7 @@ export function OrderTable({
 
   return (
     <div className="rounded-md border">
-      <Table className="w-full">
+      <Table compact className="w-full">
         <OrderTableHeader />
         <TableBody>
           {orders.length > 0 ? (

@@ -62,7 +62,7 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
 
   return (
     <div className="rounded-xl border overflow-hidden shadow-sm bg-white dark:bg-gray-900">
-      <Table className="compact-table w-full">
+      <Table compact className="compact-table w-full">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-20">ID</TableHead>
@@ -76,24 +76,24 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/40 group">
-              <TableCell className="font-mono text-xs text-gray-500">
+            <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/40 group h-10">
+              <TableCell className="font-mono text-xs text-gray-500 py-1.5">
                 {order.id.substring(0, 6)}
               </TableCell>
-              <TableCell className="py-3">
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm">{order.clientName}</span>
-                  <span className="text-xs text-gray-500">{order.customerName}</span>
+              <TableCell className="py-1.5">
+                <div className="flex flex-col gap-0">
+                  <span className="font-medium text-xs">{order.clientName}</span>
+                  <span className="text-[11px] text-gray-500 leading-tight">{order.customerName}</span>
                 </div>
               </TableCell>
-              <TableCell className="hidden md:table-cell">
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium">{order.package}</span>
-                  <span className="text-xs text-gray-500">{order.theme}</span>
+              <TableCell className="hidden md:table-cell py-1.5">
+                <div className="flex flex-col gap-0">
+                  <span className="text-[11px] font-medium leading-tight">{order.package}</span>
+                  <span className="text-[11px] text-gray-500 leading-tight">{order.theme}</span>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="flex flex-col gap-1">
+              <TableCell className="py-1.5">
+                <div className="flex flex-col gap-0.5">
                   <span className={`compact-badge border ${getStatusColor(order.paymentStatus)}`}>
                     {order.paymentStatus}
                   </span>
@@ -102,10 +102,10 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="hidden sm:table-cell text-xs text-gray-600 dark:text-gray-400">
+              <TableCell className="hidden sm:table-cell text-xs text-gray-600 dark:text-gray-400 py-1.5">
                 {format(new Date(order.orderDate), 'dd/MM/yyyy')}
               </TableCell>
-              <TableCell className="text-right font-medium">
+              <TableCell className="text-right font-medium py-1.5 text-xs">
                 {formatCurrency(order.paymentAmount)}
               </TableCell>
               <TableCell className="p-0 pr-2 text-right">
@@ -114,20 +114,20 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-7 w-7 p-0 opacity-70 group-hover:opacity-100"
+                      className="h-6 w-6 p-0 opacity-70 group-hover:opacity-100"
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="h-3.5 w-3.5" />
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-[160px]">
                     <DropdownMenuItem onClick={() => onEditOrder(order)}>
-                      <Pencil className="mr-2 h-3.5 w-3.5" />
-                      <span>Edit</span>
+                      <Pencil className="mr-2 h-3 w-3" />
+                      <span className="text-xs">Edit</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onDeleteOrder(order.id)}>
-                      <Trash className="mr-2 h-3.5 w-3.5" />
-                      <span>Delete</span>
+                      <Trash className="mr-2 h-3 w-3" />
+                      <span className="text-xs">Delete</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

@@ -11,6 +11,7 @@ interface ChartCardProps {
   colors?: string[];
   isCurrency?: boolean;
   barKeys?: {key: string, color: string}[];
+  icon?: React.ReactNode;
 }
 
 const DEFAULT_COLORS = ['#7484D3', '#8F9AD9', '#AAB0DF', '#C5C9E5', '#E0E2EB'];
@@ -34,7 +35,8 @@ export function ChartCard({
   type, 
   colors = DEFAULT_COLORS, 
   isCurrency = false,
-  barKeys = []
+  barKeys = [],
+  icon
 }: ChartCardProps) {
   const renderChart = () => {
     if (type === "bar") {
@@ -57,7 +59,7 @@ export function ChartCard({
                 return [isCurrency ? formatToRupiah(value) : value, ''];
               }}
             />
-            <Bar dataKey="value" fill="#7484D3" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="value" fill={colors[0]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       );
@@ -139,9 +141,12 @@ export function ChartCard({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </div>
+        {icon && <div className="text-wedding-primary">{icon}</div>}
       </CardHeader>
       <CardContent className="p-2 pt-0">
         {renderChart()}

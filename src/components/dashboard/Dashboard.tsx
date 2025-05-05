@@ -4,7 +4,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CreditCard, ChartPie, Wallet } from "lucide-react";
+import { Calendar, CreditCard, ChartPie, Wallet, Package, Layers } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
@@ -110,6 +110,40 @@ export function Dashboard() {
         pending: stats.pending 
       }));
     
+    // Data untuk chart tema terlaris
+    const themeMap = new Map<string, number>();
+    
+    orders.forEach(order => {
+      if (order.theme) {
+        themeMap.set(order.theme, (themeMap.get(order.theme) || 0) + 1);
+      }
+    });
+    
+    // Sortir tema berdasarkan jumlah pesanan (descending)
+    const sortedThemeEntries = Array.from(themeMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5); // Ambil 5 tema teratas
+    
+    const topThemesData: ChartData[] = sortedThemeEntries
+      .map(([name, value]) => ({ name, value }));
+    
+    // Data untuk chart paket terlaris
+    const packageMap = new Map<string, number>();
+    
+    orders.forEach(order => {
+      if (order.package) {
+        packageMap.set(order.package, (packageMap.get(order.package) || 0) + 1);
+      }
+    });
+    
+    // Sortir paket berdasarkan jumlah pesanan (descending)
+    const sortedPackageEntries = Array.from(packageMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5); // Ambil 5 paket teratas
+    
+    const topPackagesData: ChartData[] = sortedPackageEntries
+      .map(([name, value]) => ({ name, value }));
+    
     // Data untuk chart pesanan per bulan
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     
@@ -193,7 +227,9 @@ export function Dashboard() {
       workStatusData,
       vendorData,
       vendorPaymentData,
-      monthlyOrdersData
+      monthlyOrdersData,
+      topThemesData,
+      topPackagesData
     };
   }, [orders, selectedYear, selectedMonth, vendors]);
   
@@ -279,7 +315,27 @@ export function Dashboard() {
             />
           </div>
 
-          {/* Updated chart for vendor payment statistics with payment status colors */}
+          {/* New charts for top themes and packages */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <ChartCard
+              title="Tema Terlaris"
+              description="5 tema paling banyak dipesan"
+              data={stats.topThemesData}
+              type="bar"
+              colors={["#8B5CF6", "#9333EA", "#A855F7", "#C084FC", "#D8B4FE"]} // Purple colors
+              icon={<Layers className="h-4 w-4" />}
+            />
+            <ChartCard
+              title="Paket Terlaris"
+              description="5 paket paling banyak dipesan"
+              data={stats.topPackagesData}
+              type="bar"
+              colors={["#1EAEDB", "#38BDF8", "#7DD3FC", "#BAE6FD", "#E0F2FE"]} // Blue colors
+              icon={<Package className="h-4 w-4" />}
+            />
+          </div>
+
+          {/* Chart for vendor payment statistics with payment status colors */}
           <div className="grid gap-4">
             <ChartCard
               title="Pembayaran Per Vendor"

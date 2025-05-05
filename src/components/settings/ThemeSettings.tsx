@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { AddThemeModal } from "./AddThemeModal";
 import { EditThemeModal } from "./EditThemeModal";
-import { Theme } from "@/types/types";
+import { Theme, Package } from "@/types/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function ThemeSettings() {
@@ -22,21 +22,42 @@ export function ThemeSettings() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
   
   // Add search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  // Get unique categories from themes
+  // Load packages for category synchronization
+  useEffect(() => {
+    const storedPackages = localStorage.getItem("packages");
+    if (storedPackages) {
+      try {
+        setPackages(JSON.parse(storedPackages));
+      } catch (error) {
+        console.error("Error parsing stored packages:", error);
+      }
+    }
+  }, []);
+
+  // Get unique categories from themes and packages
   const categories = useMemo(() => {
     const uniqueCategories = new Set<string>();
+    
+    // Add existing theme categories
     themes.forEach(theme => {
       if (theme.category) {
         uniqueCategories.add(theme.category);
       }
     });
+    
+    // Add package names as categories
+    packages.forEach(pkg => {
+      uniqueCategories.add(pkg.name);
+    });
+    
     return ["all", ...Array.from(uniqueCategories)];
-  }, [themes]);
+  }, [themes, packages]);
 
   // Filter themes based on search and category
   const filteredThemes = useMemo(() => {

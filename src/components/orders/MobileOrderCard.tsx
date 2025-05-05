@@ -79,20 +79,38 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
     };
   };
 
+  // Format date as dd/mm/yyyy
+  const formatDateToNumber = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDate ? formatDate(dateString) : new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(date).replace(/\//g, '/');
+    } catch (error) {
+      console.error("Invalid date:", dateString);
+      return dateString;
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 border rounded-md p-4 space-y-3">
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <div className="font-medium text-sm">Client</div>
-          <div className="font-semibold">{order.customerName}</div>
-          <a 
-            href={order.clientUrl} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-wedding-primary text-sm hover:underline"
-          >
-            {order.clientName}
-          </a>
+          <div className="font-semibold">{order.clientName}</div>
+          <div className="text-xs text-muted-foreground">{order.customerName}</div>
+          {order.clientUrl && (
+            <a 
+              href={order.clientUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-wedding-primary text-xs hover:underline"
+            >
+              {order.clientUrl}
+            </a>
+          )}
         </div>
         <div className="flex space-x-2">
           <Button 
@@ -125,11 +143,11 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div>
           <div className="text-muted-foreground text-xs">Tgl Pesan</div>
-          <div className="font-mono text-xs">{formatDate(order.orderDate)}</div>
+          <div className="font-mono text-xs">{formatDateToNumber(order.orderDate)}</div>
         </div>
         <div>
           <div className="text-muted-foreground text-xs">Tgl Acara</div>
-          <div className="font-mono text-xs">{formatDate(order.eventDate)}</div>
+          <div className="font-mono text-xs">{formatDateToNumber(order.eventDate)}</div>
         </div>
         
         <div>
@@ -247,17 +265,16 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
               {updatingOrders.has(order.id) ? (
                 <span className="animate-pulse">Menyimpan...</span>
               ) : (
-                order.paymentStatus
+                <>{order.paymentStatus}</>
               )}
             </Badge>
           </Button>
-          <div className="text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
         </div>
         <div>
           <div className="text-muted-foreground text-xs">Status</div>
           <Select
             value={order.workStatus}
-            onValueChange={(value)=> handleWorkStatusChange(order.id, value)}
+            onValueChange={(value) => handleWorkStatusChange(order.id, value)}
             disabled={updatingOrders.has(order.id)}
           >
             <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
@@ -269,7 +286,7 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
                 <SelectValue>{order.workStatus}</SelectValue>
               </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {availableWorkStatuses.map((status) => (
                 <SelectItem key={status.id} value={status.name} className="text-xs">
                   <div className="flex items-center">

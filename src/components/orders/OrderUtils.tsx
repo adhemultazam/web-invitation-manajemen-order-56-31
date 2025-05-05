@@ -1,13 +1,6 @@
 
 import { Addon, Vendor, WorkStatus } from "@/types/types";
-
-export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from "@/lib/utils";
 
 export const formatDate = (dateString: string) => {
   // Updated format to be dd/mm/yyyy

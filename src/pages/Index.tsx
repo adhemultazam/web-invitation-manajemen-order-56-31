@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, BarChart3, Banknote, Package2 } from "lucide-react";
@@ -11,7 +10,8 @@ import { toast } from "sonner";
 
 export default function Index() {
   const navigate = useNavigate();
-  const [selectedYear, setSelectedYear] = useState("2024");
+  const currentYear = new Date().getFullYear().toString();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState("Semua Data");
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState({

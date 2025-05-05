@@ -1,5 +1,6 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState } from "react";
 
 interface FilterBarProps {
   onYearChange: (year: string) => void;
@@ -9,7 +10,11 @@ interface FilterBarProps {
   className?: string;
 }
 
-const years = ["Semua Data", "2023", "2024", "2025"];
+const generateYearOptions = (): string[] => {
+  const currentYear = new Date().getFullYear();
+  return ["Semua Data", (currentYear - 1).toString(), currentYear.toString(), (currentYear + 1).toString()];
+};
+
 const months = [
   "Semua Data",
   "Januari",
@@ -33,6 +38,18 @@ export function FilterBar({
   selectedMonth,
   className = "",
 }: FilterBarProps) {
+  const years = generateYearOptions();
+  
+  // Set default year to current year on initial render if not already set
+  useEffect(() => {
+    if (selectedYear === "Semua Data" || !selectedYear) {
+      const currentYear = new Date().getFullYear().toString();
+      if (years.includes(currentYear)) {
+        onYearChange(currentYear);
+      }
+    }
+  }, []);
+
   return (
     <div className={`flex flex-wrap gap-4 ${className}`}>
       <div className="flex items-center gap-2">

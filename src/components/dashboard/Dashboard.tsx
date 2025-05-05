@@ -26,22 +26,42 @@ export function Dashboard() {
     // Total Pesanan
     const totalOrders = orders.length;
     
-    // Total Pendapatan - menggunakan nilai paymentAmount dari setiap order
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
+    // Reset accumulated values
+    let totalRevenue = 0;
+    
+    // Calculate total revenue correctly
+    orders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      if (!isNaN(amount) && isFinite(amount)) {
+        totalRevenue += amount;
+      }
+    });
     
     // Pesanan yang dibayar
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
     const paidOrdersCount = paidOrders.length;
     
-    // Total pendapatan dari pesanan yang sudah lunas
-    const paidRevenue = paidOrders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
+    // Calculate paid revenue correctly
+    let paidRevenue = 0;
+    paidOrders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      if (!isNaN(amount) && isFinite(amount)) {
+        paidRevenue += amount;
+      }
+    });
     
     // Pesanan yang belum dibayar
     const pendingOrders = orders.filter(order => order.paymentStatus === "Pending");
     const pendingOrdersCount = pendingOrders.length;
     
-    // Total pendapatan yang belum diterima
-    const pendingRevenue = pendingOrders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
+    // Calculate pending revenue correctly
+    let pendingRevenue = 0;
+    pendingOrders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      if (!isNaN(amount) && isFinite(amount)) {
+        pendingRevenue += amount;
+      }
+    });
     
     // Pesanan yang perlu diselesaikan (dengan event date dalam 14 hari)
     const urgentOrdersCount = orders.filter(order => {
@@ -245,6 +265,11 @@ export function Dashboard() {
   
   // Format currency untuk Rupiah
   const formatCurrency = (amount: number): string => {
+    // Add safety check to prevent invalid formatting
+    if (!isFinite(amount) || isNaN(amount)) {
+      return "Rp 0";
+    }
+    
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",

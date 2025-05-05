@@ -15,22 +15,43 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Total pesanan
     const totalOrders = orders.length;
     
-    // Total pendapatan berdasarkan paymentAmount di setiap pesanan
-    const totalRevenue = orders.reduce((total, order) => total + (order.paymentAmount || 0), 0);
+    // Reset the accumulated values
+    let totalRevenue = 0;
+    
+    // Calculate total revenue properly, ensuring we use valid numbers
+    orders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      // Make sure we're adding a valid number
+      if (!isNaN(amount) && isFinite(amount)) {
+        totalRevenue += amount;
+      }
+    });
     
     // Pesanan yang sudah lunas
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
     const paidOrdersCount = paidOrders.length;
     
     // Total pendapatan dari pesanan yang sudah lunas
-    const paidRevenue = paidOrders.reduce((total, order) => total + (order.paymentAmount || 0), 0);
+    let paidRevenue = 0;
+    paidOrders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      if (!isNaN(amount) && isFinite(amount)) {
+        paidRevenue += amount;
+      }
+    });
     
     // Pesanan yang belum lunas
     const unpaidOrders = orders.filter(order => order.paymentStatus === "Pending");
     const unpaidOrdersCount = unpaidOrders.length;
     
     // Total pendapatan yang belum diterima
-    const unpaidRevenue = unpaidOrders.reduce((total, order) => total + (order.paymentAmount || 0), 0);
+    let unpaidRevenue = 0;
+    unpaidOrders.forEach(order => {
+      const amount = order.paymentAmount || 0;
+      if (!isNaN(amount) && isFinite(amount)) {
+        unpaidRevenue += amount;
+      }
+    });
     
     return {
       totalOrders,
@@ -44,6 +65,11 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
   
   // Format currency untuk Rupiah
   const formatCurrency = (amount: number): string => {
+    // Add safety check to prevent invalid formatting
+    if (!isFinite(amount) || isNaN(amount)) {
+      return "Rp 0";
+    }
+    
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",

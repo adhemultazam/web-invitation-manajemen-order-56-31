@@ -24,6 +24,16 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
     }
   };
 
+  // Format the value if it's a large number to prevent overflow
+  const formatValue = () => {
+    if (typeof value === 'string') {
+      return value;
+    }
+    
+    // For numeric values, return as is
+    return value;
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -33,7 +43,7 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
         <div className={`h-5 w-5 ${getIconColorClass()}`}>{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold overflow-hidden text-ellipsis">{formatValue()}</div>
         {description && (
           <p className="text-xs text-muted-foreground mt-1">{description}</p>
         )}

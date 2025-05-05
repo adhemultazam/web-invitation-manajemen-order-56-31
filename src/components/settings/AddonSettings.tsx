@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,10 +36,10 @@ import { Addon } from "@/types/types";
 
 // Initial addons for demo
 const initialAddons: Addon[] = [
-  { id: "1", name: "Express", color: "#3b82f6" },
-  { id: "2", name: "Super Express", color: "#f97316" },
-  { id: "3", name: "Custom Desain", color: "#8b5cf6" },
-  { id: "4", name: "Custom Domain", color: "#16a34a" }
+  { id: "1", name: "Express", color: "#3b82f6", price: 50000 },
+  { id: "2", name: "Super Express", color: "#f97316", price: 100000 },
+  { id: "3", name: "Custom Desain", color: "#8b5cf6", price: 150000 },
+  { id: "4", name: "Custom Domain", color: "#16a34a", price: 200000 }
 ];
 
 // Available colors for addons with hex values instead of Tailwind classes

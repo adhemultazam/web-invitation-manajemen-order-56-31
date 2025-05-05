@@ -25,12 +25,15 @@ export interface Theme {
   name: string;
   thumbnail?: string;
   category?: string;
+  price?: number;
+  backgroundColor?: string;
+  description?: string;
 }
 
 export interface Addon {
   id: string;
   name: string;
-  price: number;
+  price?: number; // Made optional since there are addons without price
   color?: string;
 }
 
@@ -39,6 +42,7 @@ export interface Vendor {
   name: string;
   code: string;
   color: string;
+  commission?: number; // Added commission property
 }
 
 export interface WorkStatus {
@@ -52,6 +56,7 @@ export interface Package {
   name: string;
   price: number;
   description?: string;
+  features?: string[]; // Added features property
 }
 
 export interface ChartData {

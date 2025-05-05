@@ -95,7 +95,7 @@ export function OrderTable({
                 availableWorkStatuses={availableWorkStatuses}
                 availablePackages={availablePackages}
                 vendors={availableVendors}
-                themes={availableThemes.map(theme => theme.name)}
+                themes={availableThemes}
                 formatDate={formatDate}
                 isPastDate={isPastDate}
                 formatCurrency={formatCurrency}

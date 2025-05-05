@@ -1,7 +1,7 @@
 
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Order, Vendor } from "@/types/types";
+import { Order, Vendor, Theme } from "@/types/types";
 import OrderAddons from "./OrderAddons";
 import PaymentStatusBadge from "./PaymentStatusBadge";
 import WorkStatusSelect from "./WorkStatusSelect";
@@ -20,7 +20,7 @@ interface OrderTableRowProps {
   availableWorkStatuses: WorkStatus[];
   availablePackages: Package[];
   vendors: Vendor[];
-  themes: string[];
+  themes: Theme[];
   formatDate: (date: string) => string;
   isPastDate: (date: string) => boolean;
   formatCurrency: (amount: number) => string;

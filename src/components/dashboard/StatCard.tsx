@@ -26,12 +26,28 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
 
   // Format the value if it's a large number to prevent overflow
   const formatValue = () => {
+    // If it's already a string (pre-formatted), return as is
     if (typeof value === 'string') {
       return value;
     }
     
-    // For numeric values, return as is
-    return value;
+    // For numeric values, apply formatting
+    if (typeof value === 'number') {
+      // Format to Indonesian currency if the value is over 1000
+      if (value >= 1000) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      } else {
+        return value.toString();
+      }
+    }
+    
+    // Fallback for unexpected types
+    return String(value);
   };
 
   return (
@@ -43,7 +59,9 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
         <div className={`h-5 w-5 ${getIconColorClass()}`}>{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold overflow-hidden text-ellipsis">{formatValue()}</div>
+        <div className="text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+          {formatValue()}
+        </div>
         {description && (
           <p className="text-xs text-muted-foreground mt-1">{description}</p>
         )}

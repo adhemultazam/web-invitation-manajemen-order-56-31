@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -31,7 +30,9 @@ export function Dashboard() {
     
     // Calculate total revenue correctly
     orders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       if (!isNaN(amount) && isFinite(amount)) {
         totalRevenue += amount;
       }
@@ -44,7 +45,9 @@ export function Dashboard() {
     // Calculate paid revenue correctly
     let paidRevenue = 0;
     paidOrders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       if (!isNaN(amount) && isFinite(amount)) {
         paidRevenue += amount;
       }
@@ -57,7 +60,9 @@ export function Dashboard() {
     // Calculate pending revenue correctly
     let pendingRevenue = 0;
     pendingOrders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       if (!isNaN(amount) && isFinite(amount)) {
         pendingRevenue += amount;
       }
@@ -305,7 +310,7 @@ export function Dashboard() {
             />
             <StatCard
               title="Total Omset"
-              value={formatCurrency(stats.totalRevenue)}
+              value={stats.totalRevenue}
               icon={<DollarSign className="h-4 w-4" />}
               description={`${stats.totalOrders} pesanan`}
             />
@@ -313,13 +318,14 @@ export function Dashboard() {
               title="Sudah Lunas"
               value={`${stats.paidOrdersCount}`}
               icon={<Check className="h-4 w-4" />}
-              description={`(${formatCurrency(stats.paidRevenue)})`}
+              description={stats.paidRevenue}
+              type="success"
             />
             <StatCard
               title="Belum Lunas"
               value={`${stats.pendingOrdersCount}`}
               icon={<CreditCard className="h-4 w-4" />}
-              description={`(${formatCurrency(stats.pendingRevenue)})`}
+              description={stats.pendingRevenue}
               type="danger"
             />
           </div>

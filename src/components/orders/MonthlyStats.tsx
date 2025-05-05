@@ -20,7 +20,9 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     
     // Calculate total revenue properly, ensuring we use valid numbers
     orders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       // Make sure we're adding a valid number
       if (!isNaN(amount) && isFinite(amount)) {
         totalRevenue += amount;
@@ -34,7 +36,9 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Total pendapatan dari pesanan yang sudah lunas
     let paidRevenue = 0;
     paidOrders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       if (!isNaN(amount) && isFinite(amount)) {
         paidRevenue += amount;
       }
@@ -47,7 +51,9 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Total pendapatan yang belum diterima
     let unpaidRevenue = 0;
     unpaidOrders.forEach(order => {
-      const amount = order.paymentAmount || 0;
+      // Parse to float to ensure we're dealing with numbers, not strings
+      const amount = parseFloat(order.paymentAmount as any) || 0;
+      
       if (!isNaN(amount) && isFinite(amount)) {
         unpaidRevenue += amount;
       }
@@ -63,20 +69,6 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     };
   }, [orders]);
   
-  // Format currency untuk Rupiah
-  const formatCurrency = (amount: number): string => {
-    // Add safety check to prevent invalid formatting
-    if (!isFinite(amount) || isNaN(amount)) {
-      return "Rp 0";
-    }
-    
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
       <StatCard
@@ -87,7 +79,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
       />
       <StatCard
         title="Total Omset"
-        value={formatCurrency(stats.totalRevenue)}
+        value={stats.totalRevenue}
         icon={<DollarSign className="h-4 w-4" />}
         description={`${stats.totalOrders} pesanan`}
       />
@@ -95,13 +87,14 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
         title="Sudah Lunas"
         value={`${stats.paidOrdersCount}`}
         icon={<Check className="h-4 w-4" />}
-        description={`(${formatCurrency(stats.paidRevenue)})`}
+        description={stats.paidRevenue > 0 ? stats.paidRevenue : "(Rp 0)"}
+        type="success"
       />
       <StatCard
         title="Belum Lunas"
         value={`${stats.unpaidOrdersCount}`}
         icon={<CreditCard className="h-4 w-4" />}
-        description={`(${formatCurrency(stats.unpaidRevenue)})`}
+        description={stats.unpaidRevenue > 0 ? stats.unpaidRevenue : "(Rp 0)"}
         type="danger"
       />
     </div>

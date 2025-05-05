@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -8,6 +8,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Theme } from "@/types/types";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ThemeSelectProps {
   value: string;
@@ -39,24 +44,53 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
       ? themes as string[]
       : (themes as Theme[]).map(theme => theme.name))
     : [];
+  
+  const [open, setOpen] = useState(false);
 
   return (
-    <Select
-      value={value}
-      onValueChange={onChange}
-      disabled={isDisabled}
-    >
-      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
-        <SelectValue>{value}</SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {themeOptions.map((theme) => (
-          <SelectItem key={theme} value={theme}>
-            {theme}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={isDisabled}
+          className="h-8 w-full text-xs py-0 px-2 justify-between"
+        >
+          {value || "Pilih tema..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Cari tema..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
+            <CommandGroup>
+              {themeOptions.map((theme) => (
+                <CommandItem
+                  key={theme}
+                  value={theme}
+                  onSelect={() => {
+                    onChange(theme);
+                    setOpen(false);
+                  }}
+                  className="text-sm"
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === theme ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {theme}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 

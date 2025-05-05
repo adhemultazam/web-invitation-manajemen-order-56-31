@@ -84,18 +84,18 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       <TableCell>
         <div className="space-y-1">
-          <div className="font-medium">{order.customerName}</div>
+          <div className="text-sm">{order.clientName}</div>
           {hasClientUrl() ? (
             <a 
               href={order.clientUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-500 hover:underline cursor-pointer"
+              className="font-medium text-blue-500 hover:underline cursor-pointer"
             >
-              {order.clientName}
+              {order.customerName}
             </a>
           ) : (
-            <span className="text-sm">{order.clientName}</span>
+            <span className="font-medium">{order.customerName}</span>
           )}
         </div>
       </TableCell>

@@ -1,163 +1,151 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Order, Vendor } from "@/types/types";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
-import { Order, Vendor } from "@/types/types";
 
-export const useInvoiceCreation = (
+export function useInvoiceCreation(
   vendors: Vendor[],
   orders: Order[],
-  isOpen: boolean,
+  open: boolean,
   onInvoiceCreated: () => void,
   onClose: () => void
-) => {
+) {
   const [selectedVendor, setSelectedVendor] = useState<string>("");
+  const [vendorOrders, setVendorOrders] = useState<Order[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Filter orders to only include those with Pending payment status
-  const pendingOrders = orders.filter(order => order.paymentStatus === "Pending");
-  
-  // Get vendor orders based on the selected vendor, but only pending payments
-  const vendorOrders = pendingOrders.filter(
-    (order) => order.vendor === selectedVendor
-  );
-  
-  // Calculate order counts per vendor (only pending orders)
-  const vendorOrderCounts: Record<string, number> = {};
-  pendingOrders.forEach((order) => {
-    vendorOrderCounts[order.vendor] = (vendorOrderCounts[order.vendor] || 0) + 1;
-  });
-  
-  // Calculate the total amount of selected orders
-  const totalSelectedAmount = selectedOrders.reduce((sum, orderId) => {
-    const order = vendorOrders.find((o) => o.id === orderId);
-    return sum + (order?.paymentAmount || 0);
-  }, 0);
-  
-  // Reset selected orders when the dialog is opened or when a different vendor is selected
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [vendorOrderCounts, setVendorOrderCounts] = useState<Record<string, number>>({});
+  const [totalSelectedAmount, setTotalSelectedAmount] = useState<number>(0);
+
+  // Reset state when modal is opened
   useEffect(() => {
-    setSelectedOrders([]);
-  }, [isOpen, selectedVendor]);
-  
-  const handleSelectAll = (checked: boolean) => {
+    if (open) {
+      setSelectedVendor("");
+      setVendorOrders([]);
+      setSelectedOrders([]);
+      
+      // Calculate order counts per vendor for all pending payments
+      const counts: Record<string, number> = {};
+      vendors.forEach(vendor => {
+        counts[vendor.id] = orders.filter(order => 
+          order.vendor === vendor.id && 
+          order.paymentStatus === "Pending"
+        ).length;
+      });
+      setVendorOrderCounts(counts);
+    }
+  }, [open, orders, vendors]);
+
+  // Update vendor orders when vendor selection changes
+  useEffect(() => {
+    if (selectedVendor) {
+      const filteredOrders = orders.filter(
+        (order) => order.vendor === selectedVendor && order.paymentStatus === "Pending"
+      );
+      setVendorOrders(filteredOrders);
+      setSelectedOrders([]);
+      console.log("Filtered vendor orders:", filteredOrders.length);
+    } else {
+      setVendorOrders([]);
+    }
+  }, [selectedVendor, orders]);
+
+  // Calculate total amount as orders are selected
+  useEffect(() => {
+    const total = vendorOrders
+      .filter(order => selectedOrders.includes(order.id))
+      .reduce((sum, order) => sum + order.paymentAmount, 0);
+    
+    setTotalSelectedAmount(total);
+  }, [selectedOrders, vendorOrders]);
+
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       setSelectedOrders(vendorOrders.map((order) => order.id));
     } else {
       setSelectedOrders([]);
     }
-  };
-  
-  const handleOrderSelection = (orderId: string, checked: boolean) => {
+  }, [vendorOrders]);
+
+  const handleOrderSelection = useCallback((orderId: string, checked: boolean) => {
     if (checked) {
       setSelectedOrders((prev) => [...prev, orderId]);
     } else {
       setSelectedOrders((prev) => prev.filter((id) => id !== orderId));
     }
-  };
-  
-  const handleCreateInvoice = () => {
+  }, []);
+
+  const handleCreateInvoice = useCallback(async () => {
     if (!selectedVendor || selectedOrders.length === 0) {
       toast.error("Pilih vendor dan minimal satu pesanan");
       return;
     }
-    
+
     setIsLoading(true);
-    
-    // Get selected orders with details
-    const orderDetails = vendorOrders
-      .filter((order) => selectedOrders.includes(order.id))
-      .map((order) => ({
-        orderId: order.id,
-        clientName: order.clientName,
-        orderDate: order.orderDate,
-        amount: order.paymentAmount,
-      }));
-    
-    // Generate a new invoice
-    const vendor = vendors.find((v) => v.id === selectedVendor);
-    
-    // Generate current date
-    const currentDate = new Date();
-    
-    // Generate due date (30 days from now)
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + 30);
-    
-    // Create invoice object
-    const newInvoice = {
-      id: uuidv4(),
-      invoiceNumber: `INV-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-      vendorId: selectedVendor,
-      vendor: vendor?.name || "Unknown Vendor",
-      orders: orderDetails,
-      totalAmount: totalSelectedAmount,
-      status: "Unpaid", // Default status
-      dateIssued: currentDate.toISOString().split('T')[0],
-      dueDate: dueDate.toISOString().split('T')[0],
-    };
-    
-    // Save to localStorage
+
     try {
-      // Get existing invoices
-      const existingInvoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+      // Get selected orders details
+      const orderDetails = vendorOrders
+        .filter((order) => selectedOrders.includes(order.id))
+        .map((order) => ({
+          orderId: order.id,
+          clientName: order.clientName,
+          orderDate: order.orderDate,
+          amount: order.paymentAmount,
+        }));
+
+      // Calculate total amount
+      const totalAmount = orderDetails.reduce((sum, order) => sum + order.amount, 0);
+
+      // Create invoice
+      const vendor = vendors.find((v) => v.id === selectedVendor);
       
-      // Add new invoice
-      const updatedInvoices = [...existingInvoices, newInvoice];
+      // Generate invoice number: INV-vendorcode-date-random
+      const today = new Date();
+      const dateStr = today.getFullYear().toString().substring(2) + 
+                     (today.getMonth() + 1).toString().padStart(2, '0');
+      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const invoiceNumber = `INV-${vendor?.code || 'XXX'}-${dateStr}-${randomNum}`;
       
-      // Save back to localStorage
-      localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
-      
-      // Update orders to mark them as invoiced
-      const allOrders = JSON.parse(localStorage.getItem("orders_all") || "[]");
-      const updatedOrders = allOrders.map((order: Order) => {
-        if (selectedOrders.includes(order.id)) {
-          return { ...order, invoiced: true };
-        }
-        return order;
-      });
-      
-      // Save updated orders
-      localStorage.setItem("orders_all", JSON.stringify(updatedOrders));
-      
-      // For monthly orders, we need to update each month's orders
-      const months = [
-        "januari", "februari", "maret", "april", "mei", "juni",
-        "juli", "agustus", "september", "oktober", "november", "desember"
-      ];
-      
-      months.forEach(month => {
-        const key = `orders_${month}`;
-        const monthlyOrders = JSON.parse(localStorage.getItem(key) || "[]");
-        if (monthlyOrders.length > 0) {
-          const updatedMonthlyOrders = monthlyOrders.map((order: Order) => {
-            if (selectedOrders.includes(order.id)) {
-              return { ...order, invoiced: true };
-            }
-            return order;
-          });
-          localStorage.setItem(key, JSON.stringify(updatedMonthlyOrders));
-        }
-      });
-      
-      // Show success message
+      // Set due date to 7 days from now
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7);
+
+      const newInvoice = {
+        id: uuidv4(),
+        invoiceNumber,
+        vendor: vendor?.name || "",
+        vendorId: selectedVendor,
+        dateIssued: today.toISOString().split('T')[0],
+        dueDate: dueDate.toISOString().split('T')[0],
+        status: "Unpaid" as const,
+        totalAmount,
+        orders: orderDetails,
+      };
+
+      // Save to localStorage
+      const existingInvoices = localStorage.getItem("invoices");
+      const invoicesArray = existingInvoices ? JSON.parse(existingInvoices) : [];
+      localStorage.setItem("invoices", JSON.stringify([...invoicesArray, newInvoice]));
+
       toast.success("Invoice berhasil dibuat", {
-        description: `Invoice untuk ${orderDetails.length} pesanan telah dibuat`
+        description: `Invoice #${invoiceNumber} untuk ${vendor?.name} telah dibuat`
       });
-      
+
       // Notify parent component
       onInvoiceCreated();
-      
-      // Close dialog
       onClose();
     } catch (error) {
       console.error("Error creating invoice:", error);
-      toast.error("Gagal membuat invoice");
+      toast.error("Gagal membuat invoice", {
+        description: "Terjadi kesalahan saat membuat invoice"
+      });
     } finally {
       setIsLoading(false);
     }
-  };
-  
+  }, [selectedVendor, selectedOrders, vendorOrders, vendors, onInvoiceCreated, onClose]);
+
   return {
     selectedVendor,
     setSelectedVendor,
@@ -168,6 +156,6 @@ export const useInvoiceCreation = (
     handleSelectAll,
     handleOrderSelection,
     handleCreateInvoice,
-    totalSelectedAmount,
+    totalSelectedAmount
   };
-};
+}

@@ -1,91 +1,57 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Theme } from "@/types/types";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface ThemeSelectProps {
   value: string;
-  themes?: string[] | Theme[];
-  isDisabled: boolean;
+  themes: Theme[];
   onChange: (value: string) => void;
+  isDisabled?: boolean;
 }
 
 const ThemeSelect: React.FC<ThemeSelectProps> = ({
   value,
-  themes = [],
-  isDisabled,
+  themes,
   onChange,
+  isDisabled = false
 }) => {
-  // Save selected theme to localStorage when it changes
-  useEffect(() => {
-    try {
-      if (value) {
-        localStorage.setItem('last_selected_theme', value);
-      }
-    } catch (e) {
-      console.error("Error saving theme to localStorage:", e);
-    }
-  }, [value]);
-
-  // Get theme options either from string array or Theme objects
-  const themeOptions = Array.isArray(themes) 
-    ? (typeof themes[0] === 'string' 
-      ? themes as string[]
-      : (themes as Theme[]).map(theme => theme.name))
-    : [];
-  
-  const [open, setOpen] = useState(false);
-
-  const handleSelect = (themeValue: string) => {
-    onChange(themeValue);
-    setOpen(false);
-  };
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          disabled={isDisabled}
-          className="h-8 w-full text-xs py-0 px-2 justify-between"
-        >
-          {value || "Pilih tema..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Cari tema..." className="h-9" />
-          <CommandList>
-            <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
-            <CommandGroup>
-              {themeOptions.map((theme) => (
-                <CommandItem
-                  key={theme}
-                  value={theme}
-                  onSelect={() => handleSelect(theme)}
-                  className="text-sm cursor-pointer"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === theme ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {theme}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div className="space-y-1">
+      <Select
+        value={value}
+        onValueChange={onChange}
+        disabled={isDisabled}
+      >
+        <SelectTrigger id="theme" className="w-full">
+          <SelectValue placeholder="Pilih tema">{value}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {themes && themes.map((theme) => (
+            <SelectItem key={theme.id} value={theme.name}>
+              <div className="flex items-center">
+                <span>{theme.name}</span>
+                {theme.category && (
+                  <span className="ml-2 text-xs text-muted-foreground">({theme.category})</span>
+                )}
+              </div>
+            </SelectItem>
+          ))}
+          {(!themes || themes.length === 0) && (
+            <SelectItem value="no-theme" disabled>
+              Tidak ada tema tersedia
+            </SelectItem>
+          )}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 

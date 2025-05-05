@@ -1,93 +1,103 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 227 41% 64%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 10% 97%;
+    --primary: 248 90% 66%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --ring: 248 90% 66%;
     --radius: 0.5rem;
-
-    --sidebar-background: 248 54% 60%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 248 54% 60%;
-    --sidebar-accent: 0 0% 100% / 0.2;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 0 0% 100%;
-    
-    --wedding-primary: 248 54% 60%;
-    --wedding-light: 248 54% 95%;
   }
  
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
- 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
- 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
- 
-    --primary: 227 41% 64%;
-    --primary-foreground: 0 0% 100%;
- 
+    --primary: 248 90% 66%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
- 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --sidebar-background: 248 54% 60%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 248 54% 60%;
-    --sidebar-accent: 0 0% 100% / 0.2;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.1;
-    --sidebar-ring: 212.7 26.8% 83.9%;
-    
-    --wedding-primary: 248 54% 60%;
-    --wedding-light: 248 10% 20%;
+    --ring: 248 90% 66%;
   }
+  
+  /* wedding colors */
+  :root {
+    --wedding-primary: 248 90% 66%; /* #7484D3 - purple/indigo */
+    --wedding-secondary: 230 28% 75%; /* #9BA7D0 - lighter purple */
+    --wedding-accent: 12 89% 75%; /* #FFA28E - soft coral */
+    --wedding-muted: 240 5% 90%; /* #E5E5EA - very light gray */
+    --wedding-background: 0 0% 100%; /* #FFFFFF - white */
+  }
+}
+
+/* Wedding specific theme */
+.bg-wedding-primary {
+  background-color: #7484D3;
+}
+
+.text-wedding-primary {
+  color: #7484D3;
+}
+
+.border-wedding-primary {
+  border-color: #7484D3;
+}
+
+.hover\:bg-wedding-primary:hover {
+  background-color: #6373C2;
+}
+
+.hover\:text-wedding-primary:hover {
+  color: #6373C2;
+}
+
+.mobile-navbar {
+  @apply fixed bottom-0 left-0 right-0 z-50 grid grid-cols-4 bg-white h-16 shadow-md border-t;
+}
+
+.mobile-navbar-item {
+  @apply flex flex-col items-center justify-center text-gray-600 hover:text-wedding-primary transition-colors;
+}
+
+.mobile-navbar-item.active {
+  @apply text-wedding-primary;
+}
+
+.mobile-navbar-icon {
+  @apply h-5 w-5;
+}
+
+.mobile-navbar-label {
+  @apply text-xs mt-1;
 }
 
 @layer base {
@@ -99,135 +109,9 @@
   }
 }
 
-/* Mobile Navbar Styling */
-.mobile-navbar {
-  @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800 flex justify-around items-center px-2 py-1 z-50;
-}
-
-.mobile-navbar-item {
-  @apply flex flex-col items-center justify-center p-2 rounded-md w-full;
-}
-
-.mobile-navbar-item.active {
-  @apply text-wedding-primary dark:text-wedding-primary;
-}
-
-.mobile-navbar-icon {
-  @apply h-5 w-5;
-}
-
-.mobile-navbar-label {
-  @apply text-xs mt-1 font-medium;
-}
-
-/* Fix for dropdowns in dark mode */
-.dark .Select-content,
-.dark .DropdownMenu-content {
-  @apply bg-gray-900 text-foreground border-gray-700;
-}
-
-/* Ensure inputs are visible in dark mode */
-.dark input,
-.dark textarea,
-.dark select {
-  @apply bg-gray-800 text-white border-gray-700;
-}
-
-/* Fix for select components in dark mode */
-.dark [data-radix-select-trigger],
-.dark [data-radix-select-content] {
-  @apply bg-gray-800 border-gray-700;
-}
-
-.dark [data-radix-select-item] {
-  @apply text-white hover:bg-gray-700;
-}
-
-/* Make invoices more readable in dark mode */
-.dark .invoice-content {
-  @apply text-white;
-}
-
-/* Override sidebar colors */
-.sidebar {
-  @apply bg-wedding-primary;
-}
-
-/* Ensure badges are visible in dark mode */
-.dark .badge {
-  @apply text-white;
-}
-
-/* Improved sidebar group labels */
-[data-sidebar="group-label"] {
-  @apply text-white/80 font-medium;
-}
-
-/* Improved sidebar menu items */
-[data-sidebar="menu-button"] {
-  @apply text-white font-medium hover:bg-white/20 hover:text-white;
-}
-
-/* Improved active state for better contrast */
-[data-sidebar="menu-button"][data-active="true"] {
-  @apply bg-white/90 text-wedding-primary font-semibold;
-}
-
-/* Styling for vendor and work status dropdowns */
-.work-status-dropdown button {
-  @apply h-8 text-xs py-0 px-2;
-}
-
-.vendor-select-trigger {
-  @apply h-8 text-xs py-0 px-2;
-}
-
-/* Better dropdown styling for dark mode */
-.dark .dropdown-menu-content {
-  @apply bg-gray-800 border-gray-700;
-}
-
-.dark .dropdown-menu-item {
-  @apply hover:bg-gray-700;
-}
-
-/* Fix for button-style dropdowns in dark mode */
-.dark .dropdown-button {
-  @apply border-gray-700;
-}
-
-/* Dialog form styling */
-.edit-order-dialog .form-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
-}
-
-/* Override popover content for date pickers to ensure they're visible in dark mode */
-.dark [data-radix-popper-content-wrapper] {
-  @apply bg-gray-800 text-white border-gray-700;
-}
-
-/* Calendar styling in dark mode */
-.dark .rdp {
-  @apply bg-gray-800 text-white;
-}
-
-.dark .rdp-day {
-  @apply text-white;
-}
-
-.dark .rdp-day_selected {
-  @apply bg-wedding-primary text-white;
-}
-
-/* Enhanced form styling */
-.form-item-spaced {
-  @apply space-y-2;
-}
-
-.checkbox-label {
-  @apply text-sm font-medium flex items-center;
-}
-
-.input-field {
-  @apply w-full p-2 border rounded;
+/* Fix z-index issues for popovers and dropdowns */
+.popover-content,
+.dropdown-menu-content,
+.select-content {
+  z-index: 50 !important;
 }

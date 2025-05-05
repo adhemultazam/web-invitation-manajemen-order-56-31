@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -232,7 +233,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="clientName">Nama Mempelai</Label>
+                <Label htmlFor="clientName">Client</Label>
                 <Input
                   id="clientName"
                   name="clientName"
@@ -313,22 +314,44 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="package">Paket</Label>
-                <Select 
-                  value={formData.package} 
-                  onValueChange={(value) => handleSelectChange(value, "package")}
-                >
-                  <SelectTrigger id="package">
-                    <SelectValue placeholder="Pilih paket" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {packages.map((pkg) => (
-                      <SelectItem key={pkg.id} value={pkg.name}>
-                        {pkg.name} - {new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR", minimumFractionDigits: 0}).format(pkg.price)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="package">Paket & Tema</Label>
+                <div className="space-y-2">
+                  <Select 
+                    value={formData.package} 
+                    onValueChange={(value) => handleSelectChange(value, "package")}
+                  >
+                    <SelectTrigger id="package">
+                      <SelectValue placeholder="Pilih paket" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packages.map((pkg) => (
+                        <SelectItem key={pkg.id} value={pkg.name}>
+                          {pkg.name} - {new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR", minimumFractionDigits: 0}).format(pkg.price)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={formData.theme}
+                    onValueChange={(value) => handleSelectChange(value, "theme")}
+                  >
+                    <SelectTrigger id="theme">
+                      <SelectValue placeholder="Pilih tema" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {themes.map((theme) => (
+                        <SelectItem key={theme.id} value={theme.name}>
+                          {theme.name} ({theme.category})
+                        </SelectItem>
+                      ))}
+                      {themes.length === 0 && (
+                        <SelectItem value="default" disabled>
+                          Tidak ada tema tersedia
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
@@ -411,29 +434,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                         {status}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="theme">Tema</Label>
-                <Select 
-                  value={formData.theme} 
-                  onValueChange={(value) => handleSelectChange(value, "theme")}
-                >
-                  <SelectTrigger id="theme">
-                    <SelectValue placeholder="Pilih tema" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map((theme) => (
-                      <SelectItem key={theme.id} value={theme.name}>
-                        {theme.name} ({theme.category})
-                      </SelectItem>
-                    ))}
-                    {themes.length === 0 && (
-                      <SelectItem value="default" disabled>
-                        Tidak ada tema tersedia
-                      </SelectItem>
-                    )}
                   </SelectContent>
                 </Select>
               </div>

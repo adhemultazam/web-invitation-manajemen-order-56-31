@@ -168,7 +168,7 @@ export function EditOrderDialog({
                 name="clientName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nama Mempelai</FormLabel>
+                    <FormLabel>Client</FormLabel>
                     <FormControl>
                       <Input placeholder="Contoh: Rizki & Putri" {...field} />
                     </FormControl>
@@ -286,29 +286,55 @@ export function EditOrderDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="package"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Paket</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih paket" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {packages.map((pkg) => (
-                          <SelectItem key={pkg.id} value={pkg.name}>
-                            {pkg.name} - Rp {pkg.price?.toLocaleString()}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <FormLabel>Paket & Tema</FormLabel>
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="package"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih paket" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {packages.map((pkg) => (
+                              <SelectItem key={pkg.id} value={pkg.name}>
+                                {pkg.name} - Rp {pkg.price?.toLocaleString()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="theme"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih tema" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {themes.map((theme) => (
+                              <SelectItem key={theme.id} value={theme.name}>
+                                {theme.name} {theme.category ? `(${theme.category})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Addons */}
@@ -405,29 +431,6 @@ export function EditOrderDialog({
                               />
                               {status.name}
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="theme"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tema</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih tema" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {themes.map((theme) => (
-                          <SelectItem key={theme.id} value={theme.name}>
-                            {theme.name} {theme.category ? `(${theme.category})` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

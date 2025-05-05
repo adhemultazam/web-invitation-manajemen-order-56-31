@@ -83,7 +83,7 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
     <div className="bg-white dark:bg-gray-800 border rounded-md p-4 space-y-3">
       <div className="flex justify-between items-center">
         <div>
-          <div className="font-medium text-sm">{order.customerName}</div>
+          <div className="font-medium text-sm">Client</div>
           <a 
             href={order.clientUrl} 
             target="_blank" 
@@ -171,44 +171,44 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-1 gap-2 text-sm">
         <div>
-          <div className="text-muted-foreground text-xs">Paket</div>
-          <Select
-            value={order.package}
-            onValueChange={(value) => handlePackageChange(order.id, value)}
-            disabled={updatingOrders.has(order.id)}
-          >
-            <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
-              <SelectValue>{order.package}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {availablePackages.map((pkg) => (
-                <SelectItem key={pkg.id} value={pkg.name} className="text-xs">
-                  {pkg.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <div className="text-muted-foreground text-xs">Tema</div>
-          <Select
-            value={order.theme}
-            onValueChange={(value) => handleThemeChange(order.id, value)}
-            disabled={updatingOrders.has(order.id)}
-          >
-            <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">
-              <SelectValue>{order.theme}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {themes.map((theme) => (
-                <SelectItem key={theme} value={theme} className="text-xs">
-                  {theme}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="text-muted-foreground text-xs">Paket & Tema</div>
+          <div className="flex flex-col space-y-2 mt-1">
+            <Select
+              value={order.package}
+              onValueChange={(value) => handlePackageChange(order.id, value)}
+              disabled={updatingOrders.has(order.id)}
+            >
+              <SelectTrigger className="h-7 w-full text-xs px-2">
+                <SelectValue>{order.package}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {availablePackages.map((pkg) => (
+                  <SelectItem key={pkg.id} value={pkg.name} className="text-xs">
+                    {pkg.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select
+              value={order.theme}
+              onValueChange={(value) => handleThemeChange(order.id, value)}
+              disabled={updatingOrders.has(order.id)}
+            >
+              <SelectTrigger className="h-7 w-full text-xs px-2">
+                <SelectValue>{order.theme}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {themes.map((theme) => (
+                  <SelectItem key={theme} value={theme} className="text-xs">
+                    {theme}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
       
@@ -256,7 +256,7 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
           <div className="text-muted-foreground text-xs">Status</div>
           <Select
             value={order.workStatus}
-            onValueChange={(value) => handleWorkStatusChange(order.id, value)}
+            onValueChange={(value)=> handleWorkStatusChange(order.id, value)}
             disabled={updatingOrders.has(order.id)}
           >
             <SelectTrigger className="h-7 w-full text-xs px-2 mt-1">

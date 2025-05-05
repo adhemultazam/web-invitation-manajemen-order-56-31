@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -9,6 +9,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Theme } from "@/types/types";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface ThemeSelectProps {
   value: string;
@@ -23,28 +25,64 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
   onChange,
   isDisabled = false
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Filter themes based on search query
+  const filteredThemes = themes.filter(theme =>
+    theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (theme.category && theme.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="space-y-1">
       <Select
         value={value}
         onValueChange={onChange}
         disabled={isDisabled}
+        open={isOpen}
+        onOpenChange={setIsOpen}
       >
         <SelectTrigger id="theme" className="w-full">
           <SelectValue placeholder="Pilih tema">{value}</SelectValue>
         </SelectTrigger>
-        <SelectContent>
-          {themes && themes.map((theme) => (
-            <SelectItem key={theme.id} value={theme.name}>
-              <div className="flex items-center">
-                <span>{theme.name}</span>
-                {theme.category && (
-                  <span className="ml-2 text-xs text-muted-foreground">({theme.category})</span>
-                )}
+        <SelectContent className="max-h-[300px]">
+          <div className="sticky top-0 p-2 bg-popover z-10 border-b">
+            <div className="flex items-center border rounded-md px-3 h-9">
+              <Search className="h-4 w-4 mr-2 opacity-50" />
+              <Input 
+                placeholder="Cari tema..."
+                className="border-0 h-full p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClick={(e) => {
+                  // Prevent dropdown from closing when clicking on the search input
+                  e.stopPropagation();
+                }}
+              />
+            </div>
+          </div>
+          
+          <div className="pt-2 pb-1">
+            {filteredThemes.length > 0 ? (
+              filteredThemes.map((theme) => (
+                <SelectItem key={theme.id} value={theme.name}>
+                  <div className="flex items-center">
+                    <span>{theme.name}</span>
+                    {theme.category && (
+                      <span className="ml-2 text-xs text-muted-foreground">({theme.category})</span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))
+            ) : (
+              <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                Tidak ada tema yang sesuai dengan pencarian
               </div>
-            </SelectItem>
-          ))}
-          {(!themes || themes.length === 0) && (
+            )}
+          </div>
+          
+          {(!themes || themes.length === 0) && searchQuery === "" && (
             <SelectItem value="no-theme" disabled>
               Tidak ada tema tersedia
             </SelectItem>

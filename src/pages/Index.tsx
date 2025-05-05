@@ -94,9 +94,8 @@ export default function Index() {
     // Year filter
     const yearMatch = selectedYear === "Semua Data" || orderYear === selectedYear;
     
-    // Month filter - use the mapping to get the correct month index
-    const monthIndex = selectedMonth === "Semua Data" ? -1 : monthMapping[selectedMonth];
-    const monthMatch = monthIndex === -1 || orderMonth === monthIndex;
+    // Month filter
+    const monthMatch = selectedMonth === "Semua Data" || orderMonth === monthMapping[selectedMonth];
     
     return yearMatch && monthMatch;
   });
@@ -110,6 +109,12 @@ export default function Index() {
         pendingPayments: 0,
         upcomingEvents: 0,
       });
+      
+      // Reset chart data as well
+      setMonthlyOrdersData([]);
+      setPackageDistribution([]);
+      setVendorDistribution([]);
+      setWorkStatusDistribution([]);
       return;
     }
     
@@ -150,7 +155,7 @@ export default function Index() {
     
     // Monthly orders data
     const ordersByMonth: Record<string, number> = {};
-    const monthNames = [
+    const monthNamesShort = [
       "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", 
       "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
     ];
@@ -160,7 +165,7 @@ export default function Index() {
       
       const date = new Date(order.orderDate);
       const monthIdx = date.getMonth();
-      const monthName = monthNames[monthIdx];
+      const monthName = monthNamesShort[monthIdx];
       
       if (!ordersByMonth[monthName]) {
         ordersByMonth[monthName] = 0;
@@ -172,7 +177,7 @@ export default function Index() {
     const monthlyData = Object.entries(ordersByMonth)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => {
-        const monthOrder = monthNames.indexOf(a.name) - monthNames.indexOf(b.name);
+        const monthOrder = monthNamesShort.indexOf(a.name) - monthNamesShort.indexOf(b.name);
         return monthOrder;
       });
     

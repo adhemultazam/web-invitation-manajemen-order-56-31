@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Order, Addon, Package, Theme } from "@/types/types";
+import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
 
 interface AddOrderModalProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
   const [packages, setPackages] = useState<Package[]>([]);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [vendorList, setVendorList] = useState<Vendor[]>([]);
+  const [themeOpen, setThemeOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     customerName: "",
@@ -50,6 +53,20 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
 
   // Load data from localStorage when component mounts
   useEffect(() => {
+    const loadVendors = () => {
+      try {
+        const savedVendors = localStorage.getItem("vendors");
+        if (savedVendors) {
+          const parsedVendors = JSON.parse(savedVendors);
+          if (Array.isArray(parsedVendors) && parsedVendors.length > 0) {
+            setVendorList(parsedVendors);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading vendors:", error);
+      }
+    };
+    
     const loadPackages = () => {
       try {
         const savedPackages = localStorage.getItem("packages");
@@ -132,6 +149,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       }
     };
     
+    loadVendors();
     loadPackages();
     loadAddons();
     loadThemes();
@@ -174,6 +192,16 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
         addons: formData.addons.filter(name => name !== addonName)
       });
     }
+  };
+  
+  const getVendorName = (vendorId: string) => {
+    const vendor = vendorList.find(v => v.id === vendorId);
+    return vendor ? vendor.name : vendorId;
+  };
+
+  const getVendorColor = (vendorId: string) => {
+    const vendor = vendorList.find(v => v.id === vendorId);
+    return vendor ? vendor.color : '#6E6E6E';
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -302,12 +330,28 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                   onValueChange={(value) => handleSelectChange(value, "vendor")}
                 >
                   <SelectTrigger id="vendor">
-                    <SelectValue placeholder="Pilih vendor" />
+                    <SelectValue>
+                      <div className="flex items-center">
+                        {formData.vendor && (
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: getVendorColor(formData.vendor) }}
+                          />
+                        )}
+                        {formData.vendor ? getVendorName(formData.vendor) : "Pilih vendor"}
+                      </div>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {vendors.map((vendor) => (
-                      <SelectItem key={vendor} value={vendor}>
-                        {vendor}
+                    {vendorList.map((vendor) => (
+                      <SelectItem key={vendor.id} value={vendor.id}>
+                        <div className="flex items-center">
+                          <div
+                            className="w-2 h-2 mr-2 rounded-full"
+                            style={{ backgroundColor: vendor.color }}
+                          />
+                          {vendor.name}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -331,26 +375,51 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select 
-                    value={formData.theme}
-                    onValueChange={(value) => handleSelectChange(value, "theme")}
-                  >
-                    <SelectTrigger id="theme">
-                      <SelectValue placeholder="Pilih tema" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {themes.map((theme) => (
-                        <SelectItem key={theme.id} value={theme.name}>
-                          {theme.name} ({theme.category})
-                        </SelectItem>
-                      ))}
-                      {themes.length === 0 && (
-                        <SelectItem value="default" disabled>
-                          Tidak ada tema tersedia
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  
+                  {/* Theme selection with search */}
+                  <Popover open={themeOpen} onOpenChange={setThemeOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={themeOpen}
+                        className="w-full justify-between"
+                      >
+                        {formData.theme ? 
+                          `${formData.theme} ${themes.find(t => t.name === formData.theme)?.category ? `(${themes.find(t => t.name === formData.theme)?.category})` : ''}` : 
+                          "Pilih tema"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Cari tema..." />
+                        <CommandList>
+                          <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
+                          <CommandGroup>
+                            {themes.map((theme) => (
+                              <CommandItem
+                                key={theme.id}
+                                value={theme.name}
+                                onSelect={(value) => {
+                                  setFormData({...formData, theme: value});
+                                  setThemeOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.theme === theme.name ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {theme.name} {theme.category ? `(${theme.category})` : ''}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </div>

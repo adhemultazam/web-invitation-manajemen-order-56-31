@@ -90,22 +90,22 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         </span>
       </TableCell>
       
-      {/* Client & Nama combined */}
+      {/* Client & Nama combined - SWAPPED ORDER */}
       <TableCell>
         <div className="space-y-1">
-          <div className="text-sm font-medium">{order.clientName}</div>
           {hasClientUrl() ? (
             <a 
               href={order.clientUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-500 hover:underline cursor-pointer"
+              className="text-sm text-blue-500 hover:underline cursor-pointer font-medium"
             >
-              {order.customerName}
+              {order.clientName}
             </a>
           ) : (
-            <span className="text-xs text-muted-foreground">{order.customerName}</span>
+            <div className="text-sm font-medium">{order.clientName}</div>
           )}
+          <div className="text-xs text-muted-foreground">{order.customerName}</div>
         </div>
       </TableCell>
       

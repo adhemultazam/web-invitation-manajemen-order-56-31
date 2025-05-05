@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface StatCardProps {
   title: string;
-  value: string | number;
+  value: string | number;  // Allow both string and number
   icon: React.ReactNode;
-  description?: string;
+  description?: string | number;  // Allow both string and number for description too
   type?: "default" | "success" | "warning" | "danger";
 }
 
@@ -50,6 +50,20 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
     return String(value);
   };
 
+  // Format description if it's a number (for currency values)
+  const formatDescription = () => {
+    if (typeof description === 'number') {
+      // Format numbers as currency
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(description);
+    }
+    return description;
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -63,7 +77,7 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
           {formatValue()}
         </div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground mt-1">{formatDescription()}</p>
         )}
       </CardContent>
     </Card>

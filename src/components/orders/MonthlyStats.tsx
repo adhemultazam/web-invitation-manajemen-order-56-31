@@ -87,14 +87,14 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
         title="Sudah Lunas"
         value={`${stats.paidOrdersCount}`}
         icon={<Check className="h-4 w-4" />}
-        description={stats.paidRevenue > 0 ? stats.paidRevenue : "(Rp 0)"}
+        description={stats.paidRevenue}
         type="success"
       />
       <StatCard
         title="Belum Lunas"
         value={`${stats.unpaidOrdersCount}`}
         icon={<CreditCard className="h-4 w-4" />}
-        description={stats.unpaidRevenue > 0 ? stats.unpaidRevenue : "(Rp 0)"}
+        description={stats.unpaidRevenue}
         type="danger"
       />
     </div>

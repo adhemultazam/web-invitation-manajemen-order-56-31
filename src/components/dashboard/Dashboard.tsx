@@ -1,9 +1,10 @@
+
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CreditCard, ChartPie, Wallet, Package, Layers, Check, DollarSign } from "lucide-react";
+import { ShoppingCart, DollarSign, Check, X, ChartPie, Wallet, Package, Layers } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
@@ -303,27 +304,28 @@ export function Dashboard() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Pesanan"
-              value={`${stats.totalOrders}`}
-              icon={<Calendar className="h-4 w-4" />}
+              value={stats.totalOrders}
+              icon={<ShoppingCart className="h-3 w-3 text-white" />}
               description="Keseluruhan pesanan"
             />
             <StatCard
               title="Total Omset"
               value={stats.totalRevenue}
-              icon={<DollarSign className="h-4 w-4" />}
+              icon={<DollarSign className="h-3 w-3 text-white" />}
               description={`${stats.totalOrders} pesanan`}
+              type="warning"
             />
             <StatCard
               title="Sudah Lunas"
-              value={`${stats.paidOrdersCount}`}
-              icon={<Check className="h-4 w-4" />}
+              value={stats.paidOrdersCount}
+              icon={<Check className="h-3 w-3 text-white" />}
               description={stats.paidRevenue}
               type="success"
             />
             <StatCard
               title="Belum Lunas"
-              value={`${stats.pendingOrdersCount}`}
-              icon={<CreditCard className="h-4 w-4" />}
+              value={stats.pendingOrdersCount}
+              icon={<X className="h-3 w-3 text-white" />}
               description={stats.pendingRevenue}
               type="danger"
             />

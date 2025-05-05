@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Order } from "@/types/types";
-import { Calendar, CreditCard, DollarSign, Check } from "lucide-react";
+import { ShoppingCart, DollarSign, Check, X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface MonthlyStatsProps {
@@ -71,26 +71,27 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
       <StatCard
         title="Total Pesanan"
         value={stats.totalOrders}
-        icon={<Calendar className="h-4 w-4" />}
+        icon={<ShoppingCart className="h-3 w-3 text-white" />}
         description={`Bulan ${month}`}
       />
       <StatCard
         title="Total Omset"
         value={formatCurrency(stats.totalRevenue)}
-        icon={<DollarSign className="h-4 w-4" />}
+        icon={<DollarSign className="h-3 w-3 text-white" />}
         description={`${stats.totalOrders} pesanan`}
+        type="warning"
       />
       <StatCard
         title="Sudah Lunas"
         value={stats.paidOrdersCount}
-        icon={<Check className="h-4 w-4" />}
+        icon={<Check className="h-3 w-3 text-white" />}
         description={formatCurrency(stats.paidRevenue)}
         type="success"
       />
       <StatCard
         title="Belum Lunas"
         value={stats.unpaidOrdersCount}
-        icon={<CreditCard className="h-4 w-4" />}
+        icon={<X className="h-3 w-3 text-white" />}
         description={formatCurrency(stats.unpaidRevenue)}
         type="danger"
       />

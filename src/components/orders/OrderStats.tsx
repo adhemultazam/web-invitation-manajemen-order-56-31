@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Order } from "@/types/types";
-import { DollarSign, Check, X, ShoppingCart } from "lucide-react";
+import { ShoppingCart, DollarSign, Check, X } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 interface OrderStatsProps {

@@ -10,17 +10,45 @@ interface StatCardProps {
 }
 
 export function StatCard({ title, value, icon, description, type = "default" }: StatCardProps) {
-  // Menentukan warna icon berdasarkan tipe
+  // Get background color class based on card type
+  const getBackgroundClass = () => {
+    switch (type) {
+      case "success":
+        return "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border border-green-200 dark:border-green-800";
+      case "warning":
+        return "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border border-amber-200 dark:border-amber-800";
+      case "danger":
+        return "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border border-red-200 dark:border-red-800";
+      default:
+        return "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800";
+    }
+  };
+
+  // Get icon color based on card type
   const getIconColorClass = () => {
     switch (type) {
       case "success":
-        return "text-green-500";
+        return "bg-green-500 dark:bg-green-400";
       case "warning":
-        return "text-amber-500";
+        return "bg-amber-500 dark:bg-amber-400";
       case "danger":
-        return "text-red-500";
+        return "bg-red-500 dark:bg-red-400";
       default:
-        return "text-wedding-primary";
+        return "bg-blue-500 dark:bg-blue-400";
+    }
+  };
+
+  // Get text color class based on card type
+  const getTextColorClass = () => {
+    switch (type) {
+      case "success":
+        return "text-green-800 dark:text-green-200";
+      case "warning":
+        return "text-amber-800 dark:text-amber-200";
+      case "danger":
+        return "text-red-800 dark:text-red-200";
+      default:
+        return "text-blue-800 dark:text-blue-200";
     }
   };
 
@@ -65,19 +93,21 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className={`h-5 w-5 ${getIconColorClass()}`}>{icon}</div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap">
+    <Card className={`overflow-hidden shadow-sm ${getBackgroundClass()}`}>
+      <CardContent className="px-3 py-3">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-xs font-medium">{title}</h3>
+          <div className={`rounded-full w-6 h-6 flex items-center justify-center ${getIconColorClass()}`}>
+            {icon}
+          </div>
+        </div>
+        <div className={`text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap ${getTextColorClass()}`}>
           {formatValue()}
         </div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{formatDescription()}</p>
+          <p className="text-xs mt-1 opacity-90">
+            {formatDescription()}
+          </p>
         )}
       </CardContent>
     </Card>

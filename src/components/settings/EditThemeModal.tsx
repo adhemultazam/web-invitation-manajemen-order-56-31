@@ -37,8 +37,6 @@ export function EditThemeModal({
   const [name, setName] = useState(theme.name);
   const [thumbnail, setThumbnail] = useState(theme.thumbnail || "");
   const [category, setCategory] = useState(theme.category || "");
-  const [newCategory, setNewCategory] = useState("");
-  const [showNewCategory, setShowNewCategory] = useState(false);
   
   // Update state when theme changes
   useEffect(() => {
@@ -59,14 +57,11 @@ export function EditThemeModal({
     // Use a placeholder thumbnail if none provided
     const finalThumbnail = thumbnail || `https://placehold.co/200x280/f5f5f5/333333?text=${encodeURIComponent(name)}`;
     
-    // Determine final category
-    const finalCategory = showNewCategory ? newCategory : category;
-    
     onSave({
       ...theme,
       name,
       thumbnail: finalThumbnail,
-      category: finalCategory
+      category
     });
     
     onClose();
@@ -106,53 +101,18 @@ export function EditThemeModal({
           
           <div className="space-y-2">
             <Label htmlFor="category">Kategori</Label>
-            {!showNewCategory ? (
-              <>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {existingCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="new">+ Kategori Baru</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                {category === "new" && (
-                  <div className="mt-2">
-                    <Input
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
-                      placeholder="Nama kategori baru"
-                      onFocus={() => setShowNewCategory(true)}
-                    />
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="Nama kategori baru"
-                />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowNewCategory(false);
-                    setNewCategory("");
-                    setCategory(theme.category || "");
-                  }}
-                >
-                  Batal
-                </Button>
-              </div>
-            )}
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                {existingCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {thumbnail && (

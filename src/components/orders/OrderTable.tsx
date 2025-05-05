@@ -1,20 +1,11 @@
-
 import React from "react";
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@/components/ui/table";
 import { Order, WorkStatus, Vendor, Package, Theme } from "@/types/types";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Eye, Trash } from "lucide-react";
-import { cn } from "@/lib/utils";
-import VendorDropdown from "./VendorDropdown";
-import OrderTableRow from "./OrderTableRow"; // Import the OrderTableRow component
+import OrderTableRow from "./OrderTableRow";
+import OrderTableHeader from "./OrderTableHeader";
 
 interface OrderTableProps {
   orders: Order[];
@@ -63,23 +54,7 @@ export function OrderTable({
   return (
     <div className="rounded-md border overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">No</TableHead>
-            <TableHead className="hidden md:table-cell">Tgl Pesan</TableHead>
-            <TableHead className="hidden md:table-cell">Tgl Acara</TableHead>
-            <TableHead className="hidden md:table-cell">Countdown</TableHead>
-            <TableHead className="min-w-[150px]">Client</TableHead>
-            <TableHead>Nama</TableHead>
-            <TableHead>Vendor</TableHead>
-            <TableHead className="hidden lg:table-cell">Paket</TableHead>
-            <TableHead className="hidden xl:table-cell">Tema</TableHead>
-            <TableHead className="hidden lg:table-cell">Addons</TableHead>
-            <TableHead>Pembayaran</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
+        <OrderTableHeader />
         <TableBody>
           {orders.length > 0 ? (
             orders.map((order, index) => (

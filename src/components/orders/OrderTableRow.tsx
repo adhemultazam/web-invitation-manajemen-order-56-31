@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor } from "@/types/types";
@@ -108,20 +107,20 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         />
       </TableCell>
       <TableCell>
-        <div className="space-y-2">
-          <PackageSelect
-            value={order.package}
-            packages={availablePackages}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handlePackageChange(order.id, value)}
-          />
-          <ThemeSelect
-            value={order.theme}
-            themes={themes}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handleThemeChange(order.id, value)}
-          />
-        </div>
+        <PackageSelect
+          value={order.package}
+          packages={availablePackages}
+          isDisabled={updatingOrders.has(order.id)}
+          onChange={(value) => handlePackageChange(order.id, value)}
+        />
+      </TableCell>
+      <TableCell>
+        <ThemeSelect
+          value={order.theme}
+          themes={themes}
+          isDisabled={updatingOrders.has(order.id)}
+          onChange={(value) => handleThemeChange(order.id, value)}
+        />
       </TableCell>
       <TableCell>
         <OrderAddons 

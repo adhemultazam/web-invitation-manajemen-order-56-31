@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -9,7 +8,6 @@ import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { Button } from "@/components/ui/button";
-import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 
 export function Dashboard() {
@@ -423,19 +421,6 @@ export function Dashboard() {
                 { key: "pending", color: "#F97316" } // Orange for pending
               ]}
               icon={<Wallet className="h-4 w-4" />}
-            />
-          </div>
-
-          {/* Recent orders with compact table */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Pesanan Terbaru</h3>
-            </div>
-            
-            <CompactOrdersTable
-              orders={recentOrders}
-              onEditOrder={(order) => console.log("Edit order", order.id)}
-              onDeleteOrder={(id) => console.log("Delete order", id)}
             />
           </div>
         </>

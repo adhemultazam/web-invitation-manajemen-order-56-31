@@ -64,7 +64,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Nunito", "sans-serif"],
+        poppins: ["Poppins", "sans-serif"],
+        inter: ["Inter", "sans-serif"],
+        sans: ["Inter", "Poppins", "sans-serif"],
       },
       boxShadow: {
         'soft': '0 2px 10px rgba(0, 0, 0, 0.08)',

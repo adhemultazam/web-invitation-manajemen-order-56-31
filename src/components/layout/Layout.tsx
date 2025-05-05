@@ -8,6 +8,7 @@ import { MobileNavbar } from "./MobileNavbar";
 import { UserMenu } from "./UserMenu";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RecentOrders } from "./RecentOrders";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -39,7 +40,12 @@ export function Layout({ children }: LayoutProps) {
                 <UserMenu />
               </div>
             </div>
-            {children}
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex-1">
+                {children}
+              </div>
+              {!isMobile && <RecentOrders className="w-80 shrink-0" />}
+            </div>
           </div>
           {isMobile && <MobileNavbar />}
         </main>

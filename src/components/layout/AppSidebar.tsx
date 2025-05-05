@@ -15,7 +15,6 @@ import {
   CalendarDays, 
   Settings,
   FileText,
-  ArrowUpRight,
   Image
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -143,14 +142,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
-        {/* Upgrade Button at the bottom */}
-        <div className="px-6 mt-6 mb-6">
-          <button className="w-full bg-wedding-primary hover:bg-wedding-primary/90 transition-colors text-white font-medium rounded-lg py-2.5 text-sm flex items-center justify-center gap-1.5 shadow-sm">
-            <span>Upgrade Sekarang</span>
-            <ArrowUpRight size={14} />
-          </button>
-        </div>
       </SidebarContent>
     </Sidebar>
   );

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, BarChart3, Banknote, Package2 } from "lucide-react";
@@ -11,8 +12,18 @@ import { toast } from "sonner";
 export default function Index() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear().toString();
+  const currentMonthIndex = new Date().getMonth();
+  
+  // Define month names
+  const monthNames = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+  
+  const currentMonthName = monthNames[currentMonthIndex];
+  
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState("Semua Data");
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthName);
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -74,6 +85,8 @@ export default function Index() {
 
   // Filter orders based on selected year and month
   const filteredOrders = orders.filter(order => {
+    if (!order.orderDate) return false;
+    
     const orderDate = new Date(order.orderDate);
     const orderYear = orderDate.getFullYear().toString();
     const orderMonth = orderDate.getMonth();
@@ -82,8 +95,8 @@ export default function Index() {
     const yearMatch = selectedYear === "Semua Data" || orderYear === selectedYear;
     
     // Month filter - use the mapping to get the correct month index
-    const monthIndex = monthMapping[selectedMonth];
-    const monthMatch = selectedMonth === "Semua Data" || orderMonth === monthIndex;
+    const monthIndex = selectedMonth === "Semua Data" ? -1 : monthMapping[selectedMonth];
+    const monthMatch = monthIndex === -1 || orderMonth === monthIndex;
     
     return yearMatch && monthMatch;
   });
@@ -143,6 +156,8 @@ export default function Index() {
     ];
     
     filteredOrders.forEach(order => {
+      if (!order.orderDate) return;
+      
       const date = new Date(order.orderDate);
       const monthIdx = date.getMonth();
       const monthName = monthNames[monthIdx];

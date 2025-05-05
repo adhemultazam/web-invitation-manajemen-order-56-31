@@ -40,13 +40,18 @@ export function FilterBar({
 }: FilterBarProps) {
   const years = generateYearOptions();
   
-  // Set default year to current year on initial render if not already set
+  // Set default year and month on initial render if not already set
   useEffect(() => {
     if (selectedYear === "Semua Data" || !selectedYear) {
       const currentYear = new Date().getFullYear().toString();
       if (years.includes(currentYear)) {
         onYearChange(currentYear);
       }
+    }
+    
+    if (selectedMonth === "Semua Data" || !selectedMonth) {
+      const currentMonthIndex = new Date().getMonth();
+      onMonthChange(months[currentMonthIndex + 1]); // +1 because index 0 is "Semua Data"
     }
   }, []);
 

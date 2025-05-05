@@ -26,6 +26,7 @@ export interface Vendor {
   name: string;
   code: string;
   color: string;
+  commission?: number; // Added commission property
   contactName?: string;
   contactPhone?: string;
   contactEmail?: string;
@@ -38,7 +39,7 @@ export interface WorkStatus {
   id: string;
   name: string;
   color: string;
-  order: number;
+  order: number; // This property was already defined but missing in implementations
 }
 
 // Addon Type
@@ -56,6 +57,8 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category?: string;
+  price?: number; // Added price property
+  description?: string; // Added description property
 }
 
 // Package Type
@@ -75,6 +78,7 @@ export interface Invoice {
   vendor: string;
   dateIssued: string;
   dateDue: string;
+  dueDate?: string; // Added dueDate property
   orders: {
     orderId: string;
     clientName: string;

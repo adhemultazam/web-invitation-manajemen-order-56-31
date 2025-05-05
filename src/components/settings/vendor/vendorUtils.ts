@@ -7,15 +7,15 @@ export const initialVendors: Vendor[] = [
     id: "1",
     name: "Vendor Utama",
     code: "MAIN",
-    commission: 10,
-    color: "#6366f1" // Default color - indigo
+    color: "#6366f1", // Default color - indigo
+    commission: 10
   },
   {
     id: "2",
     name: "Reseller Premium",
     code: "PREM",
-    commission: 15,
-    color: "#3b82f6" // Default color - blue
+    color: "#3b82f6", // Default color - blue
+    commission: 15
   }
 ];
 

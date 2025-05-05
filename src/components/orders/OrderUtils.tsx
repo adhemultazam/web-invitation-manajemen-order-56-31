@@ -81,11 +81,11 @@ export const loadWorkStatusesFromStorage = (): WorkStatus[] => {
   
   // Default work statuses if none are stored
   const defaultWorkStatuses: WorkStatus[] = [
-    { id: "1", name: "Selesai", color: "#22c55e" },
-    { id: "2", name: "Progress", color: "#3b82f6" },
-    { id: "3", name: "Review", color: "#f59e0b" },
-    { id: "4", name: "Revisi", color: "#f97316" },
-    { id: "5", name: "Data Belum", color: "#ef4444" }
+    { id: "1", name: "Selesai", color: "#22c55e", order: 1 },
+    { id: "2", name: "Progress", color: "#3b82f6", order: 2 },
+    { id: "3", name: "Review", color: "#f59e0b", order: 3 },
+    { id: "4", name: "Revisi", color: "#f97316", order: 4 },
+    { id: "5", name: "Data Belum", color: "#ef4444", order: 5 }
   ];
   
   return defaultWorkStatuses;

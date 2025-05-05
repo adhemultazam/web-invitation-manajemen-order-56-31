@@ -27,27 +27,32 @@ const initialStatuses: WorkStatus[] = [
   {
     id: "1",
     name: "Selesai",
-    color: "#22c55e" // green-500
+    color: "#22c55e", // green-500
+    order: 1
   },
   {
     id: "2",
     name: "Progress",
-    color: "#3b82f6" // blue-500
+    color: "#3b82f6", // blue-500
+    order: 2
   },
   {
     id: "3",
     name: "Review",
-    color: "#f59e0b" // amber-500
+    color: "#f59e0b", // amber-500
+    order: 3
   },
   {
     id: "4",
     name: "Revisi",
-    color: "#f97316" // orange-500
+    color: "#f97316", // orange-500
+    order: 4
   },
   {
     id: "5",
     name: "Data Belum",
-    color: "#ef4444" // red-500
+    color: "#ef4444", // red-500
+    order: 5
   }
 ];
 
@@ -57,7 +62,8 @@ export function StatusSettings() {
   const [currentStatus, setCurrentStatus] = useState<WorkStatus | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    color: "#000000"
+    color: "#000000",
+    order: 0
   });
 
   useEffect(() => {
@@ -89,13 +95,19 @@ export function StatusSettings() {
       setCurrentStatus(status);
       setFormData({
         name: status.name,
-        color: status.color
+        color: status.color,
+        order: status.order
       });
     } else {
       setCurrentStatus(null);
+      // If adding a new status, set the order to the next number in sequence
+      const nextOrder = statuses.length > 0 
+        ? Math.max(...statuses.map(s => s.order)) + 1 
+        : 1;
       setFormData({
         name: "",
-        color: "#000000"
+        color: "#000000",
+        order: nextOrder
       });
     }
     setIsDialogOpen(true);
@@ -105,7 +117,7 @@ export function StatusSettings() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: name === 'order' ? parseInt(value, 10) : value
     }));
   };
 
@@ -197,6 +209,22 @@ export function StatusSettings() {
                     />
                   </div>
                 </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="order">Urutan</Label>
+                  <Input
+                    id="order"
+                    name="order"
+                    type="number"
+                    min="1"
+                    placeholder="Urutan tampilan"
+                    value={formData.order}
+                    onChange={handleChange}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Urutan tampilan status di daftar (kecil ke besar)
+                  </p>
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -223,7 +251,7 @@ export function StatusSettings() {
                 <div>
                   <h3 className="font-medium">{status.name}</h3>
                   <p className="text-xs text-muted-foreground">
-                    {status.color}
+                    {status.color} (Urutan: {status.order})
                   </p>
                 </div>
               </div>

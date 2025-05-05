@@ -101,7 +101,8 @@ export const generateInvoice = (
     vendorId,
     vendor: vendorName,
     dateIssued: today.toISOString().split('T')[0],
-    dueDate,
+    dateDue: dueDate,
+    dueDate, // Added this property to match the updated type
     orders: invoiceOrders,
     totalAmount,
     status: "Unpaid"

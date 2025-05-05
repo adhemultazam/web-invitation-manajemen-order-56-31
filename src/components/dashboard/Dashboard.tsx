@@ -4,10 +4,11 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, ClockIcon, ChartPie, ChartLine } from "lucide-react";
+import { Calendar, CreditCard, ChartPie, Wallet } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
+import { useVendorsData } from "@/hooks/useVendorsData";
 
 export function Dashboard() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -15,9 +16,13 @@ export function Dashboard() {
   
   // Ambil data pesanan berdasarkan filter
   const { orders, isLoading } = useOrdersData(selectedYear, selectedMonth);
+  const { vendors } = useVendorsData();
   
   // Hitung statistik dari data pesanan
   const stats = useMemo(() => {
+    // Map vendor ID to vendor name
+    const vendorMap = new Map(vendors.map(vendor => [vendor.id, vendor.name]));
+    
     // Total Pesanan
     const totalOrders = orders.length;
     
@@ -61,37 +66,90 @@ export function Dashboard() {
       .map(([name, value]) => ({ name, value }));
     
     // Data untuk chart distribusi vendor
-    const vendorMap = new Map<string, number>();
+    const vendorOrdersMap = new Map<string, number>();
     
     orders.forEach(order => {
-      const vendor = order.vendor;
-      if (vendor) {
-        vendorMap.set(vendor, (vendorMap.get(vendor) || 0) + 1);
+      if (order.vendor) {
+        // Use vendor name instead of ID
+        const vendorName = vendorMap.get(order.vendor) || order.vendor;
+        vendorOrdersMap.set(vendorName, (vendorOrdersMap.get(vendorName) || 0) + 1);
       }
     });
     
-    const vendorData: ChartData[] = Array.from(vendorMap.entries())
+    const vendorData: ChartData[] = Array.from(vendorOrdersMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pesanan per bulan
-    const monthlyOrdersMap = new Map<string, number>();
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    // Data untuk chart pembayaran per vendor
+    const vendorPaymentMap = new Map<string, number>();
     
     orders.forEach(order => {
-      try {
-        const date = new Date(order.orderDate);
-        const monthName = monthNames[date.getMonth()];
-        monthlyOrdersMap.set(monthName, (monthlyOrdersMap.get(monthName) || 0) + 1);
-      } catch (e) {
-        console.error("Error parsing date:", order.orderDate);
+      if (order.vendor && order.paymentStatus === "Lunas") {
+        // Use vendor name instead of ID
+        const vendorName = vendorMap.get(order.vendor) || order.vendor;
+        vendorPaymentMap.set(vendorName, (vendorPaymentMap.get(vendorName) || 0) + order.paymentAmount);
       }
     });
     
-    const monthlyOrdersData: ChartData[] = monthNames
-      .map(month => ({
-        name: month,
-        value: monthlyOrdersMap.get(month) || 0
-      }));
+    const vendorPaymentData: ChartData[] = Array.from(vendorPaymentMap.entries())
+      .map(([name, value]) => ({ name, value }));
+    
+    // Data untuk chart pesanan per bulan - Ini yang perlu diperbaiki
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const monthlyOrdersData: ChartData[] = [];
+    
+    if (selectedMonth === "Semua Data") {
+      // Create a map to store orders count by month
+      const monthlyOrdersMap = new Map<number, number>();
+      
+      // Process each order
+      orders.forEach(order => {
+        try {
+          const date = new Date(order.orderDate);
+          // Ensure we're only counting orders from the selected year if a year is selected
+          if (selectedYear === "Semua Data" || date.getFullYear().toString() === selectedYear) {
+            const month = date.getMonth(); // 0-11
+            monthlyOrdersMap.set(month, (monthlyOrdersMap.get(month) || 0) + 1);
+          }
+        } catch (e) {
+          console.error("Error parsing date:", order.orderDate);
+        }
+      });
+      
+      // Create chart data from the map
+      monthNames.forEach((month, index) => {
+        monthlyOrdersData.push({
+          name: month,
+          value: monthlyOrdersMap.get(index) || 0
+        });
+      });
+    } else {
+      // If a specific month is selected, we show daily data for that month
+      const daysInMonth = new Date(
+        parseInt(selectedYear !== "Semua Data" ? selectedYear : new Date().getFullYear().toString()), 
+        monthNames.findIndex(m => m === selectedMonth) + 1, 
+        0
+      ).getDate();
+      
+      const dailyOrdersMap = new Map<number, number>();
+      
+      orders.forEach(order => {
+        try {
+          const date = new Date(order.orderDate);
+          const day = date.getDate(); // 1-31
+          dailyOrdersMap.set(day, (dailyOrdersMap.get(day) || 0) + 1);
+        } catch (e) {
+          console.error("Error parsing date:", order.orderDate);
+        }
+      });
+      
+      // Create chart data for each day of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        monthlyOrdersData.push({
+          name: day.toString(),
+          value: dailyOrdersMap.get(day) || 0
+        });
+      }
+    }
     
     return {
       totalOrders,
@@ -102,9 +160,10 @@ export function Dashboard() {
       paymentStatusData,
       workStatusData,
       vendorData,
+      vendorPaymentData,
       monthlyOrdersData
     };
-  }, [orders]);
+  }, [orders, selectedYear, selectedMonth, vendors]);
   
   // Format currency untuk Rupiah
   const formatCurrency = (amount: number): string => {
@@ -144,13 +203,13 @@ export function Dashboard() {
             <StatCard
               title="Total Pendapatan"
               value={formatCurrency(stats.totalRevenue)}
-              icon={<ChartLine className="h-4 w-4" />}
+              icon={<Wallet className="h-4 w-4" />}
               description={`${stats.paidOrders} pesanan telah lunas`}
             />
             <StatCard
               title="Menunggu Pembayaran"
               value={`${stats.pendingOrders}`}
-              icon={<ClockIcon className="h-4 w-4" />}
+              icon={<CreditCard className="h-4 w-4" />}
               description="Pesanan dengan status Pending"
             />
             <StatCard
@@ -163,7 +222,7 @@ export function Dashboard() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <ChartCard
-              title="Pesanan Per Bulan"
+              title={selectedMonth === "Semua Data" ? "Pesanan Per Bulan" : `Pesanan Harian (${selectedMonth})`}
               data={stats.monthlyOrdersData}
               type="bar"
             />
@@ -185,6 +244,16 @@ export function Dashboard() {
               title="Status Pengerjaan"
               data={stats.workStatusData}
               type="pie"
+            />
+          </div>
+
+          {/* New chart for vendor payment statistics */}
+          <div className="grid gap-4">
+            <ChartCard
+              title="Pembayaran Per Vendor"
+              data={stats.vendorPaymentData}
+              type="bar"
+              isCurrency={true}
             />
           </div>
         </>

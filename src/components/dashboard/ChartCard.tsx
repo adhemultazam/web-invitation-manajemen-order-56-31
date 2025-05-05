@@ -9,11 +9,20 @@ interface ChartCardProps {
   data: ChartDataArray;
   type: "bar" | "pie";
   colors?: string[];
+  isCurrency?: boolean;
 }
 
 const DEFAULT_COLORS = ['#7484D3', '#8F9AD9', '#AAB0DF', '#C5C9E5', '#E0E2EB'];
 
-export function ChartCard({ title, description, data, type, colors = DEFAULT_COLORS }: ChartCardProps) {
+const formatToRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value);
+};
+
+export function ChartCard({ title, description, data, type, colors = DEFAULT_COLORS, isCurrency = false }: ChartCardProps) {
   const renderChart = () => {
     if (type === "bar") {
       return (
@@ -21,13 +30,19 @@ export function ChartCard({ title, description, data, type, colors = DEFAULT_COL
           <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
             <XAxis dataKey="name" fontSize={12} tickMargin={10} />
-            <YAxis fontSize={12} />
+            <YAxis 
+              fontSize={12} 
+              tickFormatter={(value) => isCurrency ? `${(value / 1000000)}M` : value.toString()}
+            />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: "white", 
                 border: "1px solid #f0f0f0",
                 borderRadius: "8px",
               }} 
+              formatter={(value: any) => {
+                return [isCurrency ? formatToRupiah(value) : value, ''];
+              }}
             />
             <Bar dataKey="value" fill="#7484D3" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -61,6 +76,9 @@ export function ChartCard({ title, description, data, type, colors = DEFAULT_COL
                 border: "1px solid #f0f0f0",
                 borderRadius: "8px",
               }} 
+              formatter={(value: any) => {
+                return [isCurrency ? formatToRupiah(value) : value, ''];
+              }}
             />
           </PieChart>
         </ResponsiveContainer>

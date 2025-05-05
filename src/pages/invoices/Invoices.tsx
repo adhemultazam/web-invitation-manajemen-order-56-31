@@ -56,9 +56,9 @@ export default function Invoices() {
         setVendors(JSON.parse(savedVendors));
       } else {
         // Initialize with defaults if not found
-        const defaultVendors = [
-          { id: "v1", name: "Rizki Design", code: "RD", color: "#3b82f6" },
-          { id: "v2", name: "Putri Digital", code: "PD", color: "#8b5cf6" }
+        const defaultVendors: Vendor[] = [
+          { id: "v1", name: "Rizki Design", code: "RD", color: "#3b82f6", commission: 10 },
+          { id: "v2", name: "Putri Digital", code: "PD", color: "#8b5cf6", commission: 15 }
         ];
         localStorage.setItem('vendors', JSON.stringify(defaultVendors));
         setVendors(defaultVendors);

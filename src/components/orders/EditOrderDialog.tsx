@@ -53,8 +53,8 @@ export function EditOrderDialog({
     customerName: "",
     clientName: "",
     clientUrl: "",
-    orderDate: new Date(),
-    eventDate: new Date(),
+    orderDate: "",
+    eventDate: "",
     vendor: "",
     package: "",
     theme: "",
@@ -73,8 +73,8 @@ export function EditOrderDialog({
         customerName: order.customerName || "",
         clientName: order.clientName || "",
         clientUrl: order.clientUrl || "",
-        orderDate: order.orderDate ? parseISO(order.orderDate) : new Date(),
-        eventDate: order.eventDate ? parseISO(order.eventDate) : new Date(),
+        orderDate: order.orderDate ? order.orderDate : "",
+        eventDate: order.eventDate ? order.eventDate : "",
         vendor: order.vendor || "",
         package: order.package || "",
         theme: order.theme || "",
@@ -140,13 +140,13 @@ export function EditOrderDialog({
     
     const updatedData: Partial<Order> = {
       ...formData,
-      orderDate: typeof formData.orderDate === 'object' && formData.orderDate instanceof Date
-        ? format(formData.orderDate, 'yyyy-MM-dd')
+      orderDate: typeof formData.orderDate === 'object' 
+        ? format(formData.orderDate as Date, 'yyyy-MM-dd')
         : typeof formData.orderDate === 'string'
           ? formData.orderDate
           : format(new Date(), 'yyyy-MM-dd'),
-      eventDate: typeof formData.eventDate === 'object' && formData.eventDate instanceof Date
-        ? format(formData.eventDate, 'yyyy-MM-dd')
+      eventDate: typeof formData.eventDate === 'object'
+        ? format(formData.eventDate as Date, 'yyyy-MM-dd')
         : typeof formData.eventDate === 'string'
           ? formData.eventDate
           : format(new Date(), 'yyyy-MM-dd'),
@@ -201,8 +201,8 @@ export function EditOrderDialog({
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {typeof formData.orderDate === 'object' && formData.orderDate instanceof Date
-                        ? format(formData.orderDate, "PPP") 
+                      {typeof formData.orderDate === 'object' 
+                        ? format(formData.orderDate as Date, "PPP") 
                         : typeof formData.orderDate === 'string' && formData.orderDate
                           ? format(parseISO(formData.orderDate), "PPP")
                           : "Pilih tanggal"}
@@ -211,9 +211,11 @@ export function EditOrderDialog({
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={typeof formData.orderDate === 'object' && formData.orderDate instanceof Date 
-                        ? formData.orderDate 
-                        : typeof formData.orderDate === 'string' ? parseISO(formData.orderDate) : undefined}
+                      selected={typeof formData.orderDate === 'object' 
+                        ? formData.orderDate as Date
+                        : typeof formData.orderDate === 'string' && formData.orderDate
+                          ? parseISO(formData.orderDate)
+                          : undefined}
                       onSelect={(date) => date && setFormData({...formData, orderDate: date})}
                       initialFocus
                       className="p-3 pointer-events-auto"
@@ -230,8 +232,8 @@ export function EditOrderDialog({
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {typeof formData.eventDate === 'object' && formData.eventDate instanceof Date
-                        ? format(formData.eventDate, "PPP") 
+                      {typeof formData.eventDate === 'object'
+                        ? format(formData.eventDate as Date, "PPP") 
                         : typeof formData.eventDate === 'string' && formData.eventDate
                           ? format(parseISO(formData.eventDate), "PPP")
                           : "Pilih tanggal"}
@@ -240,9 +242,11 @@ export function EditOrderDialog({
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={typeof formData.eventDate === 'object' && formData.eventDate instanceof Date 
-                        ? formData.eventDate 
-                        : typeof formData.eventDate === 'string' ? parseISO(formData.eventDate) : undefined}
+                      selected={typeof formData.eventDate === 'object' 
+                        ? formData.eventDate as Date
+                        : typeof formData.eventDate === 'string' && formData.eventDate
+                          ? parseISO(formData.eventDate)
+                          : undefined}
                       onSelect={(date) => date && setFormData({...formData, eventDate: date})}
                       initialFocus
                       className="p-3 pointer-events-auto"

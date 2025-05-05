@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -80,6 +79,9 @@ export function EditOrderDialog({
     addons: [],
   });
   
+  // Get the current package's category
+  const [currentPackageCategory, setCurrentPackageCategory] = useState<string | undefined>(undefined);
+  
   // Initialize form data when order changes or dialog opens
   useEffect(() => {
     if (order && isOpen) {
@@ -99,8 +101,17 @@ export function EditOrderDialog({
         notes: order.notes || "",
         addons: order.addons || [],
       });
+      
+      // Update the package category based on the selected package
+      updatePackageCategory(order.package);
     }
-  }, [order, isOpen]);
+  }, [order, isOpen, packages]);
+
+  // Function to update the package category
+  const updatePackageCategory = (packageName: string) => {
+    const selectedPackage = packages.find(pkg => pkg.name === packageName);
+    setCurrentPackageCategory(selectedPackage?.name);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -110,7 +121,7 @@ export function EditOrderDialog({
   const handleSelectChange = (value: string, name: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // If package changes, update the payment amount
+    // If package changes, update the payment amount and category
     if (name === "package") {
       const selectedPackage = packages.find(pkg => pkg.name === value);
       if (selectedPackage) {
@@ -119,6 +130,9 @@ export function EditOrderDialog({
           [name]: value,
           paymentAmount: selectedPackage.price
         }));
+        
+        // Update the package category
+        updatePackageCategory(value);
       }
     }
   };
@@ -338,6 +352,7 @@ export function EditOrderDialog({
                     themes={themes}
                     isDisabled={false}
                     onChange={(value) => handleSelectChange(value, "theme")}
+                    packageCategory={currentPackageCategory}
                   />
                 </div>
               </div>

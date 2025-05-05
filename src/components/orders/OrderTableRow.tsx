@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor, Theme } from "@/types/types";
 import OrderAddons from "./OrderAddons";
@@ -56,6 +56,17 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
   handleOpenEditDialog,
   handleDeleteOrder,
 }) => {
+  // Find the current package's category
+  const [packageCategory, setPackageCategory] = useState<string | undefined>(undefined);
+  
+  // Update package category when the order's package changes
+  useEffect(() => {
+    const currentPackage = availablePackages.find(pkg => pkg.name === order.package);
+    if (currentPackage) {
+      setPackageCategory(currentPackage.name);
+    }
+  }, [order.package, availablePackages]);
+
   // Check if an order has any addons
   const hasAddons = (): boolean => {
     return Array.isArray(order.addons) && order.addons.length > 0;
@@ -133,6 +144,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
             themes={themes}
             isDisabled={updatingOrders.has(order.id)}
             onChange={(value) => handleThemeChange(order.id, value)}
+            packageCategory={packageCategory}
           />
         </div>
       </TableCell>

@@ -17,22 +17,30 @@ interface ThemeSelectProps {
   themes: Theme[];
   onChange: (value: string) => void;
   isDisabled?: boolean;
+  packageCategory?: string; // Add new prop to filter themes by package category
 }
 
 const ThemeSelect: React.FC<ThemeSelectProps> = ({
   value,
   themes,
   onChange,
-  isDisabled = false
+  isDisabled = false,
+  packageCategory
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Filter themes based on search query
-  const filteredThemes = themes.filter(theme =>
-    theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (theme.category && theme.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Filter themes based on search query and package category
+  const filteredThemes = themes.filter(theme => {
+    // First filter by package category if provided
+    if (packageCategory && theme.category !== packageCategory) {
+      return false;
+    }
+    
+    // Then filter by search query
+    return theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (theme.category && theme.category.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
 
   return (
     <div className="space-y-1">
@@ -77,7 +85,9 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
               ))
             ) : (
               <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                Tidak ada tema yang sesuai dengan pencarian
+                {packageCategory 
+                  ? `Tidak ada tema untuk paket ${packageCategory}`
+                  : "Tidak ada tema yang sesuai dengan pencarian"}
               </div>
             )}
           </div>

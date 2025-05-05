@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor } from "@/types/types";
@@ -68,37 +67,52 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
 
   return (
     <TableRow>
+      {/* No */}
       <TableCell className="font-mono text-xs">
         {index + 1}
       </TableCell>
+      
+      {/* Tgl Pesan */}
       <TableCell className="font-mono text-xs">
         {formatDate(order.orderDate)}
       </TableCell>
+      
+      {/* Tgl Acara */}
       <TableCell className="font-mono text-xs">
         {formatDate(order.eventDate)}
       </TableCell>
+      
+      {/* Countdown */}
       <TableCell className="font-mono text-xs">
         <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
           {order.countdownDays} hari
         </span>
       </TableCell>
+      
+      {/* Client */}
       <TableCell>
         <div className="space-y-1">
-          <div className="text-sm">{order.clientName}</div>
-          {hasClientUrl() ? (
-            <a 
-              href={order.clientUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-blue-500 hover:underline cursor-pointer"
-            >
-              {order.customerName}
-            </a>
-          ) : (
-            <span className="font-medium">{order.customerName}</span>
-          )}
+          <div className="text-sm font-medium">{order.clientName}</div>
         </div>
       </TableCell>
+      
+      {/* Nama */}
+      <TableCell>
+        {hasClientUrl() ? (
+          <a 
+            href={order.clientUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-blue-500 hover:underline cursor-pointer"
+          >
+            {order.customerName}
+          </a>
+        ) : (
+          <span className="font-medium">{order.customerName}</span>
+        )}
+      </TableCell>
+      
+      {/* Vendor */}
       <TableCell>
         <VendorDropdown 
           vendor={order.vendor} 
@@ -107,28 +121,36 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           onChange={(value) => handleVendorChange(order.id, value)}
         />
       </TableCell>
+      
+      {/* Paket */}
       <TableCell>
-        <div className="space-y-2">
-          <PackageSelect
-            value={order.package}
-            packages={availablePackages}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handlePackageChange(order.id, value)}
-          />
-          <ThemeSelect
-            value={order.theme}
-            themes={themes}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handleThemeChange(order.id, value)}
-          />
-        </div>
+        <PackageSelect
+          value={order.package}
+          packages={availablePackages}
+          isDisabled={updatingOrders.has(order.id)}
+          onChange={(value) => handlePackageChange(order.id, value)}
+        />
       </TableCell>
+      
+      {/* Tema */}
+      <TableCell>
+        <ThemeSelect
+          value={order.theme}
+          themes={themes}
+          isDisabled={updatingOrders.has(order.id)}
+          onChange={(value) => handleThemeChange(order.id, value)}
+        />
+      </TableCell>
+      
+      {/* Addons */}
       <TableCell>
         <OrderAddons 
           addons={order.addons} 
           addonStyles={addonStyles} 
         />
       </TableCell>
+      
+      {/* Pembayaran */}
       <TableCell>
         <PaymentStatusBadge 
           status={order.paymentStatus}
@@ -138,6 +160,8 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           formatCurrency={formatCurrency}
         />
       </TableCell>
+      
+      {/* Status */}
       <TableCell>
         <WorkStatusSelect
           value={order.workStatus}
@@ -146,6 +170,8 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           onChange={(value) => handleWorkStatusChange(order.id, value)}
         />
       </TableCell>
+      
+      {/* Aksi */}
       <TableCell>
         <OrderActions
           order={order}

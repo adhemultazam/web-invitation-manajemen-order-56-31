@@ -33,12 +33,14 @@ export interface Vendor {
   name: string;
   code: string;
   color: string;
+  commission: number; // Added commission property
 }
 
 export interface WorkStatus {
   id: string;
   name: string;
   color: string;
+  order: number; // Added order property
 }
 
 export interface Addon {
@@ -53,6 +55,8 @@ export interface Theme {
   name: string;
   thumbnail: string;
   category: string;
+  price?: number; // Added price as optional
+  description?: string; // Added description as optional
 }
 
 export interface Package {
@@ -60,6 +64,7 @@ export interface Package {
   name: string;
   price: number;
   description?: string;
+  features: string[]; // Added features array
 }
 
 export interface Invoice {
@@ -69,6 +74,7 @@ export interface Invoice {
   vendor: string;
   dateIssued: string;
   dueDate: string;
+  dateDue: string; // Added dateDue property
   totalAmount: number;
   status: "Paid" | "Unpaid";
   orders: {

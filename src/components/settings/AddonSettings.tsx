@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +61,7 @@ export function AddonSettings() {
   const [addons, setAddons] = useState<Addon[]>(initialAddons);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentAddon, setCurrentAddon] = useState<Addon | null>(null);
-  const [formData, setFormData] = useState({ name: "", color: "#3b82f6" });
+  const [formData, setFormData] = useState({ name: "", color: "#3b82f6", price: 0 });
 
   // Load saved addons or initialize with defaults
   useEffect(() => {
@@ -110,10 +111,11 @@ export function AddonSettings() {
       setFormData({
         name: addon.name,
         color: addon.color,
+        price: addon.price,
       });
     } else {
       setCurrentAddon(null);
-      setFormData({ name: "", color: "#3b82f6" });
+      setFormData({ name: "", color: "#3b82f6", price: 0 });
     }
     setIsDialogOpen(true);
   };

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Order } from "@/types/types";
 import { Calendar, CreditCard, DollarSign, Check } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 interface MonthlyStatsProps {
   orders: Order[];
@@ -22,9 +23,9 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     return 0;
   };
   
-  // Hitung statistik berdasarkan data pesanan
+  // Calculate statistics based on orders data
   const stats = useMemo(() => {
-    // Total pesanan
+    // Total orders
     const totalOrders = orders.length;
     
     // Reset the accumulated values
@@ -35,21 +36,21 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
       totalRevenue += getNumericAmount(order.paymentAmount);
     });
     
-    // Pesanan yang sudah lunas
+    // Paid orders
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
     const paidOrdersCount = paidOrders.length;
     
-    // Total pendapatan dari pesanan yang sudah lunas
+    // Total revenue from paid orders
     let paidRevenue = 0;
     paidOrders.forEach(order => {
       paidRevenue += getNumericAmount(order.paymentAmount);
     });
     
-    // Pesanan yang belum lunas
+    // Unpaid orders
     const unpaidOrders = orders.filter(order => order.paymentStatus === "Pending");
     const unpaidOrdersCount = unpaidOrders.length;
     
-    // Total pendapatan yang belum diterima
+    // Total unpaid revenue
     let unpaidRevenue = 0;
     unpaidOrders.forEach(order => {
       unpaidRevenue += getNumericAmount(order.paymentAmount);
@@ -75,22 +76,22 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
       />
       <StatCard
         title="Total Omset"
-        value={stats.totalRevenue}
+        value={formatCurrency(stats.totalRevenue)}
         icon={<DollarSign className="h-4 w-4" />}
-        description={stats.totalOrders}
+        description={`${stats.totalOrders} pesanan`}
       />
       <StatCard
         title="Sudah Lunas"
         value={stats.paidOrdersCount}
         icon={<Check className="h-4 w-4" />}
-        description={stats.paidRevenue}
+        description={formatCurrency(stats.paidRevenue)}
         type="success"
       />
       <StatCard
         title="Belum Lunas"
         value={stats.unpaidOrdersCount}
         icon={<CreditCard className="h-4 w-4" />}
-        description={stats.unpaidRevenue}
+        description={formatCurrency(stats.unpaidRevenue)}
         type="danger"
       />
     </div>

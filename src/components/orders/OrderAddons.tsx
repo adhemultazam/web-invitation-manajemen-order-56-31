@@ -5,9 +5,14 @@ import { Badge } from "@/components/ui/badge";
 interface OrderAddonsProps {
   addons: string[];
   addonStyles: Record<string, { color: string }>;
+  compact?: boolean; // Added compact prop
 }
 
-const OrderAddons: React.FC<OrderAddonsProps> = ({ addons, addonStyles }) => {
+const OrderAddons: React.FC<OrderAddonsProps> = ({ 
+  addons, 
+  addonStyles,
+  compact = false // Default to false
+}) => {
   // Store last used addons in localStorage
   useEffect(() => {
     try {
@@ -34,7 +39,12 @@ const OrderAddons: React.FC<OrderAddonsProps> = ({ addons, addonStyles }) => {
   return (
     <div className="flex flex-wrap gap-1">
       {addons.map((addon, i) => (
-        <Badge key={i} style={getAddonStyle(addon)} variant="secondary" className="text-xs">
+        <Badge 
+          key={i} 
+          style={getAddonStyle(addon)} 
+          variant="secondary" 
+          className={`${compact ? "compact-badge" : "text-xs"}`}
+        >
           {addon}
         </Badge>
       ))}

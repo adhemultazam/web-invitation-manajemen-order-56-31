@@ -14,6 +14,7 @@ interface VendorDropdownProps {
   vendors: Vendor[];
   isDisabled: boolean;
   onChange: (vendorId: string) => void;
+  compact?: boolean; // Added compact prop
 }
 
 const VendorDropdown: React.FC<VendorDropdownProps> = ({
@@ -21,6 +22,7 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
   vendors,
   isDisabled,
   onChange,
+  compact = false, // Default to false
 }) => {
   // Find the selected vendor object from the vendor ID
   const selectedVendor = vendors.find(v => v.id === vendor);
@@ -31,7 +33,7 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
       onValueChange={onChange}
       disabled={isDisabled}
     >
-      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+      <SelectTrigger className={`${compact ? "h-8 w-full text-xs py-0 px-2" : "h-10"}`}>
         <div className="flex items-center">
           <div
             className="w-2 h-2 mr-1 rounded-full"

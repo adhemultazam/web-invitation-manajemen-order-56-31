@@ -9,6 +9,7 @@ interface PaymentStatusBadgeProps {
   isUpdating: boolean;
   onToggle: () => void;
   formatCurrency: (amount: number) => string;
+  compact?: boolean; // Added compact prop
 }
 
 const PaymentStatusBadge: React.FC<PaymentStatusBadgeProps> = ({
@@ -17,6 +18,7 @@ const PaymentStatusBadge: React.FC<PaymentStatusBadgeProps> = ({
   isUpdating,
   onToggle,
   formatCurrency,
+  compact = false // Default to false
 }) => {
   const getPaymentStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -34,10 +36,10 @@ const PaymentStatusBadge: React.FC<PaymentStatusBadgeProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className="p-0 h-6 justify-start"
+        className={`p-0 ${compact ? "h-6" : "h-6"} justify-start`}
         onClick={onToggle}
       >
-        <Badge className={getPaymentStatusColor(status)}>
+        <Badge className={`${getPaymentStatusColor(status)} ${compact ? "compact-badge" : ""}`}>
           {isUpdating ? (
             <span className="animate-pulse">Menyimpan...</span>
           ) : (
@@ -45,7 +47,7 @@ const PaymentStatusBadge: React.FC<PaymentStatusBadgeProps> = ({
           )}
         </Badge>
       </Button>
-      <span className="text-xs font-mono mt-1">
+      <span className={`${compact ? "text-[11px]" : "text-xs"} font-mono mt-1`}>
         {formatCurrency(amount)}
       </span>
     </div>

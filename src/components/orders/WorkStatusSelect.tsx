@@ -15,6 +15,7 @@ interface WorkStatusSelectProps {
   isDisabled: boolean;
   workStatuses: WorkStatus[];
   onChange: (value: string) => void;
+  compact?: boolean; // Added compact prop
 }
 
 const WorkStatusSelect: React.FC<WorkStatusSelectProps> = ({
@@ -22,6 +23,7 @@ const WorkStatusSelect: React.FC<WorkStatusSelectProps> = ({
   isDisabled,
   workStatuses,
   onChange,
+  compact = false // Default to false
 }) => {
   // Find the current work status
   const currentStatus = workStatuses.find(ws => ws.name === value);
@@ -42,13 +44,13 @@ const WorkStatusSelect: React.FC<WorkStatusSelectProps> = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
-          className="flex justify-between w-full min-w-[120px]"
+          size={compact ? "sm" : "default"}
+          className={`flex justify-between ${compact ? "text-xs h-7" : ""} w-full min-w-[120px]`}
           style={getStatusColorStyle(value)}
           disabled={isDisabled}
         >
           <span className="truncate">{value || "Not set"}</span>
-          <ChevronDown className="h-4 w-4 ml-1 opacity-50" />
+          <ChevronDown className={`${compact ? "h-3 w-3" : "h-4 w-4"} ml-1 opacity-50`} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-white">

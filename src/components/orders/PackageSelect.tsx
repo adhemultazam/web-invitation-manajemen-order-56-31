@@ -14,6 +14,7 @@ interface PackageSelectProps {
   packages: Package[];
   isDisabled: boolean;
   onChange: (value: string) => void;
+  compact?: boolean; // Added compact prop
 }
 
 const PackageSelect: React.FC<PackageSelectProps> = ({
@@ -21,6 +22,7 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
   packages,
   isDisabled,
   onChange,
+  compact = false, // Default to false
 }) => {
   // Try to load last selected package from localStorage when initializing
   useEffect(() => {
@@ -60,7 +62,7 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
       onValueChange={onChange}
       disabled={isDisabled}
     >
-      <SelectTrigger className="h-8 w-full text-xs py-0 px-2">
+      <SelectTrigger className={compact ? "h-8 w-full text-xs py-0 px-2" : "h-10 w-full"}>
         <SelectValue>
           {value ? value : "Pilih paket"}
         </SelectValue>

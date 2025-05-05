@@ -47,8 +47,8 @@ export function Layout({ children }: LayoutProps) {
       <Toaster />
       <Sonner />
 
-      {/* Global styles for compact table */}
-      <style jsx global>{`
+      {/* Global styles for compact table - Fixed to use standard style tag */}
+      <style dangerouslySetInnerHTML={{ __html: `
         .compact-table th {
           height: auto;
           padding-top: 0.5rem;
@@ -73,7 +73,7 @@ export function Layout({ children }: LayoutProps) {
           line-height: 1.2;
           border-radius: 0.25rem;
         }
-      `}</style>
+      `}} />
     </SidebarProvider>
   );
 }

@@ -17,7 +17,8 @@ interface ThemeSelectProps {
   themes: Theme[];
   onChange: (value: string) => void;
   isDisabled?: boolean;
-  packageCategory?: string; // Add new prop to filter themes by package category
+  packageCategory?: string;
+  compact?: boolean; // Added compact prop
 }
 
 const ThemeSelect: React.FC<ThemeSelectProps> = ({
@@ -25,7 +26,8 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
   themes,
   onChange,
   isDisabled = false,
-  packageCategory
+  packageCategory,
+  compact = false // Default to false
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +53,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
         open={isOpen}
         onOpenChange={setIsOpen}
       >
-        <SelectTrigger id="theme" className="w-full">
+        <SelectTrigger id="theme" className={`w-full ${compact ? "h-8 text-xs py-0 px-2" : ""}`}>
           <SelectValue placeholder="Pilih tema">{value}</SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">

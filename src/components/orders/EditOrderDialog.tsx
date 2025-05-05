@@ -35,6 +35,23 @@ interface EditOrderDialogProps {
   packages: Package[];
 }
 
+interface FormDataState {
+  customerName: string;
+  clientName: string;
+  clientUrl?: string;
+  orderDate: string | Date;
+  eventDate: string | Date;
+  vendor: string;
+  package: string;
+  theme: string;
+  paymentStatus: "Lunas" | "Pending";
+  paymentAmount: number;
+  workStatus: string;
+  postPermission: boolean;
+  notes?: string;
+  addons: string[];
+}
+
 export function EditOrderDialog({
   order,
   isOpen,
@@ -46,10 +63,7 @@ export function EditOrderDialog({
   addons,
   packages = []
 }: EditOrderDialogProps) {
-  const [formData, setFormData] = useState<Partial<Order> & {
-    orderDate: Date | string;
-    eventDate: Date | string;
-  }>({
+  const [formData, setFormData] = useState<FormDataState>({
     customerName: "",
     clientName: "",
     clientUrl: "",
@@ -122,6 +136,15 @@ export function EditOrderDialog({
         return { ...prev, addons: currentAddons.filter(name => name !== addonName) };
       }
     });
+  };
+  
+  // Helper function to safely handle date changes without type errors
+  const handleDateChange = (date: Date | undefined, fieldName: 'orderDate' | 'eventDate') => {
+    if (date) {
+      // Convert Date to string when storing in state to avoid type issues
+      const dateStr = format(date, 'yyyy-MM-dd');
+      setFormData(prev => ({ ...prev, [fieldName]: dateStr }));
+    }
   };
   
   const getVendorName = (vendorId: string) => {
@@ -216,7 +239,7 @@ export function EditOrderDialog({
                         : typeof formData.orderDate === 'string' && formData.orderDate
                           ? parseISO(formData.orderDate)
                           : undefined}
-                      onSelect={(date) => date && setFormData({...formData, orderDate: date})}
+                      onSelect={(date) => handleDateChange(date, 'orderDate')}
                       initialFocus
                       className="p-3 pointer-events-auto"
                     />
@@ -247,7 +270,7 @@ export function EditOrderDialog({
                         : typeof formData.eventDate === 'string' && formData.eventDate
                           ? parseISO(formData.eventDate)
                           : undefined}
-                      onSelect={(date) => date && setFormData({...formData, eventDate: date})}
+                      onSelect={(date) => handleDateChange(date, 'eventDate')}
                       initialFocus
                       className="p-3 pointer-events-auto"
                     />

@@ -40,7 +40,7 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
           <SelectValue>{selectedVendor?.name || "Not set"}</SelectValue>
         </div>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-white">
         {vendors.map((vendorOption) => (
           <SelectItem key={vendorOption.id} value={vendorOption.id}>
             <div className="flex items-center">

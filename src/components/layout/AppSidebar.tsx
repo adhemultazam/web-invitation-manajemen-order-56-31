@@ -41,22 +41,22 @@ export function AppSidebar() {
   const { user } = useAuth();
   
   return (
-    <Sidebar className="bg-wedding-primary border-r-0">
+    <Sidebar className="bg-white border-r border-gray-200 shadow-sm w-[260px]">
       <SidebarContent>
-        <div className="px-4 py-5">
-          <div className="bg-white/80 rounded-xl p-4 shadow-sm mb-4">
-            <div className="flex items-center justify-center mb-2">
-              <Avatar className="h-12 w-12 mr-3">
+        <div className="px-6 py-6">
+          <div className="bg-gray-50 rounded-xl p-4 shadow-sm mb-4">
+            <div className="flex items-center">
+              <Avatar className="h-10 w-10 mr-3">
                 <AvatarImage src={user?.logo || ''} alt="Logo" />
                 <AvatarFallback className="bg-wedding-accent text-white">
-                  <Image className="h-5 w-5" />
+                  <Image className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-xl font-bold text-center text-wedding-primary">
+                <h1 className="text-base font-semibold text-gray-800">
                   Undangan Digital
                 </h1>
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-gray-500">
                   Manajemen Pesanan
                 </p>
               </div>
@@ -65,16 +65,20 @@ export function AppSidebar() {
         </div>
         
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80 font-medium text-xs px-5">Menu Utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-500 font-medium text-xs px-6 mb-1">Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/" 
-                    className={`sidebar-menu-item ${location.pathname === "/" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                      location.pathname === "/" 
+                        ? "bg-wedding-muted text-wedding-accent font-medium" 
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
                   >
-                    <LayoutDashboard size={18} />
+                    <LayoutDashboard size={18} className={location.pathname === "/" ? "text-wedding-accent" : ""} />
                     <span className="text-sm">Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
@@ -84,9 +88,13 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/invoices" 
-                    className={`sidebar-menu-item ${location.pathname === "/invoices" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                      location.pathname === "/invoices" 
+                        ? "bg-wedding-muted text-wedding-accent font-medium" 
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
                   >
-                    <FileText size={18} />
+                    <FileText size={18} className={location.pathname === "/invoices" ? "text-wedding-accent" : ""} />
                     <span className="text-sm">Invoice</span>
                   </Link>
                 </SidebarMenuButton>
@@ -96,9 +104,13 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/pengaturan" 
-                    className={`sidebar-menu-item ${location.pathname === "/pengaturan" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                      location.pathname === "/pengaturan" 
+                        ? "bg-wedding-muted text-wedding-accent font-medium" 
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
                   >
-                    <Settings size={18} />
+                    <Settings size={18} className={location.pathname === "/pengaturan" ? "text-wedding-accent" : ""} />
                     <span className="text-sm">Pengaturan</span>
                   </Link>
                 </SidebarMenuButton>
@@ -107,18 +119,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80 font-medium text-xs px-5">Pesanan Bulanan</SidebarGroupLabel>
-          <SidebarGroupContent>
+        <SidebarGroup className="mt-4">
+          <SidebarGroupLabel className="text-gray-500 font-medium text-xs px-6 mb-1">Pesanan Bulanan</SidebarGroupLabel>
+          <SidebarGroupContent className="max-h-[calc(100vh-350px)] overflow-y-auto pr-1 custom-scrollbar">
             <SidebarMenu>
               {months.map((month) => (
                 <SidebarMenuItem key={month.name}>
                   <SidebarMenuButton asChild>
                     <Link 
                       to={month.path} 
-                      className={`sidebar-menu-item ${location.pathname === month.path ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
+                      className={`flex items-center gap-3 px-6 py-2.5 rounded-lg transition-colors ${
+                        location.pathname === month.path 
+                          ? "bg-wedding-muted text-wedding-accent font-medium" 
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
                     >
-                      <CalendarDays size={18} />
+                      <CalendarDays size={16} className={location.pathname === month.path ? "text-wedding-accent" : ""} />
                       <span className="text-sm">{month.name}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -129,9 +145,9 @@ export function AppSidebar() {
         </SidebarGroup>
         
         {/* Upgrade Button at the bottom */}
-        <div className="px-4 mt-6 mb-4">
-          <button className="w-full bg-white hover:bg-white/90 transition-colors text-wedding-primary font-medium rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 shadow-sm">
-            <span>Upgrade</span>
+        <div className="px-6 mt-6 mb-6">
+          <button className="w-full bg-wedding-primary hover:bg-wedding-primary/90 transition-colors text-white font-medium rounded-lg py-2.5 text-sm flex items-center justify-center gap-1.5 shadow-sm">
+            <span>Upgrade Sekarang</span>
             <ArrowUpRight size={14} />
           </button>
         </div>

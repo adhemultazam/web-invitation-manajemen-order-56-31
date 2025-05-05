@@ -7,6 +7,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  logo?: string; // Added logo property as optional
 }
 
 interface AuthContextType {
@@ -55,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: "Admin",
         email: "admin@example.com",
         role: "admin",
+        logo: "", // Initialize with empty string
       };
       
       setUser(userData);

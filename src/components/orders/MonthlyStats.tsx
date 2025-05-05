@@ -21,7 +21,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Calculate total revenue properly, ensuring we use valid numbers
     orders.forEach(order => {
       // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      const amount = parseFloat(String(order.paymentAmount)) || 0;
       
       // Make sure we're adding a valid number
       if (!isNaN(amount) && isFinite(amount)) {
@@ -37,7 +37,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     let paidRevenue = 0;
     paidOrders.forEach(order => {
       // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      const amount = parseFloat(String(order.paymentAmount)) || 0;
       
       if (!isNaN(amount) && isFinite(amount)) {
         paidRevenue += amount;
@@ -52,7 +52,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     let unpaidRevenue = 0;
     unpaidOrders.forEach(order => {
       // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      const amount = parseFloat(String(order.paymentAmount)) || 0;
       
       if (!isNaN(amount) && isFinite(amount)) {
         unpaidRevenue += amount;
@@ -73,7 +73,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
       <StatCard
         title="Total Pesanan"
-        value={`${stats.totalOrders}`}
+        value={stats.totalOrders}
         icon={<Calendar className="h-4 w-4" />}
         description={`Bulan ${month}`}
       />
@@ -81,18 +81,18 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
         title="Total Omset"
         value={stats.totalRevenue}
         icon={<DollarSign className="h-4 w-4" />}
-        description={`${stats.totalOrders} pesanan`}
+        description={stats.totalOrders}
       />
       <StatCard
         title="Sudah Lunas"
-        value={`${stats.paidOrdersCount}`}
+        value={stats.paidOrdersCount}
         icon={<Check className="h-4 w-4" />}
         description={stats.paidRevenue}
         type="success"
       />
       <StatCard
         title="Belum Lunas"
-        value={`${stats.unpaidOrdersCount}`}
+        value={stats.unpaidOrdersCount}
         icon={<CreditCard className="h-4 w-4" />}
         description={stats.unpaidRevenue}
         type="danger"

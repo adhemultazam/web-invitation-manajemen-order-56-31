@@ -6,16 +6,31 @@ interface StatCardProps {
   value: string | number;
   icon: React.ReactNode;
   description?: string;
+  type?: "default" | "success" | "warning" | "danger";
 }
 
-export function StatCard({ title, value, icon, description }: StatCardProps) {
+export function StatCard({ title, value, icon, description, type = "default" }: StatCardProps) {
+  // Menentukan warna icon berdasarkan tipe
+  const getIconColorClass = () => {
+    switch (type) {
+      case "success":
+        return "text-green-500";
+      case "warning":
+        return "text-amber-500";
+      case "danger":
+        return "text-red-500";
+      default:
+        return "text-wedding-primary";
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <div className="text-wedding-primary h-5 w-5">{icon}</div>
+        <div className={`h-5 w-5 ${getIconColorClass()}`}>{icon}</div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>

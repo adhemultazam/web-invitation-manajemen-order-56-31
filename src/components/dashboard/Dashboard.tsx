@@ -4,7 +4,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CreditCard, ChartPie, Wallet, Package, Layers } from "lucide-react";
+import { Calendar, CreditCard, ChartPie, Wallet, Package, Layers, Check, DollarSign } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
@@ -26,14 +26,22 @@ export function Dashboard() {
     // Total Pesanan
     const totalOrders = orders.length;
     
-    // Total Pendapatan
+    // Total Pendapatan - menggunakan nilai paymentAmount dari setiap order
     const totalRevenue = orders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
     
     // Pesanan yang dibayar
-    const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
+    const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
+    const paidOrdersCount = paidOrders.length;
+    
+    // Total pendapatan dari pesanan yang sudah lunas
+    const paidRevenue = paidOrders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
     
     // Pesanan yang belum dibayar
-    const pendingOrders = orders.filter(order => order.paymentStatus === "Pending").length;
+    const pendingOrders = orders.filter(order => order.paymentStatus === "Pending");
+    const pendingOrdersCount = pendingOrders.length;
+    
+    // Total pendapatan yang belum diterima
+    const pendingRevenue = pendingOrders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
     
     // Pesanan yang perlu diselesaikan (dengan event date dalam 14 hari)
     const urgentOrdersCount = orders.filter(order => {
@@ -48,8 +56,8 @@ export function Dashboard() {
     
     // Data untuk chart status pembayaran
     const paymentStatusData: ChartData[] = [
-      { name: "Lunas", value: paidOrders },
-      { name: "Pending", value: pendingOrders },
+      { name: "Lunas", value: paidOrdersCount },
+      { name: "Pending", value: pendingOrdersCount },
     ];
     
     // Data untuk chart status pengerjaan
@@ -220,8 +228,10 @@ export function Dashboard() {
     return {
       totalOrders,
       totalRevenue,
-      paidOrders,
-      pendingOrders,
+      paidOrdersCount,
+      paidRevenue,
+      pendingOrdersCount,
+      pendingRevenue,
       urgentOrdersCount,
       paymentStatusData,
       workStatusData,
@@ -269,22 +279,23 @@ export function Dashboard() {
               description="Keseluruhan pesanan"
             />
             <StatCard
-              title="Total Pendapatan"
+              title="Total Omset"
               value={formatCurrency(stats.totalRevenue)}
-              icon={<Wallet className="h-4 w-4" />}
-              description={`${stats.paidOrders} pesanan telah lunas`}
+              icon={<DollarSign className="h-4 w-4" />}
+              description={`${stats.totalOrders} pesanan`}
             />
             <StatCard
-              title="Menunggu Pembayaran"
-              value={`${stats.pendingOrders}`}
+              title="Sudah Lunas"
+              value={`${stats.paidOrdersCount}`}
+              icon={<Check className="h-4 w-4" />}
+              description={`(${formatCurrency(stats.paidRevenue)})`}
+            />
+            <StatCard
+              title="Belum Lunas"
+              value={`${stats.pendingOrdersCount}`}
               icon={<CreditCard className="h-4 w-4" />}
-              description="Pesanan dengan status Pending"
-            />
-            <StatCard
-              title="Pesanan Mendesak"
-              value={`${stats.urgentOrdersCount}`}
-              icon={<Calendar className="h-4 w-4" />}
-              description="Acara dalam 14 hari kedepan"
+              description={`(${formatCurrency(stats.pendingRevenue)})`}
+              type="danger"
             />
           </div>
 

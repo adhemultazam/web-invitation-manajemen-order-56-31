@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Order, Vendor, WorkStatus, Theme, Package, Addon } from "@/types/types";
 import { toast } from "sonner";
@@ -198,8 +199,11 @@ export const useMonthlyOrders = (month: string) => {
   const handleSaveOrder = (orderId: string, data: Partial<Order>) => {
     // Ensure paymentAmount is a number if provided in data
     if (data.paymentAmount !== undefined) {
-      if (typeof data.paymentAmount === 'string') {
-        data.paymentAmount = parseFloat(data.paymentAmount.replace(/[^\d.-]/g, ''));
+      // Fix: Explicitly cast to string or number before checking type
+      const paymentAmount = data.paymentAmount as string | number;
+      
+      if (typeof paymentAmount === 'string') {
+        data.paymentAmount = parseFloat(paymentAmount.replace(/[^\d.-]/g, ''));
       }
     }
     

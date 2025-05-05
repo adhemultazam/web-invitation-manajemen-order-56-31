@@ -116,13 +116,19 @@ export function Dashboard() {
     // Create monthly orders data synchronized with the selected year/month
     const generateMonthlyOrdersData = () => {
       if (selectedMonth === "Semua Data") {
-        // For year view, show orders by month
+        // For year view, create a map for each month with 0 as default value
         const monthlyOrdersMap = new Map<number, number>();
+        
+        // Initialize all months with 0
+        monthNames.forEach((_, index) => {
+          monthlyOrdersMap.set(index, 0);
+        });
 
         // Process each order
         orders.forEach(order => {
           try {
             const orderDate = new Date(order.orderDate);
+            // Only count orders from selected year or all years if "Semua Data"
             if (selectedYear === "Semua Data" || orderDate.getFullYear().toString() === selectedYear) {
               const month = orderDate.getMonth(); // 0-11
               monthlyOrdersMap.set(month, (monthlyOrdersMap.get(month) || 0) + 1);
@@ -148,7 +154,11 @@ export function Dashboard() {
         const year = parseInt(selectedYear !== "Semua Data" ? selectedYear : new Date().getFullYear().toString());
         const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
         
+        // Initialize all days with 0
         const dailyOrdersMap = new Map<number, number>();
+        for (let i = 1; i <= daysInMonth; i++) {
+          dailyOrdersMap.set(i, 0);
+        }
         
         orders.forEach(order => {
           try {

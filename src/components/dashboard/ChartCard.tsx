@@ -45,7 +45,7 @@ export function ChartCard({
             <XAxis dataKey="name" fontSize={12} tickMargin={10} />
             <YAxis 
               fontSize={12} 
-              tickFormatter={(value) => isCurrency ? `${(value / 1000000)}M` : value.toString()}
+              tickFormatter={(value) => isCurrency ? `${value / 1000000}jt` : value.toString()}
             />
             <Tooltip 
               contentStyle={{ 
@@ -71,7 +71,7 @@ export function ChartCard({
             <XAxis dataKey="name" fontSize={12} tickMargin={10} />
             <YAxis 
               fontSize={12} 
-              tickFormatter={(value) => isCurrency ? `${(value / 1000000)}M` : value.toString()}
+              tickFormatter={(value) => isCurrency ? `${Math.round(value / 1000000)}jt` : value.toString()}
             />
             <Tooltip 
               contentStyle={{ 

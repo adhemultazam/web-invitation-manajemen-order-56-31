@@ -28,6 +28,18 @@ export function OrderSelectionTable({
   // Add debug log
   console.log("OrderSelectionTable rendering with orders:", orders.length);
   
+  // Helper function to ensure values are numeric
+  const getNumericAmount = (amount: any): number => {
+    if (typeof amount === 'number' && !isNaN(amount)) {
+      return amount;
+    }
+    if (typeof amount === 'string' && amount.trim() !== '') {
+      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+      return !isNaN(numericAmount) ? numericAmount : 0;
+    }
+    return 0;
+  };
+  
   return (
     <div className="border rounded-md overflow-hidden">
       <Table>
@@ -62,7 +74,7 @@ export function OrderSelectionTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  <InvoiceCurrency amount={order.paymentAmount} />
+                  <InvoiceCurrency amount={getNumericAmount(order.paymentAmount)} />
                 </TableCell>
               </TableRow>
             ))

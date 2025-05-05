@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -28,13 +29,21 @@ export function Dashboard() {
     // Reset accumulated values
     let totalRevenue = 0;
     
-    // Calculate total revenue correctly
+    // Calculate total revenue correctly - Perbaikan perhitungan totalRevenue
     orders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      // Pastikan paymentAmount adalah angka
+      const amount = order.paymentAmount;
       
-      if (!isNaN(amount) && isFinite(amount)) {
+      // Jika amount adalah number, tambahkan ke total
+      if (typeof amount === 'number' && !isNaN(amount)) {
         totalRevenue += amount;
+      } 
+      // Jika amount adalah string, convert ke number dahulu
+      else if (typeof amount === 'string' && amount.trim() !== '') {
+        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+        if (!isNaN(numericAmount)) {
+          totalRevenue += numericAmount;
+        }
       }
     });
     
@@ -42,14 +51,22 @@ export function Dashboard() {
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
     const paidOrdersCount = paidOrders.length;
     
-    // Calculate paid revenue correctly
+    // Calculate paid revenue correctly - Perbaikan perhitungan paidRevenue
     let paidRevenue = 0;
     paidOrders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      // Pastikan paymentAmount adalah angka
+      const amount = order.paymentAmount;
       
-      if (!isNaN(amount) && isFinite(amount)) {
+      // Jika amount adalah number, tambahkan ke total
+      if (typeof amount === 'number' && !isNaN(amount)) {
         paidRevenue += amount;
+      } 
+      // Jika amount adalah string, convert ke number dahulu
+      else if (typeof amount === 'string' && amount.trim() !== '') {
+        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+        if (!isNaN(numericAmount)) {
+          paidRevenue += numericAmount;
+        }
       }
     });
     
@@ -57,14 +74,22 @@ export function Dashboard() {
     const pendingOrders = orders.filter(order => order.paymentStatus === "Pending");
     const pendingOrdersCount = pendingOrders.length;
     
-    // Calculate pending revenue correctly
+    // Calculate pending revenue correctly - Perbaikan perhitungan pendingRevenue
     let pendingRevenue = 0;
     pendingOrders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(order.paymentAmount as any) || 0;
+      // Pastikan paymentAmount adalah angka
+      const amount = order.paymentAmount;
       
-      if (!isNaN(amount) && isFinite(amount)) {
+      // Jika amount adalah number, tambahkan ke total
+      if (typeof amount === 'number' && !isNaN(amount)) {
         pendingRevenue += amount;
+      } 
+      // Jika amount adalah string, convert ke number dahulu
+      else if (typeof amount === 'string' && amount.trim() !== '') {
+        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+        if (!isNaN(numericAmount)) {
+          pendingRevenue += numericAmount;
+        }
       }
     });
     
@@ -127,11 +152,24 @@ export function Dashboard() {
         
         const vendorStats = vendorPaymentMap.get(vendorName)!;
         
-        // Add amount to appropriate payment status
+        // Add amount to appropriate payment status - Perbaikan perhitungan vendorPayment
+        const amount = order.paymentAmount;
+        let numericAmount = 0;
+        
+        // Jika amount adalah number, gunakan nilainya
+        if (typeof amount === 'number' && !isNaN(amount)) {
+          numericAmount = amount;
+        } 
+        // Jika amount adalah string, convert ke number dahulu
+        else if (typeof amount === 'string' && amount.trim() !== '') {
+          numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+          if (isNaN(numericAmount)) numericAmount = 0;
+        }
+        
         if (order.paymentStatus === "Lunas") {
-          vendorStats.paid += order.paymentAmount;
+          vendorStats.paid += numericAmount;
         } else {
-          vendorStats.pending += order.paymentAmount;
+          vendorStats.pending += numericAmount;
         }
       }
     });

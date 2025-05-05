@@ -1,103 +1,72 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 250 100% 99%;
+    --foreground: 240 10% 3.9%;
+ 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 248 90% 66%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 240 10% 3.9%;
+ 
+    --primary: 252 94% 76%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 252 100% 97%;
+    --secondary-foreground: 240 5.9% 10%;
+ 
+    --muted: 252 71% 95%;
+    --muted-foreground: 240 3.8% 46.1%;
+ 
+    --accent: 250 94% 65%;
+    --accent-foreground: 240 5.9% 10%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 248 90% 66%;
-    --radius: 0.5rem;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 252 94% 76%;
+ 
+    --radius: 0.75rem;
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 248 90% 66%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+ 
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+ 
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+ 
+    --primary: 252 94% 76%;
+    --primary-foreground: 240 5.9% 10%;
+ 
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+ 
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+ 
+    --accent: 250 94% 65%;
+    --accent-foreground: 0 0% 98%;
+ 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 248 90% 66%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 252 94% 76%;
   }
-  
-  /* wedding colors */
-  :root {
-    --wedding-primary: 248 90% 66%; /* #7484D3 - purple/indigo */
-    --wedding-secondary: 230 28% 75%; /* #9BA7D0 - lighter purple */
-    --wedding-accent: 12 89% 75%; /* #FFA28E - soft coral */
-    --wedding-muted: 240 5% 90%; /* #E5E5EA - very light gray */
-    --wedding-background: 0 0% 100%; /* #FFFFFF - white */
-  }
-}
-
-/* Wedding specific theme */
-.bg-wedding-primary {
-  background-color: #7484D3;
-}
-
-.text-wedding-primary {
-  color: #7484D3;
-}
-
-.border-wedding-primary {
-  border-color: #7484D3;
-}
-
-.hover\:bg-wedding-primary:hover {
-  background-color: #6373C2;
-}
-
-.hover\:text-wedding-primary:hover {
-  color: #6373C2;
-}
-
-.mobile-navbar {
-  @apply fixed bottom-0 left-0 right-0 z-50 grid grid-cols-4 bg-white h-16 shadow-md border-t;
-}
-
-.mobile-navbar-item {
-  @apply flex flex-col items-center justify-center text-gray-600 hover:text-wedding-primary transition-colors;
-}
-
-.mobile-navbar-item.active {
-  @apply text-wedding-primary;
-}
-
-.mobile-navbar-icon {
-  @apply h-5 w-5;
-}
-
-.mobile-navbar-label {
-  @apply text-xs mt-1;
 }
 
 @layer base {
@@ -105,13 +74,55 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 
-/* Fix z-index issues for popovers and dropdowns */
-.popover-content,
-.dropdown-menu-content,
-.select-content {
-  z-index: 50 !important;
+@layer components {
+  /* Modern sidebar styling */
+  .sidebar-menu-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors;
+  }
+  
+  .sidebar-menu-active {
+    @apply bg-white/80 text-wedding-primary font-medium;
+  }
+  
+  .sidebar-menu-inactive {
+    @apply text-white hover:bg-white/20;
+  }
+  
+  /* Mobile navbar styling */
+  .mobile-navbar {
+    @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex justify-around items-center py-2 px-4 z-40;
+  }
+  
+  .mobile-navbar-item {
+    @apply flex flex-col items-center justify-center py-2 px-3 rounded-lg;
+  }
+  
+  .mobile-navbar-icon {
+    @apply h-5 w-5 mb-1;
+  }
+  
+  .mobile-navbar-label {
+    @apply text-xs;
+  }
+  
+  .mobile-navbar-item.active {
+    @apply text-wedding-primary;
+  }
+  
+  /* Custom table styles for compact display */
+  .compact-table th {
+    @apply py-2 text-xs font-medium text-gray-500 bg-gray-50 dark:bg-gray-800/50;
+  }
+  
+  .compact-table td {
+    @apply py-2.5 text-sm;
+  }
+  
+  .compact-badge {
+    @apply inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full;
+  }
 }

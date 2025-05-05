@@ -1,13 +1,12 @@
 
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
-  content: [join(__dirname, "src/**/*.{js,ts,jsx,tsx}")],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  prefix: "",
   theme: {
     container: {
       center: true,
@@ -23,23 +22,40 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        primary: "hsl(var(--primary))",
-        "primary-foreground": "hsl(var(--primary-foreground))",
-        secondary: "hsl(var(--secondary))",
-        "secondary-foreground": "hsl(var(--secondary-foreground))",
-        destructive: "hsl(var(--destructive))",
-        "destructive-foreground": "hsl(var(--destructive-foreground))",
-        muted: "hsl(var(--muted))",
-        "muted-foreground": "hsl(var(--muted-foreground))",
-        accent: "hsl(var(--accent))",
-        "accent-foreground": "hsl(var(--accent-foreground))",
-        popover: "hsl(var(--popover))",
-        "popover-foreground": "hsl(var(--popover-foreground))",
-        card: "hsl(var(--card))",
-        "card-foreground": "hsl(var(--card-foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
         wedding: {
-          primary: "#7484D3",
-          light: "#F1F0FB"
+          primary: "#9A84FF",
+          secondary: "#C4B5FD", 
+          light: "#F3F0FF",
+          accent: "#7A5AF8",
+          muted: "#EDE9FE",
         }
       },
       borderRadius: {
@@ -47,14 +63,21 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        sans: ["Nunito", "sans-serif"],
+      },
+      boxShadow: {
+        'soft': '0 2px 10px rgba(0, 0, 0, 0.08)',
+        'card': '0 4px 15px rgba(0, 0, 0, 0.05)',
+      },
       keyframes: {
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -63,5 +86,5 @@ export default {
       },
     },
   },
-  plugins: [import("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate")],
 };

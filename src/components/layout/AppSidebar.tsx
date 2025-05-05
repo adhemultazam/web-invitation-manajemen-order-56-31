@@ -14,7 +14,8 @@ import {
   LayoutDashboard, 
   CalendarDays, 
   Settings,
-  FileText
+  FileText,
+  ArrowUpRight
 } from "lucide-react";
 
 const months = [
@@ -36,31 +37,31 @@ export function AppSidebar() {
   const location = useLocation();
   
   return (
-    <Sidebar className="border-r bg-wedding-primary">
+    <Sidebar className="bg-wedding-primary border-r-0">
       <SidebarContent>
         <div className="px-4 py-5">
-          <div className="bg-white/80 rounded-xl p-4 shadow-sm border border-wedding-primary/10 mb-4">
+          <div className="bg-white/80 rounded-xl p-4 shadow-sm mb-4">
             <h1 className="text-xl font-bold text-center text-wedding-primary">
               Undangan Digital
             </h1>
-            <p className="text-xs text-center text-gray-600 mt-1">
+            <p className="text-xs text-center text-gray-500 mt-1">
               Manajemen Pesanan
             </p>
           </div>
         </div>
         
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80 font-medium">Menu Utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/80 font-medium text-xs px-5">Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/" 
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/" ? "bg-white/80 text-wedding-primary font-medium" : "text-white hover:bg-white/20"}`}
+                    className={`sidebar-menu-item ${location.pathname === "/" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
                   >
-                    <LayoutDashboard size={20} />
-                    <span>Dashboard</span>
+                    <LayoutDashboard size={18} />
+                    <span className="text-sm">Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -69,10 +70,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/invoices" 
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/invoices" ? "bg-white/80 text-wedding-primary font-medium" : "text-white hover:bg-white/20"}`}
+                    className={`sidebar-menu-item ${location.pathname === "/invoices" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
                   >
-                    <FileText size={20} />
-                    <span>Invoice</span>
+                    <FileText size={18} />
+                    <span className="text-sm">Invoice</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -81,10 +82,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/pengaturan" 
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/pengaturan" ? "bg-white/80 text-wedding-primary font-medium" : "text-white hover:bg-white/20"}`}
+                    className={`sidebar-menu-item ${location.pathname === "/pengaturan" ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
                   >
-                    <Settings size={20} />
-                    <span>Pengaturan</span>
+                    <Settings size={18} />
+                    <span className="text-sm">Pengaturan</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -93,7 +94,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/80 font-medium">Pesanan Bulanan</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/80 font-medium text-xs px-5">Pesanan Bulanan</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {months.map((month) => (
@@ -101,10 +102,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <Link 
                       to={month.path} 
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === month.path ? "bg-white/80 text-wedding-primary font-medium" : "text-white hover:bg-white/20"}`}
+                      className={`sidebar-menu-item ${location.pathname === month.path ? "sidebar-menu-active" : "sidebar-menu-inactive"}`}
                     >
-                      <CalendarDays size={20} />
-                      <span>{month.name}</span>
+                      <CalendarDays size={18} />
+                      <span className="text-sm">{month.name}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -112,6 +113,14 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        {/* Upgrade Button at the bottom */}
+        <div className="px-4 mt-6 mb-4">
+          <button className="w-full bg-white hover:bg-white/90 transition-colors text-wedding-primary font-medium rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 shadow-sm">
+            <span>Upgrade</span>
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

@@ -1,6 +1,6 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface FilterBarProps {
   onYearChange: (year: string) => void;
@@ -56,14 +56,13 @@ export function FilterBar({
   }, []);
 
   return (
-    <div className={`flex flex-wrap gap-4 ${className}`}>
+    <div className={`flex flex-wrap gap-3 ${className}`}>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Tahun:</span>
         <Select
           value={selectedYear}
           onValueChange={onYearChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Tahun" />
           </SelectTrigger>
           <SelectContent>
@@ -77,12 +76,11 @@ export function FilterBar({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Bulan:</span>
         <Select
           value={selectedMonth}
           onValueChange={onMonthChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Bulan" />
           </SelectTrigger>
           <SelectContent>

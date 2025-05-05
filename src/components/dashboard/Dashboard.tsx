@@ -3,19 +3,22 @@ import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, DollarSign, Check, X, ChartPie, Wallet, Package, Layers } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
 import { useVendorsData } from "@/hooks/useVendorsData";
+import { Button } from "@/components/ui/button";
+import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
+import { AddOrderModal } from "@/components/orders/AddOrderModal";
 
 export function Dashboard() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState<string>("Semua Data");
+  const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
   
   // Ambil data pesanan berdasarkan filter
-  const { orders, isLoading } = useOrdersData(selectedYear, selectedMonth);
+  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
   
   // Helper function to ensure amounts are processed safely
@@ -268,6 +271,17 @@ export function Dashboard() {
     };
   }, [orders, selectedYear, selectedMonth, vendors]);
   
+  // Handlers for modal
+  const handleOpenAddOrderModal = () => setIsAddOrderModalOpen(true);
+  const handleCloseAddOrderModal = () => setIsAddOrderModalOpen(false);
+
+  // Get recent orders (last 5)
+  const recentOrders = useMemo(() => {
+    return [...orders]
+      .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+      .slice(0, 5);
+  }, [orders]);
+
   // Format currency untuk Rupiah
   const formatCurrency = (amount: number): string => {
     // Add safety check to prevent invalid formatting
@@ -284,15 +298,25 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <FilterBar
-          onYearChange={setSelectedYear}
-          onMonthChange={setSelectedMonth}
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-          className="w-full md:w-auto"
-        />
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Overview dari pesanan undangan digital Anda
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <FilterBar
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            className="w-full lg:w-auto"
+          />
+          <Button className="bg-wedding-primary hover:bg-wedding-accent" onClick={handleOpenAddOrderModal}>
+            Tambah Pesanan
+          </Button>
+        </div>
       </div>
       
       {isLoading ? (
@@ -307,6 +331,7 @@ export function Dashboard() {
               value={stats.totalOrders}
               icon={<ShoppingCart className="h-3 w-3 text-white" />}
               description="Keseluruhan pesanan"
+              trend={2.5}
             />
             <StatCard
               title="Total Omset"
@@ -314,6 +339,7 @@ export function Dashboard() {
               icon={<DollarSign className="h-3 w-3 text-white" />}
               description={`${stats.totalOrders} pesanan`}
               type="warning"
+              trend={3.2}
             />
             <StatCard
               title="Sudah Lunas"
@@ -321,6 +347,7 @@ export function Dashboard() {
               icon={<Check className="h-3 w-3 text-white" />}
               description={stats.paidRevenue}
               type="success"
+              trend={1.8}
             />
             <StatCard
               title="Belum Lunas"
@@ -328,20 +355,23 @@ export function Dashboard() {
               icon={<X className="h-3 w-3 text-white" />}
               description={stats.pendingRevenue}
               type="danger"
+              trend={-0.5}
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <ChartCard
-              title={selectedMonth === "Semua Data" ? "Pesanan Per Bulan" : `Pesanan Harian (${selectedMonth})`}
-              data={stats.monthlyOrdersData}
-              type="bar"
-            />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <ChartCard
+                title={selectedMonth === "Semua Data" ? "Pesanan Per Bulan" : `Pesanan Harian (${selectedMonth})`}
+                data={stats.monthlyOrdersData}
+                type="line"
+              />
+            </div>
             <ChartCard
               title="Status Pembayaran"
               data={stats.paymentStatusData}
               type="pie"
-              colors={["#0EA5E9", "#F97316"]} // Blue for paid, Orange for pending
+              colors={["#9A84FF", "#F97316"]} // Primary for paid, Orange for pending
             />
           </div>
 
@@ -350,11 +380,14 @@ export function Dashboard() {
               title="Distribusi Vendor"
               data={stats.vendorData}
               type="pie"
+              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]}
+              icon={<ChartPie className="h-4 w-4" />}
             />
             <ChartCard
               title="Status Pengerjaan"
               data={stats.workStatusData}
               type="pie"
+              colors={["#9A84FF", "#60A5FA", "#F59E0B", "#EC4899"]}
             />
           </div>
 
@@ -365,7 +398,7 @@ export function Dashboard() {
               description="5 tema paling banyak dipesan"
               data={stats.topThemesData}
               type="bar"
-              colors={["#8B5CF6", "#9333EA", "#A855F7", "#C084FC", "#D8B4FE"]} // Purple colors
+              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} // Purple shades
               icon={<Layers className="h-4 w-4" />}
             />
             <ChartCard
@@ -373,7 +406,7 @@ export function Dashboard() {
               description="5 paket paling banyak dipesan"
               data={stats.topPackagesData}
               type="bar"
-              colors={["#1EAEDB", "#38BDF8", "#7DD3FC", "#BAE6FD", "#E0F2FE"]} // Blue colors
+              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} // Purple shades
               icon={<Package className="h-4 w-4" />}
             />
           </div>
@@ -386,12 +419,41 @@ export function Dashboard() {
               type="multiBar"
               isCurrency={true}
               barKeys={[
-                { key: "paid", color: "#0EA5E9" }, // Blue for paid
+                { key: "paid", color: "#9A84FF" }, // Primary for paid
                 { key: "pending", color: "#F97316" } // Orange for pending
               ]}
+              icon={<Wallet className="h-4 w-4" />}
+            />
+          </div>
+
+          {/* Recent orders with compact table */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Pesanan Terbaru</h3>
+            </div>
+            
+            <CompactOrdersTable
+              orders={recentOrders}
+              onEditOrder={(order) => console.log("Edit order", order.id)}
+              onDeleteOrder={(id) => console.log("Delete order", id)}
             />
           </div>
         </>
+      )}
+      
+      {/* AddOrderModal will appear when isAddOrderModalOpen is true */}
+      {isAddOrderModalOpen && (
+        <AddOrderModal
+          isOpen={isAddOrderModalOpen}
+          onClose={handleCloseAddOrderModal}
+          onAddOrder={(order) => {
+            addOrder(order);
+            handleCloseAddOrderModal();
+          }}
+          vendors={vendors.map(v => v.id)}
+          workStatuses={["Belum", "Proses", "Selesai"]} 
+          addons={[]}
+        />
       )}
     </div>
   );

@@ -15,10 +15,10 @@ export function MobileNavbar() {
   };
 
   return (
-    <div className="mobile-navbar">
+    <div className="mobile-navbar shadow-lg z-50">
       <Link 
         to="/" 
-        className={`mobile-navbar-item ${isActive("/") ? "active" : ""}`}
+        className={`mobile-navbar-item ${isActive("/") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
         <LayoutDashboard className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Dashboard</span>
@@ -26,7 +26,7 @@ export function MobileNavbar() {
       
       <Link 
         to="/bulan/januari" 
-        className={`mobile-navbar-item ${isActive("/bulan") ? "active" : ""}`}
+        className={`mobile-navbar-item ${isActive("/bulan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
         <Calendar className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Pesanan</span>
@@ -34,7 +34,7 @@ export function MobileNavbar() {
       
       <Link 
         to="/invoices" 
-        className={`mobile-navbar-item ${isActive("/invoices") ? "active" : ""}`}
+        className={`mobile-navbar-item ${isActive("/invoices") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
         <FileText className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Invoice</span>
@@ -42,7 +42,7 @@ export function MobileNavbar() {
       
       <Link 
         to="/pengaturan" 
-        className={`mobile-navbar-item ${isActive("/pengaturan") ? "active" : ""}`}
+        className={`mobile-navbar-item ${isActive("/pengaturan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
         <Settings className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Pengaturan</span>

@@ -1,26 +1,27 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface StatCardProps {
   title: string;
-  value: string | number;  // Allow both string and number
+  value: string | number;
   icon: React.ReactNode;
-  description?: string | number;  // Allow both string and number for description too
+  description?: string | number;
   type?: "default" | "success" | "warning" | "danger";
+  trend?: number;
 }
 
-export function StatCard({ title, value, icon, description, type = "default" }: StatCardProps) {
+export function StatCard({ title, value, icon, description, type = "default", trend }: StatCardProps) {
   // Get background color class based on card type
   const getBackgroundClass = () => {
     switch (type) {
       case "success":
-        return "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border border-green-200 dark:border-green-800";
+        return "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40";
       case "warning":
-        return "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border border-amber-200 dark:border-amber-800";
+        return "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/40 dark:to-amber-800/40";
       case "danger":
-        return "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border border-red-200 dark:border-red-800";
+        return "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40";
       default:
-        return "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border border-blue-200 dark:border-blue-800";
+        return "bg-gradient-to-br from-wedding-light to-white dark:from-wedding-primary/10 dark:to-wedding-primary/5";
     }
   };
 
@@ -28,13 +29,13 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   const getIconColorClass = () => {
     switch (type) {
       case "success":
-        return "bg-green-500 dark:bg-green-400";
+        return "bg-green-500 text-white dark:bg-green-500";
       case "warning":
-        return "bg-amber-500 dark:bg-amber-400";
+        return "bg-amber-500 text-white dark:bg-amber-500";
       case "danger":
-        return "bg-red-500 dark:bg-red-400";
+        return "bg-red-500 text-white dark:bg-red-500";
       default:
-        return "bg-blue-500 dark:bg-blue-400";
+        return "bg-wedding-primary text-white dark:bg-wedding-primary";
     }
   };
 
@@ -42,13 +43,38 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   const getTextColorClass = () => {
     switch (type) {
       case "success":
-        return "text-green-800 dark:text-green-200";
+        return "text-green-800 dark:text-green-300";
       case "warning":
-        return "text-amber-800 dark:text-amber-200";
+        return "text-amber-800 dark:text-amber-300";
       case "danger":
-        return "text-red-800 dark:text-red-200";
+        return "text-red-800 dark:text-red-300";
       default:
-        return "text-blue-800 dark:text-blue-200";
+        return "text-wedding-primary dark:text-wedding-secondary";
+    }
+  };
+  
+  // Get trend color and icon
+  const getTrendElement = () => {
+    if (trend === undefined) return null;
+    
+    if (trend > 0) {
+      return (
+        <div className="flex items-center text-green-600 text-xs font-medium">
+          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+          </svg>
+          {trend}%
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center text-red-600 text-xs font-medium">
+          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+          {Math.abs(trend)}%
+        </div>
+      );
     }
   };
 
@@ -93,22 +119,27 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   };
 
   return (
-    <Card className={`overflow-hidden shadow-sm ${getBackgroundClass()}`}>
-      <CardContent className="px-3 py-3">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-xs font-medium">{title}</h3>
-          <div className={`rounded-full w-6 h-6 flex items-center justify-center ${getIconColorClass()}`}>
+    <Card className={`overflow-hidden border shadow-card ${getBackgroundClass()}`}>
+      <CardContent className="p-4">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">{title}</h3>
+          <div className={`rounded-full w-8 h-8 flex items-center justify-center ${getIconColorClass()}`}>
             {icon}
           </div>
         </div>
-        <div className={`text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap ${getTextColorClass()}`}>
-          {formatValue()}
+        <div className="flex items-end justify-between">
+          <div>
+            <div className={`text-xl lg:text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap ${getTextColorClass()}`}>
+              {formatValue()}
+            </div>
+            {description && (
+              <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+                {formatDescription()}
+              </p>
+            )}
+          </div>
+          {getTrendElement()}
         </div>
-        {description && (
-          <p className="text-xs mt-1 opacity-90">
-            {formatDescription()}
-          </p>
-        )}
       </CardContent>
     </Card>
   );

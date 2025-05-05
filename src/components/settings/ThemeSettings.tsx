@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Pencil, Trash2, Image } from "lucide-react";
@@ -219,7 +218,7 @@ export function ThemeSettings() {
             {themes.map((theme) => (
               <div key={theme.id} className="border rounded-lg overflow-hidden">
                 <div 
-                  className="h-32 relative flex items-center justify-center text-white font-bold text-2xl bg-gray-100"
+                  className="h-32 relative flex items-center justify-center bg-gray-100"
                 >
                   {theme.thumbnail ? (
                     <img 
@@ -233,9 +232,7 @@ export function ThemeSettings() {
                       <span className="text-gray-500 text-sm">No Image</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span>{theme.name}</span>
-                  </div>
+                  {/* Removed the div with the black overlay and large title text */}
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-center">
@@ -355,7 +352,7 @@ export function ThemeSettings() {
             <div className="mt-2">
               <div className="rounded-lg overflow-hidden border">
                 <div 
-                  className="h-24 relative flex items-center justify-center text-white font-bold text-xl bg-gray-100"
+                  className="h-24 relative flex items-center justify-center bg-gray-100"
                 >
                   {formData.thumbnail ? (
                     <img 
@@ -369,9 +366,7 @@ export function ThemeSettings() {
                       <span className="text-gray-500 text-xs">No Image</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span>{formData.name || "Preview Tema"}</span>
-                  </div>
+                  {/* Removed the div with the black overlay and large title text in the preview */}
                 </div>
               </div>
             </div>

@@ -10,6 +10,18 @@ interface MonthlyStatsProps {
 }
 
 export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
+  // Helper function to ensure values are numeric
+  const getNumericAmount = (amount: any): number => {
+    if (typeof amount === 'number' && !isNaN(amount)) {
+      return amount;
+    }
+    if (typeof amount === 'string' && amount.trim() !== '') {
+      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+      return !isNaN(numericAmount) ? numericAmount : 0;
+    }
+    return 0;
+  };
+  
   // Hitung statistik berdasarkan data pesanan
   const stats = useMemo(() => {
     // Total pesanan
@@ -20,13 +32,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     
     // Calculate total revenue properly, ensuring we use valid numbers
     orders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(String(order.paymentAmount)) || 0;
-      
-      // Make sure we're adding a valid number
-      if (!isNaN(amount) && isFinite(amount)) {
-        totalRevenue += amount;
-      }
+      totalRevenue += getNumericAmount(order.paymentAmount);
     });
     
     // Pesanan yang sudah lunas
@@ -36,12 +42,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Total pendapatan dari pesanan yang sudah lunas
     let paidRevenue = 0;
     paidOrders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(String(order.paymentAmount)) || 0;
-      
-      if (!isNaN(amount) && isFinite(amount)) {
-        paidRevenue += amount;
-      }
+      paidRevenue += getNumericAmount(order.paymentAmount);
     });
     
     // Pesanan yang belum lunas
@@ -51,12 +52,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
     // Total pendapatan yang belum diterima
     let unpaidRevenue = 0;
     unpaidOrders.forEach(order => {
-      // Parse to float to ensure we're dealing with numbers, not strings
-      const amount = parseFloat(String(order.paymentAmount)) || 0;
-      
-      if (!isNaN(amount) && isFinite(amount)) {
-        unpaidRevenue += amount;
-      }
+      unpaidRevenue += getNumericAmount(order.paymentAmount);
     });
     
     return {

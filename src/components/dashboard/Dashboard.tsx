@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -18,6 +17,18 @@ export function Dashboard() {
   const { orders, isLoading } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
   
+  // Helper function to ensure amounts are processed safely
+  const getNumericAmount = (amount: any): number => {
+    if (typeof amount === 'number' && !isNaN(amount)) {
+      return amount;
+    }
+    if (typeof amount === 'string' && amount.trim() !== '') {
+      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+      return !isNaN(numericAmount) ? numericAmount : 0;
+    }
+    return 0;
+  };
+  
   // Hitung statistik dari data pesanan
   const stats = useMemo(() => {
     // Map vendor ID to vendor name
@@ -31,20 +42,7 @@ export function Dashboard() {
     
     // Calculate total revenue correctly - Perbaikan perhitungan totalRevenue
     orders.forEach(order => {
-      // Pastikan paymentAmount adalah angka
-      const amount = order.paymentAmount;
-      
-      // Jika amount adalah number, tambahkan ke total
-      if (typeof amount === 'number' && !isNaN(amount)) {
-        totalRevenue += amount;
-      } 
-      // Jika amount adalah string, convert ke number dahulu
-      else if (typeof amount === 'string' && amount.trim() !== '') {
-        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
-        if (!isNaN(numericAmount)) {
-          totalRevenue += numericAmount;
-        }
-      }
+      totalRevenue += getNumericAmount(order.paymentAmount);
     });
     
     // Pesanan yang dibayar
@@ -54,20 +52,7 @@ export function Dashboard() {
     // Calculate paid revenue correctly - Perbaikan perhitungan paidRevenue
     let paidRevenue = 0;
     paidOrders.forEach(order => {
-      // Pastikan paymentAmount adalah angka
-      const amount = order.paymentAmount;
-      
-      // Jika amount adalah number, tambahkan ke total
-      if (typeof amount === 'number' && !isNaN(amount)) {
-        paidRevenue += amount;
-      } 
-      // Jika amount adalah string, convert ke number dahulu
-      else if (typeof amount === 'string' && amount.trim() !== '') {
-        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
-        if (!isNaN(numericAmount)) {
-          paidRevenue += numericAmount;
-        }
-      }
+      paidRevenue += getNumericAmount(order.paymentAmount);
     });
     
     // Pesanan yang belum dibayar
@@ -77,20 +62,7 @@ export function Dashboard() {
     // Calculate pending revenue correctly - Perbaikan perhitungan pendingRevenue
     let pendingRevenue = 0;
     pendingOrders.forEach(order => {
-      // Pastikan paymentAmount adalah angka
-      const amount = order.paymentAmount;
-      
-      // Jika amount adalah number, tambahkan ke total
-      if (typeof amount === 'number' && !isNaN(amount)) {
-        pendingRevenue += amount;
-      } 
-      // Jika amount adalah string, convert ke number dahulu
-      else if (typeof amount === 'string' && amount.trim() !== '') {
-        const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
-        if (!isNaN(numericAmount)) {
-          pendingRevenue += numericAmount;
-        }
-      }
+      pendingRevenue += getNumericAmount(order.paymentAmount);
     });
     
     // Pesanan yang perlu diselesaikan (dengan event date dalam 14 hari)
@@ -153,18 +125,7 @@ export function Dashboard() {
         const vendorStats = vendorPaymentMap.get(vendorName)!;
         
         // Add amount to appropriate payment status - Perbaikan perhitungan vendorPayment
-        const amount = order.paymentAmount;
-        let numericAmount = 0;
-        
-        // Jika amount adalah number, gunakan nilainya
-        if (typeof amount === 'number' && !isNaN(amount)) {
-          numericAmount = amount;
-        } 
-        // Jika amount adalah string, convert ke number dahulu
-        else if (typeof amount === 'string' && amount.trim() !== '') {
-          numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
-          if (isNaN(numericAmount)) numericAmount = 0;
-        }
+        const numericAmount = getNumericAmount(order.paymentAmount);
         
         if (order.paymentStatus === "Lunas") {
           vendorStats.paid += numericAmount;

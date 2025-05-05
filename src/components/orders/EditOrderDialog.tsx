@@ -21,6 +21,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Order, Theme, Addon, Vendor, WorkStatus, Package } from "@/types/types";
+import ThemeSelect from "./ThemeSelect";
 
 interface EditOrderDialogProps {
   order: Order | null;
@@ -46,8 +47,8 @@ export function EditOrderDialog({
   packages = []
 }: EditOrderDialogProps) {
   const [formData, setFormData] = useState<Partial<Order> & {
-    orderDate: string | Date;
-    eventDate: string | Date;
+    orderDate: Date | string;
+    eventDate: Date | string;
   }>({
     customerName: "",
     clientName: "",
@@ -64,8 +65,6 @@ export function EditOrderDialog({
     notes: "",
     addons: [],
   });
-  
-  const [themeOpen, setThemeOpen] = useState(false);
   
   // Initialize form data when order changes or dialog opens
   useEffect(() => {
@@ -141,12 +140,16 @@ export function EditOrderDialog({
     
     const updatedData: Partial<Order> = {
       ...formData,
-      orderDate: formData.orderDate instanceof Date 
-        ? format(formData.orderDate, 'yyyy-MM-dd') 
-        : formData.orderDate,
-      eventDate: formData.eventDate instanceof Date 
-        ? format(formData.eventDate, 'yyyy-MM-dd') 
-        : formData.eventDate,
+      orderDate: typeof formData.orderDate === 'object' && formData.orderDate instanceof Date
+        ? format(formData.orderDate, 'yyyy-MM-dd')
+        : typeof formData.orderDate === 'string'
+          ? formData.orderDate
+          : format(new Date(), 'yyyy-MM-dd'),
+      eventDate: typeof formData.eventDate === 'object' && formData.eventDate instanceof Date
+        ? format(formData.eventDate, 'yyyy-MM-dd')
+        : typeof formData.eventDate === 'string'
+          ? formData.eventDate
+          : format(new Date(), 'yyyy-MM-dd'),
     };
 
     onSave(order.id, updatedData);
@@ -198,9 +201,9 @@ export function EditOrderDialog({
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.orderDate instanceof Date
+                      {typeof formData.orderDate === 'object' && formData.orderDate instanceof Date
                         ? format(formData.orderDate, "PPP") 
-                        : formData.orderDate 
+                        : typeof formData.orderDate === 'string' && formData.orderDate
                           ? format(parseISO(formData.orderDate), "PPP")
                           : "Pilih tanggal"}
                     </Button>
@@ -208,9 +211,9 @@ export function EditOrderDialog({
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={formData.orderDate instanceof Date 
+                      selected={typeof formData.orderDate === 'object' && formData.orderDate instanceof Date 
                         ? formData.orderDate 
-                        : formData.orderDate ? parseISO(formData.orderDate) : undefined}
+                        : typeof formData.orderDate === 'string' ? parseISO(formData.orderDate) : undefined}
                       onSelect={(date) => date && setFormData({...formData, orderDate: date})}
                       initialFocus
                       className="p-3 pointer-events-auto"
@@ -227,9 +230,9 @@ export function EditOrderDialog({
                       className="w-full justify-start text-left font-normal"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.eventDate instanceof Date
+                      {typeof formData.eventDate === 'object' && formData.eventDate instanceof Date
                         ? format(formData.eventDate, "PPP") 
-                        : formData.eventDate 
+                        : typeof formData.eventDate === 'string' && formData.eventDate
                           ? format(parseISO(formData.eventDate), "PPP")
                           : "Pilih tanggal"}
                     </Button>
@@ -237,9 +240,9 @@ export function EditOrderDialog({
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={formData.eventDate instanceof Date 
+                      selected={typeof formData.eventDate === 'object' && formData.eventDate instanceof Date 
                         ? formData.eventDate 
-                        : formData.eventDate ? parseISO(formData.eventDate) : undefined}
+                        : typeof formData.eventDate === 'string' ? parseISO(formData.eventDate) : undefined}
                       onSelect={(date) => date && setFormData({...formData, eventDate: date})}
                       initialFocus
                       className="p-3 pointer-events-auto"
@@ -303,50 +306,12 @@ export function EditOrderDialog({
                     </SelectContent>
                   </Select>
                   
-                  {/* Theme selection with search */}
-                  <Popover open={themeOpen} onOpenChange={setThemeOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={themeOpen}
-                        className="w-full justify-between"
-                      >
-                        {formData.theme ? 
-                          `${formData.theme} ${themes.find(t => t.name === formData.theme)?.category ? `(${themes.find(t => t.name === formData.theme)?.category})` : ''}` : 
-                          "Pilih tema"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Cari tema..." />
-                        <CommandList>
-                          <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
-                          <CommandGroup>
-                            {themes.map((theme) => (
-                              <CommandItem
-                                key={theme.id}
-                                value={theme.name}
-                                onSelect={(value) => {
-                                  setFormData({...formData, theme: value});
-                                  setThemeOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    formData.theme === theme.name ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {theme.name} {theme.category ? `(${theme.category})` : ''}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <ThemeSelect
+                    value={formData.theme || ""}
+                    themes={themes}
+                    isDisabled={false}
+                    onChange={(value) => handleSelectChange(value, "theme")}
+                  />
                 </div>
               </div>
             </div>

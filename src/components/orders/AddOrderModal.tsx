@@ -7,13 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
+import ThemeSelect from "./ThemeSelect";
 
 interface AddOrderModalProps {
   isOpen: boolean;
@@ -376,50 +375,13 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                     </SelectContent>
                   </Select>
                   
-                  {/* Theme selection with search */}
-                  <Popover open={themeOpen} onOpenChange={setThemeOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={themeOpen}
-                        className="w-full justify-between"
-                      >
-                        {formData.theme ? 
-                          `${formData.theme} ${themes.find(t => t.name === formData.theme)?.category ? `(${themes.find(t => t.name === formData.theme)?.category})` : ''}` : 
-                          "Pilih tema"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Cari tema..." />
-                        <CommandList>
-                          <CommandEmpty>Tema tidak ditemukan</CommandEmpty>
-                          <CommandGroup>
-                            {themes.map((theme) => (
-                              <CommandItem
-                                key={theme.id}
-                                value={theme.name}
-                                onSelect={(value) => {
-                                  setFormData({...formData, theme: value});
-                                  setThemeOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    formData.theme === theme.name ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                {theme.name} {theme.category ? `(${theme.category})` : ''}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  {/* Ganti dropdown tema dengan ThemeSelect component */}
+                  <ThemeSelect
+                    value={formData.theme}
+                    themes={themes}
+                    isDisabled={false}
+                    onChange={(value) => handleSelectChange(value, "theme")}
+                  />
                 </div>
               </div>
             </div>

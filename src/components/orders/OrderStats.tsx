@@ -2,6 +2,7 @@
 import React from "react";
 import { Order } from "@/types/types";
 import { DollarSign, Check, X, ShoppingCart } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 interface OrderStatsProps {
   orders: Order[];
@@ -9,15 +10,42 @@ interface OrderStatsProps {
 }
 
 const OrderStats: React.FC<OrderStatsProps> = ({ orders, formatCurrency }) => {
+  // Ensure we convert strings to numbers before adding
+  const getNumericAmount = (amount: any): number => {
+    if (typeof amount === 'number' && !isNaN(amount)) {
+      return amount;
+    }
+    if (typeof amount === 'string' && amount.trim() !== '') {
+      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+      return !isNaN(numericAmount) ? numericAmount : 0;
+    }
+    return 0;
+  };
+
   // Calculate statistics
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((total, order) => total + order.paymentAmount, 0);
+  
+  // Properly calculate total revenue by ensuring numeric values
+  let totalRevenue = 0;
+  orders.forEach(order => {
+    totalRevenue += getNumericAmount(order.paymentAmount);
+  });
   
   const paidOrders = orders.filter(order => order.paymentStatus.toLowerCase() === "lunas");
-  const paidAmount = paidOrders.reduce((total, order) => total + order.paymentAmount, 0);
+  
+  // Calculate paid amount properly
+  let paidAmount = 0;
+  paidOrders.forEach(order => {
+    paidAmount += getNumericAmount(order.paymentAmount);
+  });
   
   const unpaidOrders = orders.filter(order => order.paymentStatus.toLowerCase() !== "lunas");
-  const unpaidAmount = unpaidOrders.reduce((total, order) => total + order.paymentAmount, 0);
+  
+  // Calculate unpaid amount properly
+  let unpaidAmount = 0;
+  unpaidOrders.forEach(order => {
+    unpaidAmount += getNumericAmount(order.paymentAmount);
+  });
 
   return (
     <div className="grid grid-cols-4 gap-3 mb-4">

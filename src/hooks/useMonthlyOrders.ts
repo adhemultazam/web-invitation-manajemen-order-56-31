@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Order, Vendor, WorkStatus, Theme, Package, Addon } from "@/types/types";
 import { toast } from "sonner";
@@ -161,6 +160,7 @@ export const useMonthlyOrders = (month: string) => {
     handleUpdateOrder(orderId, { theme });
   };
   
+  // Fix this function to properly convert the package price to a number
   const handlePackageChange = (orderId: string, pkg: string) => {
     // Find the package to get its price
     const packages = localStorage.getItem("packages");
@@ -169,9 +169,14 @@ export const useMonthlyOrders = (month: string) => {
       const packageObj = parsedPackages.find((p: Package) => p.name === pkg);
       
       if (packageObj) {
+        // Ensure price is treated as a number
+        const packagePrice = typeof packageObj.price === 'string' 
+          ? parseFloat(packageObj.price.replace(/[^\d.-]/g, ''))
+          : packageObj.price;
+          
         handleUpdateOrder(orderId, { 
           package: pkg,
-          paymentAmount: packageObj.price 
+          paymentAmount: packagePrice 
         });
       } else {
         handleUpdateOrder(orderId, { package: pkg });
@@ -191,6 +196,13 @@ export const useMonthlyOrders = (month: string) => {
   };
   
   const handleSaveOrder = (orderId: string, data: Partial<Order>) => {
+    // Ensure paymentAmount is a number if provided in data
+    if (data.paymentAmount !== undefined) {
+      if (typeof data.paymentAmount === 'string') {
+        data.paymentAmount = parseFloat(data.paymentAmount.replace(/[^\d.-]/g, ''));
+      }
+    }
+    
     handleUpdateOrder(orderId, data);
     toast.success("Pesanan berhasil diperbarui");
   };

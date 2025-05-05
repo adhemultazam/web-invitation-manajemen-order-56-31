@@ -81,14 +81,15 @@ const MobileOrderCard: React.FC<MobileOrderCardProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 border rounded-md p-4 space-y-3">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
           <div className="font-medium text-sm">Client</div>
+          <div className="font-semibold">{order.customerName}</div>
           <a 
             href={order.clientUrl} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-wedding-primary font-semibold hover:underline"
+            className="text-wedding-primary text-sm hover:underline"
           >
             {order.clientName}
           </a>

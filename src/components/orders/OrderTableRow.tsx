@@ -82,22 +82,22 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           {order.countdownDays} hari
         </span>
       </TableCell>
-      <TableCell className="font-medium">
-        {order.customerName}
-      </TableCell>
       <TableCell>
-        {hasClientUrl() ? (
-          <a 
-            href={order.clientUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline cursor-pointer"
-          >
-            {order.clientName}
-          </a>
-        ) : (
-          <span>{order.clientName}</span>
-        )}
+        <div className="space-y-1">
+          <div className="font-medium">{order.customerName}</div>
+          {hasClientUrl() ? (
+            <a 
+              href={order.clientUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-500 hover:underline cursor-pointer"
+            >
+              {order.clientName}
+            </a>
+          ) : (
+            <span className="text-sm">{order.clientName}</span>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <VendorDropdown 
@@ -108,25 +108,25 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         />
       </TableCell>
       <TableCell>
-        <PackageSelect
-          value={order.package}
-          packages={availablePackages}
-          isDisabled={updatingOrders.has(order.id)}
-          onChange={(value) => handlePackageChange(order.id, value)}
-        />
+        <div className="space-y-2">
+          <PackageSelect
+            value={order.package}
+            packages={availablePackages}
+            isDisabled={updatingOrders.has(order.id)}
+            onChange={(value) => handlePackageChange(order.id, value)}
+          />
+          <ThemeSelect
+            value={order.theme}
+            themes={themes}
+            isDisabled={updatingOrders.has(order.id)}
+            onChange={(value) => handleThemeChange(order.id, value)}
+          />
+        </div>
       </TableCell>
       <TableCell>
         <OrderAddons 
           addons={order.addons} 
           addonStyles={addonStyles} 
-        />
-      </TableCell>
-      <TableCell>
-        <ThemeSelect
-          value={order.theme}
-          themes={themes}
-          isDisabled={updatingOrders.has(order.id)}
-          onChange={(value) => handleThemeChange(order.id, value)}
         />
       </TableCell>
       <TableCell>

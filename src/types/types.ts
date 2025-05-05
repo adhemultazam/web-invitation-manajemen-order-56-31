@@ -26,7 +26,6 @@ export interface Theme {
   thumbnail?: string;
   category?: string;
   price?: number;
-  backgroundColor?: string;
   description?: string;
 }
 

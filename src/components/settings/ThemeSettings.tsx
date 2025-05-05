@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Pencil, Trash2 } from "lucide-react";
+import { PlusIcon, Pencil, Trash2, Image } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -39,7 +39,7 @@ export function ThemeSettings() {
   const [formData, setFormData] = useState<Partial<Theme>>({
     name: "",
     category: "",
-    backgroundColor: "#F5F5F5"
+    thumbnail: ""
   });
   
   // Load themes from localStorage on component mount
@@ -82,30 +82,26 @@ export function ThemeSettings() {
       {
         id: uuidv4(),
         name: "Elegant Gold",
-        thumbnail: "",
+        thumbnail: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=300",
         category: "Premium",
-        backgroundColor: "#FEF7CD"
       },
       {
         id: uuidv4(),
         name: "Floral Pink",
-        thumbnail: "",
+        thumbnail: "https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=300",
         category: "Basic",
-        backgroundColor: "#FFDEE2"
       },
       {
         id: uuidv4(),
         name: "Rustic Wood",
-        thumbnail: "",
+        thumbnail: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=300",
         category: "Premium",
-        backgroundColor: "#8B4513"
       },
       {
         id: uuidv4(),
         name: "Minimalist",
-        thumbnail: "",
+        thumbnail: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=300",
         category: "Basic",
-        backgroundColor: "#F5F5F5"
       }
     ];
     
@@ -133,7 +129,7 @@ export function ThemeSettings() {
     setFormData({
       name: "",
       category: defaultCategory,
-      backgroundColor: "#F5F5F5"
+      thumbnail: ""
     });
     setIsDialogOpen(true);
   };
@@ -147,7 +143,8 @@ export function ThemeSettings() {
         name: theme.name,
         category: theme.category,
         price: theme.price,
-        backgroundColor: theme.backgroundColor
+        thumbnail: theme.thumbnail,
+        description: theme.description
       });
       setIsDialogOpen(true);
     }
@@ -188,9 +185,8 @@ export function ThemeSettings() {
       const newTheme: Theme = {
         id: uuidv4(),
         name: formData.name || "Tema Baru",
-        thumbnail: "",
+        thumbnail: formData.thumbnail || "",
         category: formData.category || (packages.length > 0 ? packages[0].name : "Basic"),
-        backgroundColor: formData.backgroundColor,
         description: formData.description
       };
       
@@ -223,10 +219,23 @@ export function ThemeSettings() {
             {themes.map((theme) => (
               <div key={theme.id} className="border rounded-lg overflow-hidden">
                 <div 
-                  className="h-32 flex items-center justify-center text-white font-bold text-2xl" 
-                  style={{ backgroundColor: theme.backgroundColor }}
+                  className="h-32 relative flex items-center justify-center text-white font-bold text-2xl bg-gray-100"
                 >
-                  {theme.name}
+                  {theme.thumbnail ? (
+                    <img 
+                      src={theme.thumbnail} 
+                      alt={theme.name} 
+                      className="w-full h-full object-cover absolute inset-0"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center opacity-50">
+                      <Image className="h-8 w-8 mb-2" />
+                      <span className="text-gray-500 text-sm">No Image</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <span>{theme.name}</span>
+                  </div>
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-center">
@@ -324,20 +333,13 @@ export function ThemeSettings() {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="backgroundColor">Warna Latar</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="backgroundColor"
-                  value={formData.backgroundColor || "#F5F5F5"}
-                  onChange={(e) => handleInputChange("backgroundColor", e.target.value)}
-                />
-                <input
-                  type="color"
-                  value={formData.backgroundColor || "#F5F5F5"}
-                  onChange={(e) => handleInputChange("backgroundColor", e.target.value)}
-                  className="w-10 h-10 p-1 border rounded"
-                />
-              </div>
+              <Label htmlFor="thumbnail">URL Gambar Thumbnail</Label>
+              <Input
+                id="thumbnail"
+                value={formData.thumbnail || ""}
+                onChange={(e) => handleInputChange("thumbnail", e.target.value)}
+                placeholder="https://example.com/image.jpg"
+              />
             </div>
             
             <div className="grid gap-2">
@@ -353,10 +355,23 @@ export function ThemeSettings() {
             <div className="mt-2">
               <div className="rounded-lg overflow-hidden border">
                 <div 
-                  className="h-24 flex items-center justify-center text-white font-bold text-xl" 
-                  style={{ backgroundColor: formData.backgroundColor || "#F5F5F5" }}
+                  className="h-24 relative flex items-center justify-center text-white font-bold text-xl bg-gray-100"
                 >
-                  {formData.name || "Preview Tema"}
+                  {formData.thumbnail ? (
+                    <img 
+                      src={formData.thumbnail} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover absolute inset-0"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center opacity-50">
+                      <Image className="h-6 w-6 mb-1" />
+                      <span className="text-gray-500 text-xs">No Image</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <span>{formData.name || "Preview Tema"}</span>
+                  </div>
                 </div>
               </div>
             </div>

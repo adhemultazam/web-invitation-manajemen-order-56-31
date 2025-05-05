@@ -441,13 +441,10 @@ export default function MonthlyOrders() {
               updatingOrders={updatingOrders}
               vendorColors={vendorColors}
               addonStyles={addonStyles}
-              workStatuses={workStatuses}
-              vendors={vendors}
-              packages={packages}
-              themes={themes}
-              formatDate={formatDate}
-              isPastDate={isPastDate}
-              formatCurrency={formatCurrency}
+              availableWorkStatuses={workStatuses}
+              availableVendors={vendors}
+              availableThemes={themes}
+              availablePackages={packages}
               togglePaymentStatus={togglePaymentStatus}
               handleWorkStatusChange={handleWorkStatusChange}
               handleVendorChange={handleVendorChange}

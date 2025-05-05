@@ -6,7 +6,7 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, CreditCard, ChartPie, Wallet } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
-import { ChartData } from "@/types/types";
+import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
 import { useVendorsData } from "@/hooks/useVendorsData";
 
@@ -79,77 +79,99 @@ export function Dashboard() {
     const vendorData: ChartData[] = Array.from(vendorOrdersMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pembayaran per vendor
-    const vendorPaymentMap = new Map<string, number>();
+    // Data untuk chart pembayaran per vendor dengan status pembayaran
+    const vendorPaymentMap = new Map<string, { paid: number; pending: number }>();
     
     orders.forEach(order => {
-      if (order.vendor && order.paymentStatus === "Lunas") {
+      if (order.vendor) {
         // Use vendor name instead of ID
         const vendorName = vendorMap.get(order.vendor) || order.vendor;
-        vendorPaymentMap.set(vendorName, (vendorPaymentMap.get(vendorName) || 0) + order.paymentAmount);
+        
+        // Initialize if not exists
+        if (!vendorPaymentMap.has(vendorName)) {
+          vendorPaymentMap.set(vendorName, { paid: 0, pending: 0 });
+        }
+        
+        const vendorStats = vendorPaymentMap.get(vendorName)!;
+        
+        // Add amount to appropriate payment status
+        if (order.paymentStatus === "Lunas") {
+          vendorStats.paid += order.paymentAmount;
+        } else {
+          vendorStats.pending += order.paymentAmount;
+        }
       }
     });
     
-    const vendorPaymentData: ChartData[] = Array.from(vendorPaymentMap.entries())
-      .map(([name, value]) => ({ name, value }));
+    const vendorPaymentData: MultiBarChartData[] = Array.from(vendorPaymentMap.entries())
+      .map(([name, stats]) => ({ 
+        name, 
+        paid: stats.paid, 
+        pending: stats.pending 
+      }));
     
-    // Data untuk chart pesanan per bulan - Ini yang perlu diperbaiki
+    // Data untuk chart pesanan per bulan
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const monthlyOrdersData: ChartData[] = [];
     
-    if (selectedMonth === "Semua Data") {
-      // Create a map to store orders count by month
-      const monthlyOrdersMap = new Map<number, number>();
-      
-      // Process each order
-      orders.forEach(order => {
-        try {
-          const date = new Date(order.orderDate);
-          // Ensure we're only counting orders from the selected year if a year is selected
-          if (selectedYear === "Semua Data" || date.getFullYear().toString() === selectedYear) {
-            const month = date.getMonth(); // 0-11
-            monthlyOrdersMap.set(month, (monthlyOrdersMap.get(month) || 0) + 1);
+    // Create monthly orders data synchronized with the selected year/month
+    const generateMonthlyOrdersData = () => {
+      if (selectedMonth === "Semua Data") {
+        // For year view, show orders by month
+        const monthlyOrdersMap = new Map<number, number>();
+
+        // Process each order
+        orders.forEach(order => {
+          try {
+            const orderDate = new Date(order.orderDate);
+            if (selectedYear === "Semua Data" || orderDate.getFullYear().toString() === selectedYear) {
+              const month = orderDate.getMonth(); // 0-11
+              monthlyOrdersMap.set(month, (monthlyOrdersMap.get(month) || 0) + 1);
+            }
+          } catch (e) {
+            console.error("Error parsing date:", order.orderDate);
           }
-        } catch (e) {
-          console.error("Error parsing date:", order.orderDate);
-        }
-      });
-      
-      // Create chart data from the map
-      monthNames.forEach((month, index) => {
-        monthlyOrdersData.push({
+        });
+
+        // Create chart data from the map for all 12 months
+        return monthNames.map((month, index) => ({
           name: month,
           value: monthlyOrdersMap.get(index) || 0
+        }));
+      } else {
+        // If a specific month is selected, show daily data for that month
+        const monthIndex = monthNames.findIndex(m => 
+          m.toLowerCase() === selectedMonth.substring(0, 3).toLowerCase()
+        );
+        
+        if (monthIndex === -1) return [];
+        
+        const year = parseInt(selectedYear !== "Semua Data" ? selectedYear : new Date().getFullYear().toString());
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        
+        const dailyOrdersMap = new Map<number, number>();
+        
+        orders.forEach(order => {
+          try {
+            const orderDate = new Date(order.orderDate);
+            if (orderDate.getMonth() === monthIndex && 
+                (selectedYear === "Semua Data" || orderDate.getFullYear().toString() === selectedYear)) {
+              const day = orderDate.getDate(); // 1-31
+              dailyOrdersMap.set(day, (dailyOrdersMap.get(day) || 0) + 1);
+            }
+          } catch (e) {
+            console.error("Error parsing date:", order.orderDate);
+          }
         });
-      });
-    } else {
-      // If a specific month is selected, we show daily data for that month
-      const daysInMonth = new Date(
-        parseInt(selectedYear !== "Semua Data" ? selectedYear : new Date().getFullYear().toString()), 
-        monthNames.findIndex(m => m === selectedMonth) + 1, 
-        0
-      ).getDate();
-      
-      const dailyOrdersMap = new Map<number, number>();
-      
-      orders.forEach(order => {
-        try {
-          const date = new Date(order.orderDate);
-          const day = date.getDate(); // 1-31
-          dailyOrdersMap.set(day, (dailyOrdersMap.get(day) || 0) + 1);
-        } catch (e) {
-          console.error("Error parsing date:", order.orderDate);
-        }
-      });
-      
-      // Create chart data for each day of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        monthlyOrdersData.push({
+        
+        // Create chart data for each day of the selected month
+        return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => ({
           name: day.toString(),
           value: dailyOrdersMap.get(day) || 0
-        });
+        }));
       }
-    }
+    };
+    
+    const monthlyOrdersData = generateMonthlyOrdersData();
     
     return {
       totalOrders,
@@ -230,7 +252,7 @@ export function Dashboard() {
               title="Status Pembayaran"
               data={stats.paymentStatusData}
               type="pie"
-              colors={["#10b981", "#f59e0b"]}
+              colors={["#0EA5E9", "#F97316"]} // Blue for paid, Orange for pending
             />
           </div>
 
@@ -247,13 +269,17 @@ export function Dashboard() {
             />
           </div>
 
-          {/* New chart for vendor payment statistics */}
+          {/* Updated chart for vendor payment statistics with payment status colors */}
           <div className="grid gap-4">
             <ChartCard
               title="Pembayaran Per Vendor"
               data={stats.vendorPaymentData}
-              type="bar"
+              type="multiBar"
               isCurrency={true}
+              barKeys={[
+                { key: "paid", color: "#0EA5E9" }, // Blue for paid
+                { key: "pending", color: "#F97316" } // Orange for pending
+              ]}
             />
           </div>
         </>

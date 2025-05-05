@@ -8,6 +8,13 @@ export interface ChartData {
 
 export type ChartDataArray = ChartData[];
 
+export interface MultiBarChartData {
+  name: string;
+  paid?: number;
+  pending?: number;
+  [key: string]: any;
+}
+
 export interface Order {
   id: string;
   customerName: string;

@@ -27,6 +27,23 @@ export default function Index() {
   const [vendorDistribution, setVendorDistribution] = useState<ChartDataArray>([]);
   const [workStatusDistribution, setWorkStatusDistribution] = useState<ChartDataArray>([]);
 
+  // Mapping between month names in Indonesian and their indices
+  const monthMapping: Record<string, number> = {
+    "Januari": 0,
+    "Februari": 1,
+    "Maret": 2,
+    "April": 3,
+    "Mei": 4,
+    "Juni": 5,
+    "Juli": 6,
+    "Agustus": 7,
+    "September": 8,
+    "Oktober": 9,
+    "November": 10,
+    "Desember": 11,
+    "Semua Data": -1,
+  };
+
   // Load all orders from all months
   useEffect(() => {
     const months = [
@@ -57,15 +74,16 @@ export default function Index() {
 
   // Filter orders based on selected year and month
   const filteredOrders = orders.filter(order => {
-    const orderYear = new Date(order.orderDate).getFullYear().toString();
-    const orderMonth = new Date(order.orderDate).getMonth();
-    const monthNames = [
-      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
+    const orderDate = new Date(order.orderDate);
+    const orderYear = orderDate.getFullYear().toString();
+    const orderMonth = orderDate.getMonth();
     
+    // Year filter
     const yearMatch = selectedYear === "Semua Data" || orderYear === selectedYear;
-    const monthMatch = selectedMonth === "Semua Data" || monthNames[orderMonth] === selectedMonth;
+    
+    // Month filter - use the mapping to get the correct month index
+    const monthIndex = monthMapping[selectedMonth];
+    const monthMatch = selectedMonth === "Semua Data" || orderMonth === monthIndex;
     
     return yearMatch && monthMatch;
   });

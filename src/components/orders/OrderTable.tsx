@@ -1,7 +1,10 @@
+
 import React from "react";
 import {
   Table,
   TableBody,
+  TableRow,
+  TableCell,
 } from "@/components/ui/table";
 import { Order, WorkStatus, Vendor, Package, Theme } from "@/types/types";
 import OrderTableRow from "./OrderTableRow";
@@ -94,12 +97,3 @@ export function OrderTable({
     </div>
   );
 }
-
-// Import for Select components
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";

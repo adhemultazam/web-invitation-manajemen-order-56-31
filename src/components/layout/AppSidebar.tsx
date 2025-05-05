@@ -15,8 +15,11 @@ import {
   CalendarDays, 
   Settings,
   FileText,
-  ArrowUpRight
+  ArrowUpRight,
+  Image
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const months = [
   { name: "Januari", path: "/bulan/januari" },
@@ -35,18 +38,29 @@ const months = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { user } = useAuth();
   
   return (
     <Sidebar className="bg-wedding-primary border-r-0">
       <SidebarContent>
         <div className="px-4 py-5">
           <div className="bg-white/80 rounded-xl p-4 shadow-sm mb-4">
-            <h1 className="text-xl font-bold text-center text-wedding-primary">
-              Undangan Digital
-            </h1>
-            <p className="text-xs text-center text-gray-500 mt-1">
-              Manajemen Pesanan
-            </p>
+            <div className="flex items-center justify-center mb-2">
+              <Avatar className="h-12 w-12 mr-3">
+                <AvatarImage src={user?.logo || ''} alt="Logo" />
+                <AvatarFallback className="bg-wedding-accent text-white">
+                  <Image className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-xl font-bold text-center text-wedding-primary">
+                  Undangan Digital
+                </h1>
+                <p className="text-xs text-center text-gray-500">
+                  Manajemen Pesanan
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         

@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
         <AppSidebar />
         <main className="flex-1 overflow-auto pb-16 md:pb-0">
-          <div className="p-4 md:p-6 w-full mx-auto max-w-7xl">
+          <div className="p-4 md:p-6 w-full">
             <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
               {isMobile && (
                 <SidebarTrigger asChild>

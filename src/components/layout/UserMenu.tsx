@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { User, LogOut, Settings, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 export function UserMenu() {
@@ -36,9 +36,10 @@ export function UserMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 px-2 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-            <Avatar className="h-7 w-7">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            <Avatar className="h-7 w-7 bg-wedding-primary text-white">
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
             </Avatar>
             <span className="font-medium text-sm">{user.name}</span>
           </Button>

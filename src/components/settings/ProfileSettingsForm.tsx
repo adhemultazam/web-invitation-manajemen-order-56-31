@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { User } from "lucide-react";
+import { User, Image } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function ProfileSettingsForm() {
   const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
+    logo: user?.logo || "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,7 +33,8 @@ export function ProfileSettingsForm() {
       updateUser({
         ...user, 
         name: formData.name,
-        email: formData.email
+        email: formData.email,
+        logo: formData.logo
       });
       
       toast.success("Profil berhasil diperbarui");
@@ -51,32 +54,58 @@ export function ProfileSettingsForm() {
       </h3>
       <Separator />
       
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nama Pengguna</Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="flex flex-col items-center gap-3">
+          <Avatar className="h-24 w-24 bg-gray-100">
+            <AvatarImage src={formData.logo} />
+            <AvatarFallback className="bg-wedding-primary text-white">
+              <Image className="h-8 w-8" />
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="space-y-2 w-full">
+            <Label htmlFor="logo">Logo Perusahaan</Label>
+            <Input
+              id="logo"
+              name="logo"
+              value={formData.logo}
+              onChange={handleChange}
+              placeholder="URL Logo (https://...)"
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">Masukkan URL gambar logo Anda</p>
+          </div>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+
+        <div className="space-y-4 flex-1">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nama Pengguna</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
         </div>
       </div>
       
-      <Button type="submit" disabled={isLoading}>
+      <Button type="submit" disabled={isLoading} className="mt-4">
         {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
       </Button>
     </form>

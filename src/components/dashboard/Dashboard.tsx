@@ -3,39 +3,64 @@ import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CreditCard, ChartPie, Wallet, Package, Layers } from "lucide-react";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  ShoppingBag, 
+  ShoppingCart, 
+  CreditCard, 
+  TrendingUp, 
+  Plus
+} from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
 import { useVendorsData } from "@/hooks/useVendorsData";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function Dashboard() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState<string>("Semua Data");
   
-  // Ambil data pesanan berdasarkan filter
+  // Fetch orders data based on filters
   const { orders, isLoading } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
   
-  // Hitung statistik dari data pesanan
+  // Calculate stats from orders data
   const stats = useMemo(() => {
     // Map vendor ID to vendor name
     const vendorMap = new Map(vendors.map(vendor => [vendor.id, vendor.name]));
     
-    // Total Pesanan
+    // Total Orders
     const totalOrders = orders.length;
     
-    // Total Pendapatan
+    // Total Revenue
     const totalRevenue = orders.reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
     
-    // Pesanan yang dibayar
+    // Paid Orders
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas").length;
+    const paidAmount = orders
+      .filter(order => order.paymentStatus === "Lunas")
+      .reduce((sum, order) => sum + (order.paymentAmount || 0), 0);
     
-    // Pesanan yang belum dibayar
+    // Pending Orders
     const pendingOrders = orders.filter(order => order.paymentStatus === "Pending").length;
     
-    // Pesanan yang perlu diselesaikan (dengan event date dalam 14 hari)
+    // Urgent orders (with event date within 14 days)
     const urgentOrdersCount = orders.filter(order => {
       if (!order.eventDate) return false;
       
@@ -46,13 +71,13 @@ export function Dashboard() {
       return differenceInDays >= 0 && differenceInDays <= 14;
     }).length;
     
-    // Data untuk chart status pembayaran
+    // Payment status chart data
     const paymentStatusData: ChartData[] = [
       { name: "Lunas", value: paidOrders },
       { name: "Pending", value: pendingOrders },
     ];
     
-    // Data untuk chart status pengerjaan
+    // Work status chart data
     const workStatusMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -65,12 +90,11 @@ export function Dashboard() {
     const workStatusData: ChartData[] = Array.from(workStatusMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart distribusi vendor
+    // Vendor distribution chart data
     const vendorOrdersMap = new Map<string, number>();
     
     orders.forEach(order => {
       if (order.vendor) {
-        // Use vendor name instead of ID
         const vendorName = vendorMap.get(order.vendor) || order.vendor;
         vendorOrdersMap.set(vendorName, (vendorOrdersMap.get(vendorName) || 0) + 1);
       }
@@ -79,22 +103,19 @@ export function Dashboard() {
     const vendorData: ChartData[] = Array.from(vendorOrdersMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pembayaran per vendor dengan status pembayaran
+    // Vendor payment data with payment status
     const vendorPaymentMap = new Map<string, { paid: number; pending: number }>();
     
     orders.forEach(order => {
       if (order.vendor) {
-        // Use vendor name instead of ID
         const vendorName = vendorMap.get(order.vendor) || order.vendor;
         
-        // Initialize if not exists
         if (!vendorPaymentMap.has(vendorName)) {
           vendorPaymentMap.set(vendorName, { paid: 0, pending: 0 });
         }
         
         const vendorStats = vendorPaymentMap.get(vendorName)!;
         
-        // Add amount to appropriate payment status
         if (order.paymentStatus === "Lunas") {
           vendorStats.paid += order.paymentAmount;
         } else {
@@ -110,7 +131,7 @@ export function Dashboard() {
         pending: stats.pending 
       }));
     
-    // Data untuk chart tema terlaris
+    // Top themes data
     const themeMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -119,15 +140,14 @@ export function Dashboard() {
       }
     });
     
-    // Sortir tema berdasarkan jumlah pesanan (descending)
     const sortedThemeEntries = Array.from(themeMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5); // Ambil 5 tema teratas
+      .slice(0, 5);
     
     const topThemesData: ChartData[] = sortedThemeEntries
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart paket terlaris
+    // Top packages data
     const packageMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -136,62 +156,66 @@ export function Dashboard() {
       }
     });
     
-    // Sortir paket berdasarkan jumlah pesanan (descending)
     const sortedPackageEntries = Array.from(packageMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5); // Ambil 5 paket teratas
+      .slice(0, 5);
     
     const topPackagesData: ChartData[] = sortedPackageEntries
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pesanan per bulan
+    // Monthly orders data
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     
-    // Create monthly orders data synchronized with the selected year/month
     const generateMonthlyOrdersData = () => {
       if (selectedMonth === "Semua Data") {
-        // For year view, create a map for each month with 0 as default value
         const monthlyOrdersMap = new Map<number, number>();
+        const monthlyRevenueMap = new Map<number, number>();
         
-        // Initialize all months with 0
         monthNames.forEach((_, index) => {
           monthlyOrdersMap.set(index, 0);
+          monthlyRevenueMap.set(index, 0);
         });
 
-        // Process each order
         orders.forEach(order => {
           try {
             const orderDate = new Date(order.orderDate);
-            // Only count orders from selected year or all years if "Semua Data"
             if (selectedYear === "Semua Data" || orderDate.getFullYear().toString() === selectedYear) {
-              const month = orderDate.getMonth(); // 0-11
+              const month = orderDate.getMonth();
               monthlyOrdersMap.set(month, (monthlyOrdersMap.get(month) || 0) + 1);
+              monthlyRevenueMap.set(month, (monthlyRevenueMap.get(month) || 0) + order.paymentAmount);
             }
           } catch (e) {
             console.error("Error parsing date:", order.orderDate);
           }
         });
 
-        // Create chart data from the map for all 12 months
-        return monthNames.map((month, index) => ({
-          name: month,
-          value: monthlyOrdersMap.get(index) || 0
-        }));
+        return {
+          orders: monthNames.map((month, index) => ({
+            name: month,
+            value: monthlyOrdersMap.get(index) || 0
+          })),
+          revenue: monthNames.map((month, index) => ({
+            name: month,
+            value: monthlyRevenueMap.get(index) || 0
+          }))
+        };
       } else {
-        // If a specific month is selected, show daily data for that month
+        // Daily data for selected month
         const monthIndex = monthNames.findIndex(m => 
           m.toLowerCase() === selectedMonth.substring(0, 3).toLowerCase()
         );
         
-        if (monthIndex === -1) return [];
+        if (monthIndex === -1) return { orders: [], revenue: [] };
         
         const year = parseInt(selectedYear !== "Semua Data" ? selectedYear : new Date().getFullYear().toString());
         const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
         
-        // Initialize all days with 0
         const dailyOrdersMap = new Map<number, number>();
+        const dailyRevenueMap = new Map<number, number>();
+
         for (let i = 1; i <= daysInMonth; i++) {
           dailyOrdersMap.set(i, 0);
+          dailyRevenueMap.set(i, 0);
         }
         
         orders.forEach(order => {
@@ -199,28 +223,61 @@ export function Dashboard() {
             const orderDate = new Date(order.orderDate);
             if (orderDate.getMonth() === monthIndex && 
                 (selectedYear === "Semua Data" || orderDate.getFullYear().toString() === selectedYear)) {
-              const day = orderDate.getDate(); // 1-31
+              const day = orderDate.getDate();
               dailyOrdersMap.set(day, (dailyOrdersMap.get(day) || 0) + 1);
+              dailyRevenueMap.set(day, (dailyRevenueMap.get(day) || 0) + order.paymentAmount);
             }
           } catch (e) {
             console.error("Error parsing date:", order.orderDate);
           }
         });
         
-        // Create chart data for each day of the selected month
-        return Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => ({
-          name: day.toString(),
-          value: dailyOrdersMap.get(day) || 0
-        }));
+        return {
+          orders: Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => ({
+            name: day.toString(),
+            value: dailyOrdersMap.get(day) || 0
+          })),
+          revenue: Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => ({
+            name: day.toString(),
+            value: dailyRevenueMap.get(day) || 0
+          }))
+        };
       }
     };
     
-    const monthlyOrdersData = generateMonthlyOrdersData();
+    const { orders: monthlyOrdersData, revenue: monthlyRevenueData } = generateMonthlyOrdersData();
+    
+    // Calculate month-to-month changes
+    const calculateChange = () => {
+      // For now, just mock these values based on existing data
+      const totalOrdersChange = 15; // percentage
+      const totalRevenueChange = 25; // percentage
+      const paidOrdersChange = 20; // percentage
+      const pendingOrdersChange = -10; // percentage
+      
+      return {
+        totalOrdersChange,
+        totalRevenueChange, 
+        paidOrdersChange,
+        pendingOrdersChange
+      };
+    };
+    
+    const changes = calculateChange();
+    
+    // Top 5 themes as packages for display in the table
+    const topThemes = sortedThemeEntries.slice(0, 5).map(([name, count]) => ({
+      name,
+      count,
+      id: Math.floor(Math.random() * 1000) + 1000, // Mock ID for demonstration
+      type: "Tema Undangan"
+    }));
     
     return {
       totalOrders,
       totalRevenue,
       paidOrders,
+      paidAmount,
       pendingOrders,
       urgentOrdersCount,
       paymentStatusData,
@@ -228,12 +285,15 @@ export function Dashboard() {
       vendorData,
       vendorPaymentData,
       monthlyOrdersData,
+      monthlyRevenueData,
       topThemesData,
-      topPackagesData
+      topPackagesData,
+      changes,
+      topThemes
     };
   }, [orders, selectedYear, selectedMonth, vendors]);
   
-  // Format currency untuk Rupiah
+  // Format currency to IDR
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -244,15 +304,30 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <FilterBar
-          onYearChange={setSelectedYear}
-          onMonthChange={setSelectedMonth}
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-          className="w-full md:w-auto"
-        />
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Input
+              placeholder="Cari Pesanan..."
+              className="w-60 pl-10"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+          </div>
+          
+          <FilterBar
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            className="w-auto"
+          />
+        </div>
       </div>
       
       {isLoading ? (
@@ -261,93 +336,143 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Pesanan"
               value={`${stats.totalOrders}`}
-              icon={<Calendar className="h-4 w-4" />}
-              description="Keseluruhan pesanan"
+              icon={<ShoppingBag className="h-5 w-5 text-white" />}
+              iconBg="#B87333" // Bronze color for shopping bag
+              change={stats.changes.totalOrdersChange}
+              description="Dibandingkan bulan lalu"
             />
             <StatCard
-              title="Total Pendapatan"
+              title="Total Penjualan"
               value={formatCurrency(stats.totalRevenue)}
-              icon={<Wallet className="h-4 w-4" />}
-              description={`${stats.paidOrders} pesanan telah lunas`}
+              icon={<ShoppingCart className="h-5 w-5 text-white" />}
+              iconBg="#3182CE" // Blue color for shopping cart
+              change={stats.changes.totalRevenueChange}
+              description="Dibandingkan bulan lalu"
             />
             <StatCard
-              title="Menunggu Pembayaran"
-              value={`${stats.pendingOrders}`}
-              icon={<CreditCard className="h-4 w-4" />}
-              description="Pesanan dengan status Pending"
+              title="Pembayaran Lunas"
+              value={formatCurrency(stats.paidAmount)}
+              icon={<CreditCard className="h-5 w-5 text-white" />}
+              iconBg="#38A169" // Green color for credit card
+              change={stats.changes.paidOrdersChange}
+              description="Dibandingkan bulan lalu"
             />
             <StatCard
-              title="Pesanan Mendesak"
-              value={`${stats.urgentOrdersCount}`}
-              icon={<Calendar className="h-4 w-4" />}
-              description="Acara dalam 14 hari kedepan"
+              title="Keuntungan"
+              value={formatCurrency(stats.totalRevenue * 0.3)} // Assuming 30% profit margin
+              icon={<TrendingUp className="h-5 w-5 text-white" />}
+              iconBg="#805AD5" // Purple color for trend up
+              change={stats.changes.totalRevenueChange}
+              description="Dibandingkan bulan lalu"
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <ChartCard
-              title={selectedMonth === "Semua Data" ? "Pesanan Per Bulan" : `Pesanan Harian (${selectedMonth})`}
-              data={stats.monthlyOrdersData}
-              type="bar"
-            />
-            <ChartCard
-              title="Status Pembayaran"
-              data={stats.paymentStatusData}
-              type="pie"
-              colors={["#0EA5E9", "#F97316"]} // Blue for paid, Orange for pending
-            />
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+            <Card className="col-span-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-xl">Laporan Penjualan</CardTitle>
+                  <CardDescription>
+                    Data {selectedMonth !== "Semua Data" ? selectedMonth : "bulanan"} {selectedYear !== "Semua Data" ? `tahun ${selectedYear}` : ""}
+                  </CardDescription>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Bulanan
+                </div>
+              </CardHeader>
+              <CardContent className="px-1">
+                <ChartCard
+                  title=""
+                  data={stats.monthlyRevenueData}
+                  type="area"
+                  isCurrency={true}
+                  height={300}
+                  showValues={true}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-xl">Tema Terlaris</CardTitle>
+                  <CardDescription>
+                    {selectedMonth !== "Semua Data" ? selectedMonth : "Semua bulan"} {selectedYear !== "Semua Data" ? `tahun ${selectedYear}` : ""}
+                  </CardDescription>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Bulan Ini
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ChartCard
+                  title=""
+                  data={stats.topThemesData}
+                  type="pie"
+                  colors={["#38B2AC", "#4FD1C5", "#81E6D9", "#B2F5EA", "#E6FFFA"]} 
+                  height={300}
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <ChartCard
-              title="Distribusi Vendor"
-              data={stats.vendorData}
-              type="pie"
-            />
-            <ChartCard
-              title="Status Pengerjaan"
-              data={stats.workStatusData}
-              type="pie"
-            />
-          </div>
-
-          {/* New charts for top themes and packages */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <ChartCard
-              title="Tema Terlaris"
-              description="5 tema paling banyak dipesan"
-              data={stats.topThemesData}
-              type="bar"
-              colors={["#8B5CF6", "#9333EA", "#A855F7", "#C084FC", "#D8B4FE"]} // Purple colors
-              icon={<Layers className="h-4 w-4" />}
-            />
-            <ChartCard
-              title="Paket Terlaris"
-              description="5 paket paling banyak dipesan"
-              data={stats.topPackagesData}
-              type="bar"
-              colors={["#1EAEDB", "#38BDF8", "#7DD3FC", "#BAE6FD", "#E0F2FE"]} // Blue colors
-              icon={<Package className="h-4 w-4" />}
-            />
-          </div>
-
-          {/* Chart for vendor payment statistics with payment status colors */}
-          <div className="grid gap-4">
-            <ChartCard
-              title="Pembayaran Per Vendor"
-              data={stats.vendorPaymentData}
-              type="multiBar"
-              isCurrency={true}
-              barKeys={[
-                { key: "paid", color: "#0EA5E9" }, // Blue for paid
-                { key: "pending", color: "#F97316" } // Orange for pending
-              ]}
-            />
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div>
+                <CardTitle className="text-xl">Produk Terlaris</CardTitle>
+                <CardDescription>
+                  Tema dan paket dengan pesanan terbanyak
+                </CardDescription>
+              </div>
+              <Button size="sm" className="gap-1">
+                <Plus className="h-4 w-4" />
+                <span>Tambah Produk</span>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama Produk</TableHead>
+                      <TableHead>ID Produk</TableHead>
+                      <TableHead>Deskripsi</TableHead>
+                      <TableHead>Jenis</TableHead>
+                      <TableHead>Jumlah Pesanan</TableHead>
+                      <TableHead>Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.topThemes.length > 0 ? (
+                      stats.topThemes.map((theme) => (
+                        <TableRow key={theme.id}>
+                          <TableCell className="font-medium">{theme.name}</TableCell>
+                          <TableCell>#{theme.id}</TableCell>
+                          <TableCell>Tema Undangan Digital</TableCell>
+                          <TableCell>{theme.type}</TableCell>
+                          <TableCell>{theme.count}</TableCell>
+                          <TableCell className="flex gap-2">
+                            <Button variant="outline" size="sm">Edit</Button>
+                            <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">Hapus</Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                          Tidak ada data produk
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

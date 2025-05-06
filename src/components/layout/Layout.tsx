@@ -8,6 +8,7 @@ import { MobileNavbar } from "./MobileNavbar";
 import { UserMenu } from "./UserMenu";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,11 +16,12 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const isMobile = useIsMobile();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
       <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
-        <AppSidebar />
+        <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
         <main className="flex-1 overflow-auto pb-16 md:pb-0">
           <div className="p-4 md:p-6 w-full">
             <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
@@ -75,6 +77,30 @@ export function Layout({ children }: LayoutProps) {
           padding: 0.125rem 0.375rem;
           line-height: 1.2;
           border-radius: 0.25rem;
+        }
+        
+        /* Animation for statistics */
+        @keyframes countUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        
+        .animate-count-up {
+          animation: countUp 0.8s ease-out forwards;
+        }
+        
+        .stat-card {
+          transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        
+        .stat-card:hover {
+          transform: scale(1.05);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
         `}
       </style>

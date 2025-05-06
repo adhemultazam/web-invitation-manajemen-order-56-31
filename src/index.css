@@ -36,6 +36,16 @@
     --ring: 252 94% 76%;
  
     --radius: 1rem;
+
+    /* Sidebar vars */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-primary: 252 94% 76%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 250 94% 65%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-ring: 252 94% 76%;
   }
  
   .dark {
@@ -66,6 +76,16 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 252 94% 76%;
+
+    /* Sidebar dark mode vars */
+    --sidebar-background: 235 20% 15%;
+    --sidebar-foreground: 240 10% 97%;
+    --sidebar-primary: 246 100% 77%;
+    --sidebar-primary-foreground: 240 10% 5%;
+    --sidebar-accent: 246 100% 77%;
+    --sidebar-accent-foreground: 240 10% 97%;
+    --sidebar-border: 235 20% 10%;
+    --sidebar-ring: 246 100% 77%;
   }
 }
 
@@ -105,12 +125,12 @@
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #E5E7EB;
+    @apply bg-gray-200 dark:bg-gray-700;
     border-radius: 20px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #D1D5DB;
+    @apply bg-gray-300 dark:bg-gray-600;
   }
   
   /* Mobile navbar styling */
@@ -155,5 +175,10 @@
   /* Navigation hover effects */
   .nav-item-hover {
     @apply transition-all duration-200 hover:bg-gradient-to-r from-wedding-light to-white;
+  }
+
+  /* Dark mode sidebar hover effects */
+  .dark .sidebar-hover {
+    @apply hover:bg-sidebar-accent/20 hover:shadow-glow;
   }
 }

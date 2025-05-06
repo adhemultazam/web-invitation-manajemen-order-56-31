@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 
 interface StatCardProps {
   title: string;
@@ -11,6 +12,54 @@ interface StatCardProps {
 }
 
 export function StatCard({ title, value, icon, description, type = "default", trend }: StatCardProps) {
+  const [animatedValue, setAnimatedValue] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Animate the value when component is mounted
+  useEffect(() => {
+    // Handle numeric values for count-up animation
+    if (typeof value === 'number') {
+      let start = 0;
+      const end = value;
+      let duration = 1500;
+      
+      // Faster animation for small numbers
+      if (end < 10) duration = 800;
+      // Slower animation for large numbers
+      else if (end > 1000) duration = 2000;
+      
+      // Determine step increment
+      const increment = Math.ceil(end / (duration / 50));
+      
+      // Only animate if we haven't done it already and the end value is > 0
+      if (!isLoaded && end > 0) {
+        const timer = setInterval(() => {
+          start += increment;
+          if (start >= end) {
+            clearInterval(timer);
+            setAnimatedValue(end);
+            setIsLoaded(true);
+          } else {
+            setAnimatedValue(start);
+          }
+        }, 50);
+        
+        return () => {
+          clearInterval(timer);
+        };
+      }
+    } else {
+      // For string values, just set them directly after a short delay
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 300);
+      
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [value, isLoaded]);
+  
   // Get background color class based on card type
   const getBackgroundClass = () => {
     switch (type) {
@@ -85,7 +134,7 @@ export function StatCard({ title, value, icon, description, type = "default", tr
       return value;
     }
     
-    // For numeric values, apply formatting
+    // For numeric values that are being animated, use the animated value
     if (typeof value === 'number') {
       // Format to Indonesian currency if the value is over 1000
       if (value >= 1000) {
@@ -94,9 +143,9 @@ export function StatCard({ title, value, icon, description, type = "default", tr
           currency: "IDR",
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
-        }).format(value);
+        }).format(animatedValue);
       } else {
-        return value.toString();
+        return animatedValue.toString();
       }
     }
     
@@ -119,21 +168,21 @@ export function StatCard({ title, value, icon, description, type = "default", tr
   };
 
   return (
-    <Card className={`overflow-hidden border shadow-card ${getBackgroundClass()}`}>
-      <CardContent className="p-5">
+    <Card className={`overflow-hidden border rounded-xl shadow-lg stat-card ${getBackgroundClass()}`}>
+      <CardContent className="p-6">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xs font-semibold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
-          <div className={`rounded-full w-9 h-9 flex items-center justify-center shadow-sm ${getIconColorClass()}`}>
+          <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
+          <div className={`rounded-full w-10 h-10 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
             {icon}
           </div>
         </div>
         <div className="flex items-end justify-between">
-          <div>
-            <div className={`text-xl lg:text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
+          <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
+            <div className={`text-2xl lg:text-3xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
               {formatValue()}
             </div>
             {description && (
-              <p className="text-xs mt-1 text-gray-500 dark:text-gray-400 font-inter">
+              <p className="text-xs mt-1.5 text-gray-500 dark:text-gray-400 font-inter">
                 {formatDescription()}
               </p>
             )}

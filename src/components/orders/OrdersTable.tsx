@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Order } from "@/types/types";
 import { format, formatDistance, parseISO } from "date-fns";
@@ -22,9 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Trash2, Edit, ClockIcon } from "lucide-react";
-import DeleteConfirmModal from "./DeleteConfirmModal";
-import EditOrderModal from "./EditOrderModal";
-import AddOrderModal from "./AddOrderModal";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { EditOrderModal } from "./EditOrderModal";
+import { AddOrderModal } from "./AddOrderModal";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -257,17 +256,8 @@ export function OrdersTable({
         </Table>
       </div>
       
-      {/* Delete confirmation modal */}
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={closeDeleteModal}
-        onConfirm={handleDelete}
-        title="Konfirmasi Hapus Pesanan"
-        description="Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan."
-      />
-      
       {/* Edit order modal */}
-      {orderToEdit && (
+      {isEditModalOpen && orderToEdit && (
         <EditOrderModal
           isOpen={isEditModalOpen}
           onClose={closeEditModal}
@@ -280,6 +270,22 @@ export function OrdersTable({
           packages={packages}
         />
       )}
+      
+      {/* Delete confirmation modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

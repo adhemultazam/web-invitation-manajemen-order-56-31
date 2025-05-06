@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { 
@@ -60,7 +59,7 @@ import {
   Trash, 
   User 
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 
 // Helper function to map month names to their numbers
@@ -143,6 +142,45 @@ export default function MonthlyOrders() {
   const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(currentYear, month ? getMonthTranslation(month) : undefined);
   const { vendors } = useVendorsData();
   const { workStatuses, addons, themes, packages } = useOrderResources();
+  
+  // Calculate countdown days for each order
+  useEffect(() => {
+    if (orders.length > 0) {
+      const updatedOrders = orders.map(order => {
+        try {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const eventDate = new Date(order.eventDate);
+          const countdown = differenceInDays(eventDate, today);
+          
+          // Only update if countdown doesn't match
+          if (order.countdownDays !== countdown) {
+            return {
+              ...order,
+              countdownDays: countdown
+            };
+          }
+        } catch (error) {
+          console.error("Error calculating countdown for order:", order.id);
+        }
+        return order;
+      });
+
+      // Update orders with new countdown values if needed
+      const hasChanges = updatedOrders.some((order, index) => 
+        order.countdownDays !== orders[index].countdownDays
+      );
+      
+      if (hasChanges) {
+        // Update the orders in local storage
+        try {
+          localStorage.setItem(`orders_${month?.toLowerCase()}`, JSON.stringify(updatedOrders));
+        } catch (error) {
+          console.error("Error updating orders countdown:", error);
+        }
+      }
+    }
+  }, [orders, month]);
   
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -276,10 +314,19 @@ export default function MonthlyOrders() {
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm">{order.clientName}</span>
-                            {order.clientUrl && (
-                              <span className="text-xs text-muted-foreground">{order.clientUrl}</span>
+                            {order.clientUrl ? (
+                              <a 
+                                href={order.clientUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-sm text-blue-500 hover:underline"
+                              >
+                                {order.clientName}
+                              </a>
+                            ) : (
+                              <span className="font-medium text-sm">{order.clientName}</span>
                             )}
+                            <span className="text-xs text-muted-foreground">{order.customerName}</span>
                           </div>
                         </div>
                       </TableCell>
@@ -292,6 +339,11 @@ export default function MonthlyOrders() {
                           <div className="flex items-center gap-1 mt-1">
                             <Clock className="h-3 w-3 text-muted-foreground" />
                             <span className="text-xs">{format(new Date(order.eventDate), "dd MMM yyyy")}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className={`text-xs ${order.countdownDays < 0 ? "text-red-500 font-semibold" : ""}`}>
+                              {order.countdownDays} hari lagi
+                            </span>
                           </div>
                         </div>
                       </TableCell>
@@ -370,36 +422,62 @@ export default function MonthlyOrders() {
         </CardContent>
       </Card>
       
-      {/* Add Order Modal */}
+      {/* Add Order Modal - Remove countdown days input and auto-calculate */}
       {isAddOrderModalOpen && (
         <AddOrderModal
           isOpen={isAddOrderModalOpen}
           onClose={handleCloseAddModal}
           onAddOrder={(order) => {
-            addOrder(order);
+            // Calculate countdown days based on current date and event date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const eventDate = new Date(order.eventDate);
+            const countdown = differenceInDays(eventDate, today);
+            
+            const orderWithCountdown = {
+              ...order,
+              countdownDays: countdown
+            };
+            
+            addOrder(orderWithCountdown);
             handleCloseAddModal();
             toast.success("Pesanan berhasil ditambahkan");
           }}
           vendors={vendors.map(v => v.id)}
           workStatuses={workStatuses.map(ws => ws.name)}
           addons={addons}
+          themes={themes}
+          packages={packages}
         />
       )}
       
-      {/* Edit Order Modal */}
+      {/* Edit Order Modal - Remove countdown days input and auto-calculate */}
       {isEditOrderModalOpen && currentOrder && (
         <EditOrderModal
           isOpen={isEditOrderModalOpen}
           onClose={handleCloseEditModal}
           order={currentOrder}
           onEditOrder={(updated) => {
-            editOrder(updated.id, updated);
+            // Calculate countdown days based on current date and event date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const eventDate = new Date(updated.eventDate);
+            const countdown = differenceInDays(eventDate, today);
+            
+            const updatedWithCountdown = {
+              ...updated,
+              countdownDays: countdown
+            };
+            
+            editOrder(updatedWithCountdown.id, updatedWithCountdown);
             handleCloseEditModal();
             toast.success("Pesanan berhasil diperbarui");
           }}
           vendors={vendors.map(v => v.id)}
           workStatuses={workStatuses.map(ws => ws.name)}
           addons={addons}
+          themes={themes}
+          packages={packages}
         />
       )}
       

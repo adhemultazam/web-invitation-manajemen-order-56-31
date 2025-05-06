@@ -104,18 +104,20 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       {/* Client & Nama combined - SWAPPED ORDER */}
       <TableCell className="py-2 px-2">
         <div className="flex flex-col gap-0.5">
-          {hasClientUrl() ? (
-            <a 
-              href={order.clientUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-500 hover:underline cursor-pointer font-medium leading-tight"
-            >
-              {order.clientName}
-            </a>
-          ) : (
-            <div className="text-xs font-medium leading-tight">{order.clientName}</div>
-          )}
+          <div className="text-xs font-medium leading-tight">
+            {hasClientUrl() ? (
+              <a 
+                href={order.clientUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline cursor-pointer"
+              >
+                {order.clientName}
+              </a>
+            ) : (
+              order.clientName
+            )}
+          </div>
           <div className="text-[11px] text-muted-foreground leading-tight">{order.customerName}</div>
         </div>
       </TableCell>

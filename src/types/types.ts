@@ -1,4 +1,3 @@
-
 // Data types for the wedding digital order management system
 
 export interface ChartData {
@@ -71,8 +70,8 @@ export interface Package {
   name: string;
   price: number;
   description?: string;
-  features: string[]; // Added features array
-  themes?: string[]; // Added themes array to fix type errors
+  features: string[];
+  themes?: string[]; // Add themes array property to fix type errors
 }
 
 export interface Invoice {

@@ -112,7 +112,7 @@ export function OrdersFilter({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Status</SelectItem>
-              {workStatuses.length > 0 ? (
+              {workStatuses && workStatuses.length > 0 ? (
                 workStatuses.map((status) => (
                   <SelectItem key={status.id} value={status.name}>
                     {status.name}

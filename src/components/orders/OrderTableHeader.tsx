@@ -1,14 +1,13 @@
 
 import React from "react";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar } from "lucide-react";
 
 const OrderTableHeader: React.FC = () => {
   return (
     <TableHeader>
       <TableRow>
         <TableHead className="w-[30px]">No</TableHead>
-        <TableHead className="w-[150px]"><Calendar className="h-4 w-4" /></TableHead>
+        <TableHead className="w-[150px]">Tanggal</TableHead>
         <TableHead className="w-[80px]">Countdown</TableHead>
         <TableHead>Nama</TableHead>
         <TableHead className="w-[110px]">Vendor</TableHead>

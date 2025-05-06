@@ -98,7 +98,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Countdown */}
-      <TableCell className="font-mono text-xs py-2 px-2">
+      <TableCell className="font-mono text-[10px] py-2 px-2">
         <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
           {order.countdownDays} hari
         </span>

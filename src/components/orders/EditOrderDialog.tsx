@@ -44,7 +44,7 @@ interface FormDataState {
   package: string;
   theme: string;
   paymentStatus: "Lunas" | "Pending";
-  paymentAmount: number;
+  paymentAmount: number | string; // Updated to match Order type
   workStatus: string;
   postPermission: boolean;
   notes?: string;
@@ -128,7 +128,7 @@ export function EditOrderDialog({
         setFormData(prev => ({ 
           ...prev, 
           [name]: value,
-          paymentAmount: selectedPackage.price
+          paymentAmount: selectedPackage.price || 0
         }));
         
         // Update the package category
@@ -194,6 +194,20 @@ export function EditOrderDialog({
   };
 
   if (!order) return null;
+
+  // Function to safely format currency values
+  const formatCurrency = (value: number | string) => {
+    // Convert to number if it's a string
+    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+    // Check if it's a valid number
+    if (isNaN(numericValue)) return '';
+    
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency", 
+      currency: "IDR", 
+      minimumFractionDigits: 0
+    }).format(numericValue);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

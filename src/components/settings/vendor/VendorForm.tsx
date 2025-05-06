@@ -49,8 +49,8 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
     if (currentVendor) {
       setFormData({
         name: currentVendor.name,
-        code: currentVendor.code,
-        commission: currentVendor.commission || 0,
+        code: currentVendor.code || "",
+        commission: currentVendor.commission !== undefined ? currentVendor.commission : 0,
         color: currentVendor.color || "#6366f1"
       });
     } else {

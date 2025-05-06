@@ -35,7 +35,7 @@ export function VendorItem({ vendor, onEdit, onDelete }: VendorItemProps) {
           <span>{vendor.color || "#6366f1"}</span>
         </div>
       </TableCell>
-      <TableCell>{vendor.commission}%</TableCell>
+      <TableCell>{vendor.commission || 0}%</TableCell>
       <TableCell>
         <div className="flex space-x-1">
           <Button

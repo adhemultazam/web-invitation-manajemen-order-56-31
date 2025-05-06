@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,19 @@ export function OrderDetailModal({ order, onClose, isOpen }: OrderDetailModalPro
       default:
         return 'bg-gray-500';
     }
+  };
+
+  // Function to safely format payment amount
+  const safeFormatCurrency = (amount: number | string) => {
+    // If it's a string, try to convert to number
+    if (typeof amount === 'string') {
+      const parsedAmount = parseFloat(amount);
+      if (!isNaN(parsedAmount)) {
+        return formatCurrency(parsedAmount);
+      }
+      return amount; // If conversion fails, return the original string
+    }
+    return formatCurrency(amount);
   };
 
   return (
@@ -120,7 +134,7 @@ export function OrderDetailModal({ order, onClose, isOpen }: OrderDetailModalPro
                 >
                   {order.paymentStatus}
                 </Badge>
-                <div className="mt-1 text-xs font-mono">{formatCurrency(order.paymentAmount)}</div>
+                <div className="mt-1 text-xs font-mono">{safeFormatCurrency(order.paymentAmount)}</div>
               </div>
               
               <div className="text-sm text-muted-foreground">Status Pengerjaan</div>
@@ -132,7 +146,7 @@ export function OrderDetailModal({ order, onClose, isOpen }: OrderDetailModalPro
             </div>
           </section>
 
-          {(order.addons.length > 0 || order.bonuses.length > 0) && (
+          {(order.addons.length > 0 || (order.bonuses && order.bonuses.length > 0)) && (
             <section>
               <h3 className="text-lg font-medium">Fitur Tambahan</h3>
               <Separator className="my-2" />
@@ -148,7 +162,7 @@ export function OrderDetailModal({ order, onClose, isOpen }: OrderDetailModalPro
                 </div>
               )}
               
-              {order.bonuses.length > 0 && (
+              {order.bonuses && order.bonuses.length > 0 && (
                 <div>
                   <div className="text-sm font-medium mb-1">Bonus:</div>
                   <ul className="list-disc pl-5 space-y-1">

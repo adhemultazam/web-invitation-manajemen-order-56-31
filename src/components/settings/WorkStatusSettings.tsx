@@ -21,10 +21,10 @@ export function WorkStatusSettings() {
         console.error("Error parsing work statuses:", error);
         // Initialize with default work statuses if there's an error
         const defaultWorkStatuses = [
-          { id: crypto.randomUUID(), name: "Belum Dikerjakan" },
-          { id: crypto.randomUUID(), name: "Dalam Pengerjaan" },
-          { id: crypto.randomUUID(), name: "Selesai" },
-          { id: crypto.randomUUID(), name: "Revisi" }
+          { id: crypto.randomUUID(), name: "Belum Dikerjakan", color: "#EF4444", order: 1 },
+          { id: crypto.randomUUID(), name: "Dalam Pengerjaan", color: "#3B82F6", order: 2 },
+          { id: crypto.randomUUID(), name: "Selesai", color: "#10B981", order: 3 },
+          { id: crypto.randomUUID(), name: "Revisi", color: "#F59E0B", order: 4 }
         ];
         setWorkStatuses(defaultWorkStatuses);
         localStorage.setItem("workStatuses", JSON.stringify(defaultWorkStatuses));
@@ -32,10 +32,10 @@ export function WorkStatusSettings() {
     } else {
       // Initialize with default work statuses if none exist
       const defaultWorkStatuses = [
-        { id: crypto.randomUUID(), name: "Belum Dikerjakan" },
-        { id: crypto.randomUUID(), name: "Dalam Pengerjaan" },
-        { id: crypto.randomUUID(), name: "Selesai" },
-        { id: crypto.randomUUID(), name: "Revisi" }
+        { id: crypto.randomUUID(), name: "Belum Dikerjakan", color: "#EF4444", order: 1 },
+        { id: crypto.randomUUID(), name: "Dalam Pengerjaan", color: "#3B82F6", order: 2 },
+        { id: crypto.randomUUID(), name: "Selesai", color: "#10B981", order: 3 },
+        { id: crypto.randomUUID(), name: "Revisi", color: "#F59E0B", order: 4 }
       ];
       setWorkStatuses(defaultWorkStatuses);
       localStorage.setItem("workStatuses", JSON.stringify(defaultWorkStatuses));
@@ -51,7 +51,13 @@ export function WorkStatusSettings() {
   const handleAddWorkStatus = () => {
     if (!newWorkStatus.trim()) return;
     
-    const newWorkStatusItem = { id: crypto.randomUUID(), name: newWorkStatus.trim() };
+    const newWorkStatusItem: WorkStatus = { 
+      id: crypto.randomUUID(), 
+      name: newWorkStatus.trim(),
+      color: "#64748b", // Default color
+      order: workStatuses.length + 1
+    };
+    
     setWorkStatuses([...workStatuses, newWorkStatusItem]);
     setNewWorkStatus("");
     toast.success("Status pengerjaan berhasil ditambahkan");

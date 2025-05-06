@@ -102,7 +102,7 @@ export function StatCard({ title, value, icon, description, type = "default", tr
     }
   };
   
-  // Get trend color and icon
+  // Get trend element - REMOVED PERCENTAGE DISPLAY
   const getTrendElement = () => {
     if (trend === undefined) return null;
     
@@ -112,7 +112,6 @@ export function StatCard({ title, value, icon, description, type = "default", tr
           <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
           </svg>
-          {trend}%
         </div>
       );
     } else {
@@ -121,7 +120,6 @@ export function StatCard({ title, value, icon, description, type = "default", tr
           <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
           </svg>
-          {Math.abs(trend)}%
         </div>
       );
     }

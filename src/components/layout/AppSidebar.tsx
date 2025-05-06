@@ -176,11 +176,11 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                               : "",
                             collapsed && "ml-0"
                           )} />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">Pesanan Bulanan</span>}
+                          {!collapsed && <span className="text-sm transition-opacity duration-300">Catatan Pesanan</span>}
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>
-                    {collapsed && <TooltipContent side="right" className="text-xs">Pesanan Bulanan</TooltipContent>}
+                    {collapsed && <TooltipContent side="right" className="text-xs">Catatan Pesanan</TooltipContent>}
                   </Tooltip>
                 </SidebarMenuItem>
 

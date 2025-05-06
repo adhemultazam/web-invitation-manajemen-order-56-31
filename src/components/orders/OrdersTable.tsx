@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Order } from "@/types/types";
 import { format, formatDistance, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
@@ -53,17 +53,28 @@ export function OrdersTable({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [orderStatuses, setOrderStatuses] = useState<{[key: string]: string}>({});
+  
+  // Add refs to track mounted status
+  const isMounted = useRef(true);
 
   // Update current time every minute to refresh countdown
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      if (isMounted.current) {
+        setCurrentTime(new Date());
+      }
     }, 60000); // Every minute
-    return () => clearInterval(timer);
+    
+    return () => {
+      clearInterval(timer);
+      isMounted.current = false;
+    };
   }, []);
   
   // Calculate countdown for each order when current time changes
   useEffect(() => {
+    if (!isMounted.current) return;
+    
     const statuses: {[key: string]: string} = {};
     
     orders.forEach(order => {
@@ -103,42 +114,61 @@ export function OrdersTable({
       }
     });
     
-    setOrderStatuses(statuses);
+    if (isMounted.current) {
+      setOrderStatuses(statuses);
+    }
   }, [orders, currentTime]);
 
   // Opening and closing modals
   const openDeleteModal = (id: string) => {
-    setOrderToDelete(id);
-    setIsDeleteModalOpen(true);
+    if (isMounted.current) {
+      setOrderToDelete(id);
+      setIsDeleteModalOpen(true);
+    }
   };
   
   const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setOrderToDelete(null);
+    if (isMounted.current) {
+      setIsDeleteModalOpen(false);
+      setTimeout(() => {
+        if (isMounted.current) {
+          setOrderToDelete(null);
+        }
+      }, 300); // Delay to allow animation to complete
+    }
   };
   
   const openEditModal = (order: Order) => {
-    setOrderToEdit(order);
-    setIsEditModalOpen(true);
+    if (isMounted.current) {
+      setOrderToEdit(order);
+      setIsEditModalOpen(true);
+    }
   };
   
   const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setOrderToEdit(null);
+    if (isMounted.current) {
+      setIsEditModalOpen(false);
+      setTimeout(() => {
+        if (isMounted.current) {
+          setOrderToEdit(null);
+        }
+      }, 300); // Delay to allow animation to complete
+    }
   };
 
   // Handle delete and edit actions
   const handleDelete = () => {
-    if (orderToDelete) {
+    if (orderToDelete && isMounted.current) {
       onDeleteOrder(orderToDelete);
       closeDeleteModal();
     }
   };
   
-  // Changed the function name from handleEdit to match what EditOrderModal expects
   const handleEditOrder = (editedOrder: Order) => {
-    onEditOrder(editedOrder);
-    closeEditModal();
+    if (isMounted.current) {
+      onEditOrder(editedOrder);
+      closeEditModal();
+    }
   };
 
   // Helper function to get the appropriate CSS class for the countdown badge
@@ -259,7 +289,7 @@ export function OrdersTable({
       </div>
       
       {/* Edit order modal */}
-      {isEditModalOpen && orderToEdit && (
+      {isMounted.current && isEditModalOpen && orderToEdit && (
         <EditOrderModal
           isOpen={isEditModalOpen}
           onClose={closeEditModal}
@@ -274,20 +304,22 @@ export function OrdersTable({
       )}
       
       {/* Delete confirmation modal */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Konfirmasi Hapus</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Batal</Button>
-            <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {isMounted.current && (
+        <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Konfirmasi Hapus</DialogTitle>
+              <DialogDescription>
+                Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Batal</Button>
+              <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

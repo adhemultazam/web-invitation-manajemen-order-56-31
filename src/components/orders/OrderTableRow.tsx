@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor, Theme } from "@/types/types";
 import OrderAddons from "./OrderAddons";
@@ -58,13 +59,18 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
 }) => {
   // Find the current package's category
   const [packageCategory, setPackageCategory] = useState<string | undefined>(undefined);
+  const isMounted = useRef(true);
   
   // Update package category when the order's package changes
   useEffect(() => {
     const currentPackage = availablePackages.find(pkg => pkg.name === order.package);
-    if (currentPackage) {
+    if (currentPackage && isMounted.current) {
       setPackageCategory(currentPackage.name);
     }
+    
+    return () => {
+      isMounted.current = false;
+    };
   }, [order.package, availablePackages]);
 
   // Check if an order has any addons
@@ -145,14 +151,16 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
             onChange={(value) => handlePackageChange(order.id, value)}
             compact={true}
           />
-          <ThemeSelect
-            value={order.theme}
-            themes={themes}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handleThemeChange(order.id, value)}
-            packageCategory={packageCategory}
-            compact={true}
-          />
+          {packageCategory !== undefined && (
+            <ThemeSelect
+              value={order.theme || ""}
+              themes={themes}
+              isDisabled={updatingOrders.has(order.id)}
+              onChange={(value) => handleThemeChange(order.id, value)}
+              packageCategory={packageCategory}
+              compact={true}
+            />
+          )}
         </div>
       </TableCell>
       

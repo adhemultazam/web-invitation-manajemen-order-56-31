@@ -10,26 +10,28 @@ export const useOrderResources = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadResources = () => {
+    let isMounted = true;
+    
+    const loadResources = async () => {
       setIsLoading(true);
       try {
         // Load work statuses from localStorage
         const storedWorkStatuses = localStorage.getItem("workStatuses");
-        if (storedWorkStatuses) {
+        if (storedWorkStatuses && isMounted) {
           const parsedWorkStatuses = JSON.parse(storedWorkStatuses);
           setWorkStatuses(parsedWorkStatuses);
         }
 
         // Load addons from localStorage
         const storedAddons = localStorage.getItem("addons");
-        if (storedAddons) {
+        if (storedAddons && isMounted) {
           const parsedAddons = JSON.parse(storedAddons);
           setAddons(parsedAddons);
         }
 
         // Load themes from localStorage
         const storedThemes = localStorage.getItem("themes");
-        if (storedThemes) {
+        if (storedThemes && isMounted) {
           const parsedThemes = JSON.parse(storedThemes);
           
           // Convert string themes to object themes if necessary
@@ -45,18 +47,25 @@ export const useOrderResources = () => {
 
         // Load packages from localStorage
         const storedPackages = localStorage.getItem("packages");
-        if (storedPackages) {
+        if (storedPackages && isMounted) {
           const parsedPackages = JSON.parse(storedPackages);
           setPackages(parsedPackages);
         }
       } catch (error) {
         console.error("Error loading order resources:", error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadResources();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { workStatuses, addons, themes, packages, isLoading };

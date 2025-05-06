@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import {
   Table,
   TableBody,
@@ -53,20 +53,26 @@ export function OrderTable({
   // Format date as dd/MM/yyyy
   const formatDate = (dateString: string) => {
     try {
+      if (!dateString) return "-";
       const date = parseISO(dateString);
       return format(date, "dd/MM/yyyy", { locale: id });
     } catch (error) {
       console.error("Invalid date:", dateString);
-      return dateString;
+      return "-";
     }
   };
 
   // Check if date is in the past
   const isPastDate = (dateString: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const date = parseISO(dateString);
-    return date < today;
+    if (!dateString) return false;
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const date = parseISO(dateString);
+      return date < today;
+    } catch (error) {
+      return false;
+    }
   };
   
   // Format currency

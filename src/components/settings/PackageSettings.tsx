@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash, Save } from "lucide-react";
@@ -10,17 +10,29 @@ export function PackageSettings() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [newPackage, setNewPackage] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const isMounted = useRef(true);
   
   // Load packages from localStorage on component mount
   useEffect(() => {
-    const savedPackages = localStorage.getItem("packages");
-    
-    if (savedPackages) {
-      try {
-        setPackages(JSON.parse(savedPackages));
-      } catch (error) {
-        console.error("Error parsing packages:", error);
-        // Initialize with some default packages if there's an error
+    const loadPackages = () => {
+      const savedPackages = localStorage.getItem("packages");
+      
+      if (savedPackages && isMounted.current) {
+        try {
+          setPackages(JSON.parse(savedPackages));
+        } catch (error) {
+          console.error("Error parsing packages:", error);
+          // Initialize with some default packages if there's an error
+          const defaultPackages = [
+            { id: crypto.randomUUID(), name: "Basic", price: 500000 },
+            { id: crypto.randomUUID(), name: "Standard", price: 1000000 },
+            { id: crypto.randomUUID(), name: "Premium", price: 2000000 }
+          ];
+          setPackages(defaultPackages);
+          localStorage.setItem("packages", JSON.stringify(defaultPackages));
+        }
+      } else if (isMounted.current) {
+        // Initialize with default packages if none exist
         const defaultPackages = [
           { id: crypto.randomUUID(), name: "Basic", price: 500000 },
           { id: crypto.randomUUID(), name: "Standard", price: 1000000 },
@@ -29,21 +41,20 @@ export function PackageSettings() {
         setPackages(defaultPackages);
         localStorage.setItem("packages", JSON.stringify(defaultPackages));
       }
-    } else {
-      // Initialize with default packages if none exist
-      const defaultPackages = [
-        { id: crypto.randomUUID(), name: "Basic", price: 500000 },
-        { id: crypto.randomUUID(), name: "Standard", price: 1000000 },
-        { id: crypto.randomUUID(), name: "Premium", price: 2000000 }
-      ];
-      setPackages(defaultPackages);
-      localStorage.setItem("packages", JSON.stringify(defaultPackages));
-    }
+    };
+    
+    loadPackages();
+    
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   // Save packages to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("packages", JSON.stringify(packages));
+    if (isMounted.current) {
+      localStorage.setItem("packages", JSON.stringify(packages));
+    }
   }, [packages]);
 
   // Add a new package

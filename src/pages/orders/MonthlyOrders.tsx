@@ -13,12 +13,12 @@ import { Calendar, PlusCircle } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
-import OrderStats from "@/components/orders/OrderStats";
 import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
 import { useMonthlyOrders } from "@/hooks/useMonthlyOrders";
-import { MonthlyStats } from "@/components/orders/MonthlyStats";
 import { formatCurrency } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { ShoppingCart, DollarSign, Check, X } from "lucide-react";
 
 const MonthlyOrders = () => {
   const { month } = useParams();
@@ -90,9 +90,45 @@ const MonthlyOrders = () => {
       handleDeleteOrder(orderToDelete);
     }
   };
+
+  // Helper function to ensure values are numeric
+  const getNumericAmount = (amount: any): number => {
+    if (typeof amount === 'number' && !isNaN(amount)) {
+      return amount;
+    }
+    if (typeof amount === 'string' && amount.trim() !== '') {
+      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
+      return !isNaN(numericAmount) ? numericAmount : 0;
+    }
+    return 0;
+  };
+
+  // Calculate stats for the stat cards
+  const totalOrders = orders.length;
+  
+  let totalRevenue = 0;
+  orders.forEach(order => {
+    totalRevenue += getNumericAmount(order.paymentAmount);
+  });
+  
+  const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
+  const paidOrdersCount = paidOrders.length;
+  
+  let paidRevenue = 0;
+  paidOrders.forEach(order => {
+    paidRevenue += getNumericAmount(order.paymentAmount);
+  });
+  
+  const unpaidOrders = orders.filter(order => order.paymentStatus === "Pending");
+  const unpaidOrdersCount = unpaidOrders.length;
+  
+  let unpaidRevenue = 0;
+  unpaidOrders.forEach(order => {
+    unpaidRevenue += getNumericAmount(order.paymentAmount);
+  });
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Pesanan Bulanan</h2>
@@ -150,8 +186,56 @@ const MonthlyOrders = () => {
         </div>
       ) : (
         <>
-          {/* Monthly Statistics */}
-          <MonthlyStats orders={orders} month={selectedMonth} />
+          {/* Compact Stat Cards */}
+          <div className="grid grid-cols-4 gap-4">
+            {/* Total Pesanan Card */}
+            <Card className="p-4 bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800/40">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xs text-blue-700 dark:text-blue-300 font-medium">Total Pesanan</h3>
+                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-blue-500">
+                  <ShoppingCart className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{totalOrders}</p>
+            </Card>
+            
+            {/* Total Omset Card */}
+            <Card className="p-4 bg-purple-50 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800/40">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xs text-purple-700 dark:text-purple-300 font-medium">Total Omset</h3>
+                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-purple-500">
+                  <DollarSign className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{formatCurrency(totalRevenue)}</p>
+            </Card>
+            
+            {/* Sudah Lunas Card */}
+            <Card className="p-4 bg-green-50 border border-green-100 dark:bg-green-900/20 dark:border-green-800/40">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xs text-green-700 dark:text-green-300 font-medium">Sudah Lunas</h3>
+                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-green-500">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-green-800 dark:text-green-200">
+                {paidOrdersCount} <span className="text-sm">(Rp {paidRevenue.toLocaleString('id-ID')})</span>
+              </p>
+            </Card>
+            
+            {/* Belum Lunas Card */}
+            <Card className="p-4 bg-red-50 border border-red-100 dark:bg-red-900/20 dark:border-red-800/40">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xs text-red-700 dark:text-red-300 font-medium">Belum Lunas</h3>
+                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-red-500">
+                  <X className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              <p className="text-xl font-bold text-red-800 dark:text-red-200">
+                {unpaidOrdersCount} <span className="text-sm">(Rp {unpaidRevenue.toLocaleString('id-ID')})</span>
+              </p>
+            </Card>
+          </div>
           
           {/* Order Filters */}
           <OrderFilter 

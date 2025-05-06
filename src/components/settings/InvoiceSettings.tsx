@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -125,9 +126,10 @@ export function InvoiceSettings() {
     reader.onloadend = () => {
       if (typeof reader.result === 'string') {
         setPreviewImage(reader.result);
+        // Ensure logo is always a string
         setFormData(prev => ({
           ...prev,
-          logo: reader.result
+          logo: reader.result as string
         }));
       }
       setIsUploading(false);

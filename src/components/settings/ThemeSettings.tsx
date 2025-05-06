@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/use-toast";
-import { ColorPicker } from "./ColorPicker";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -14,318 +12,245 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FontSettings } from "./FontSettings";
-import { SelectGroup, SelectLabel } from "@/components/ui/select";
-import { toast } from "sonner";
+import { Theme } from "@/types/types";
+import { AddThemeModal } from "./AddThemeModal";
+import { EditThemeModal } from "./EditThemeModal";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function ThemeSettings() {
-  // State for theme settings
-  const [primaryColor, setPrimaryColor] = useState("#9c84ff");
-  const [accentColor, setAccentColor] = useState("#8371e0");
-  const [fontHeading, setFontHeading] = useState("Inter");
-  const [fontBody, setFontBody] = useState("Inter");
-  const [roundedCorners, setRoundedCorners] = useState("md");
-  const [isCustom, setIsCustom] = useState(false);
-  const [presetTheme, setPresetTheme] = useState("purple");
-  
-  // Load settings from localStorage when component mounts
+  // State for theme management
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [themeToEdit, setThemeToEdit] = useState<Theme | null>(null);
+  const [themeToDelete, setThemeToDelete] = useState<Theme | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Load themes from localStorage on component mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('themeSettings');
-    if (savedSettings) {
+    const savedThemes = localStorage.getItem('weddingThemes');
+    if (savedThemes) {
       try {
-        const settings = JSON.parse(savedSettings);
-        setPrimaryColor(settings.primaryColor || "#9c84ff");
-        setAccentColor(settings.accentColor || "#8371e0");
-        setFontHeading(settings.fontHeading || "Inter");
-        setFontBody(settings.fontBody || "Inter");
-        setRoundedCorners(settings.roundedCorners || "md");
-        setIsCustom(settings.isCustom || false);
-        setPresetTheme(settings.presetTheme || "purple");
+        const parsedThemes = JSON.parse(savedThemes);
+        setThemes(parsedThemes);
+        
+        // Extract unique categories
+        const uniqueCategories = Array.from(
+          new Set(parsedThemes.map((theme: Theme) => theme.category).filter(Boolean))
+        );
+        setCategories(uniqueCategories as string[]);
       } catch (error) {
-        console.error("Failed to parse theme settings:", error);
+        console.error("Error parsing themes:", error);
       }
+    } else {
+      // If no themes exist, initialize with default data
+      const defaultThemes = [
+        { id: "1", name: "Elegant Gold", category: "Premium", thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Elegant+Gold" },
+        { id: "2", name: "Rustic Brown", category: "Classic", thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Rustic+Brown" },
+        { id: "3", name: "Modern Minimal", category: "Simple", thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Modern+Minimal" },
+        { id: "4", name: "Floral Garden", category: "Premium", thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Floral+Garden" },
+      ];
+      setThemes(defaultThemes);
+      
+      // Extract unique categories from default themes
+      const uniqueCategories = Array.from(
+        new Set(defaultThemes.map((theme: Theme) => theme.category).filter(Boolean))
+      );
+      setCategories(uniqueCategories as string[]);
+      
+      // Save default themes to localStorage
+      localStorage.setItem('weddingThemes', JSON.stringify(defaultThemes));
     }
   }, []);
 
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    // Only save if component has mounted
-    if (primaryColor) {
-      const settings = {
-        primaryColor,
-        accentColor,
-        fontHeading,
-        fontBody,
-        roundedCorners,
-        isCustom,
-        presetTheme
-      };
-      localStorage.setItem('themeSettings', JSON.stringify(settings));
-      
-      // Apply CSS variables
-      document.documentElement.style.setProperty('--wedding-primary', primaryColor);
-      document.documentElement.style.setProperty('--wedding-accent', accentColor);
-      document.documentElement.style.setProperty('--wedding-light', isCustom ? adjustBrightness(primaryColor, 80) : "#f4f1fe");
-      document.documentElement.style.setProperty('--wedding-muted', isCustom ? adjustBrightness(primaryColor, 40) : "#e9e4fd");
-    }
-  }, [primaryColor, accentColor, fontHeading, fontBody, roundedCorners, isCustom, presetTheme]);
+  // Filter themes based on selected category
+  const filteredThemes = selectedCategory === "all"
+    ? themes
+    : themes.filter(theme => theme.category === selectedCategory);
 
-  // Handle preset theme changes
-  const handlePresetChange = (value: string) => {
-    setPresetTheme(value);
-    setIsCustom(false);
-    
-    // Set colors based on preset
-    switch (value) {
-      case "purple":
-        setPrimaryColor("#9c84ff");
-        setAccentColor("#8371e0");
-        break;
-      case "blue":
-        setPrimaryColor("#60a5fa");
-        setAccentColor("#3b82f6");
-        break;
-      case "green":
-        setPrimaryColor("#4ade80");
-        setAccentColor("#22c55e");
-        break;
-      case "rose":
-        setPrimaryColor("#fb7185");
-        setAccentColor("#e11d48");
-        break;
-      case "amber":
-        setPrimaryColor("#fbbf24");
-        setAccentColor("#d97706");
-        break;
-    }
-  };
-
-  // Handle save button click
-  const handleSave = () => {
-    // Save to localStorage
-    const settings = {
-      primaryColor,
-      accentColor,
-      fontHeading,
-      fontBody,
-      roundedCorners,
-      isCustom,
-      presetTheme
+  // Handle add new theme
+  const handleAddTheme = (newTheme: Omit<Theme, "id">) => {
+    const themeWithId = {
+      ...newTheme,
+      id: `theme-${Date.now()}`
     };
-    localStorage.setItem('themeSettings', JSON.stringify(settings));
     
-    // Show success message
-    toast.success("Tema berhasil disimpan!", {
-      description: "Perubahan tema telah diterapkan ke aplikasi."
-    });
+    const updatedThemes = [...themes, themeWithId];
+    setThemes(updatedThemes);
+    
+    // Update categories if new category
+    if (newTheme.category && !categories.includes(newTheme.category)) {
+      setCategories([...categories, newTheme.category]);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    
+    toast.success("Tema baru berhasil ditambahkan");
   };
 
-  // Function to adjust color brightness
-  const adjustBrightness = (hex: string, percent: number) => {
-    hex = hex.replace(/^\s*#|\s*$/g, '');
+  // Handle edit theme
+  const handleEditTheme = (editedTheme: Theme) => {
+    const updatedThemes = themes.map(theme => 
+      theme.id === editedTheme.id ? editedTheme : theme
+    );
     
-    // Convert to RGB
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
+    setThemes(updatedThemes);
     
-    // Increase brightness
-    const adjustR = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
-    const adjustG = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
-    const adjustB = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+    // Update categories if needed
+    if (editedTheme.category && !categories.includes(editedTheme.category)) {
+      setCategories([...categories, editedTheme.category]);
+    }
     
-    // Convert back to hex
-    return "#" + ((1 << 24) + (adjustR << 16) + (adjustG << 8) + adjustB).toString(16).slice(1);
+    // Save to localStorage
+    localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    
+    toast.success("Tema berhasil diperbarui");
+  };
+
+  // Handle delete theme
+  const handleDeleteTheme = () => {
+    if (!themeToDelete) return;
+    
+    const updatedThemes = themes.filter(theme => theme.id !== themeToDelete.id);
+    setThemes(updatedThemes);
+    
+    // Save to localStorage
+    localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    
+    // Close dialog
+    setShowDeleteDialog(false);
+    setThemeToDelete(null);
+    
+    toast.success("Tema berhasil dihapus");
+  };
+
+  // Handler for edit button click
+  const handleEditClick = (theme: Theme) => {
+    setThemeToEdit(theme);
+    setIsEditModalOpen(true);
+  };
+
+  // Handler for delete button click
+  const handleDeleteClick = (theme: Theme) => {
+    setThemeToDelete(theme);
+    setShowDeleteDialog(true);
   };
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Pengaturan Tema</CardTitle>
+        <CardTitle>Tema Undangan</CardTitle>
         <CardDescription>
-          Kustomisasi tampilan aplikasi sesuai dengan preferensi Anda
+          Kelola tema undangan untuk klien Anda
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Preset Theme Selection */}
-        <div className="space-y-1.5">
-          <Label htmlFor="preset">Tema</Label>
-          <Select
-            value={presetTheme}
-            onValueChange={handlePresetChange}
-          >
-            <SelectTrigger id="preset" className="w-full">
-              <SelectValue placeholder="Pilih tema" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Tema</SelectLabel>
-                <SelectItem value="purple">Ungu (Default)</SelectItem>
-                <SelectItem value="blue">Biru</SelectItem>
-                <SelectItem value="green">Hijau</SelectItem>
-                <SelectItem value="rose">Merah Muda</SelectItem>
-                <SelectItem value="amber">Amber</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        {/* Category Filter & Add Button */}
+        <div className="flex flex-wrap gap-2 justify-between items-center">
+          <div className="w-64">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button onClick={() => setIsAddModalOpen(true)} size="sm">
+            <Plus className="h-4 w-4 mr-1" /> Tambah Tema
+          </Button>
         </div>
         
-        {/* Custom Colors Toggle */}
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="custom-color"
-            checked={isCustom}
-            onCheckedChange={setIsCustom}
-          />
-          <Label htmlFor="custom-color">Gunakan warna kustom</Label>
-        </div>
-        
-        {/* Custom Color Pickers - Only show if custom is enabled */}
-        {isCustom && (
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="primary-color">Warna Utama</Label>
-              <div className="flex space-x-2">
-                <ColorPicker
-                  color={primaryColor}
-                  onChange={setPrimaryColor}
-                  id="primary-color"
-                />
-                <Input
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1"
-                />
+        {/* Themes Grid */}
+        {filteredThemes.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredThemes.map((theme) => (
+              <div key={theme.id} className="border rounded-md overflow-hidden">
+                <div className="relative aspect-[3/4] bg-gray-100">
+                  <img 
+                    src={theme.thumbnail || `https://placehold.co/200x280/f5f5f5/333333?text=${encodeURIComponent(theme.name)}`}
+                    alt={theme.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleEditClick(theme)}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleDeleteClick(theme)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h3 className="font-medium">{theme.name}</h3>
+                  {theme.category && (
+                    <p className="text-xs text-muted-foreground">{theme.category}</p>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-1.5">
-              <Label htmlFor="accent-color">Warna Aksen</Label>
-              <div className="flex space-x-2">
-                <ColorPicker
-                  color={accentColor}
-                  onChange={setAccentColor}
-                  id="accent-color"
-                />
-                <Input
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
-                  className="flex-1"
-                />
-              </div>
-            </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Tidak ada tema dalam kategori ini</p>
           </div>
         )}
-        
-        {/* Font Settings */}
-        <FontSettings
-          headingFont={fontHeading}
-          bodyFont={fontBody}
-          onHeadingFontChange={setFontHeading}
-          onBodyFontChange={setFontBody}
-        />
-        
-        {/* Border Radius Settings */}
-        <div className="space-y-1.5">
-          <Label htmlFor="rounded">Sudut Elemen</Label>
-          <Select
-            value={roundedCorners}
-            onValueChange={(value) => setRoundedCorners(value)}
-          >
-            <SelectTrigger id="rounded" className="w-full">
-              <SelectValue placeholder="Pilih jenis sudut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Persegi (Tanpa Sudut)</SelectItem>
-              <SelectItem value="sm">Kecil</SelectItem>
-              <SelectItem value="md">Sedang</SelectItem>
-              <SelectItem value="lg">Besar</SelectItem>
-              <SelectItem value="full">Penuh (Bulat)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {/* Preview */}
-        <div className="border rounded-lg p-4 space-y-4">
-          <h3 className="text-lg font-semibold">Preview</h3>
-          <div className="flex flex-wrap gap-4">
-            <div 
-              className="w-20 h-20 rounded-lg flex items-center justify-center text-white"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Utama
-            </div>
-            <div 
-              className="w-20 h-20 rounded-lg flex items-center justify-center text-white"
-              style={{ backgroundColor: accentColor }}
-            >
-              Aksen
-            </div>
-            <div 
-              className="w-20 h-20 rounded-lg flex items-center justify-center text-gray-800"
-              style={{ backgroundColor: isCustom ? adjustBrightness(primaryColor, 80) : "#f4f1fe" }}
-            >
-              Terang
-            </div>
-            <div 
-              className="w-20 h-20 rounded-lg flex items-center justify-center text-gray-800"
-              style={{ backgroundColor: isCustom ? adjustBrightness(primaryColor, 40) : "#e9e4fd" }}
-            >
-              Muted
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <h4 style={{ fontFamily: fontHeading }}>Heading Font: {fontHeading}</h4>
-            <p style={{ fontFamily: fontBody }}>Body Font: {fontBody}. This is how your body text will appear throughout the application.</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <div 
-              className={`w-16 h-8 bg-gray-200 rounded-none flex items-center justify-center`}
-            >
-              None
-            </div>
-            <div 
-              className={`w-16 h-8 bg-gray-200 rounded-sm flex items-center justify-center`}
-            >
-              Small
-            </div>
-            <div 
-              className={`w-16 h-8 bg-gray-200 rounded-md flex items-center justify-center`}
-            >
-              Medium
-            </div>
-            <div 
-              className={`w-16 h-8 bg-gray-200 rounded-lg flex items-center justify-center`}
-            >
-              Large
-            </div>
-            <div 
-              className={`w-16 h-8 bg-gray-200 rounded-full flex items-center justify-center`}
-            >
-              Full
-            </div>
-          </div>
-          
-          <div>
-            <Button
-              style={{ 
-                backgroundColor: primaryColor,
-                borderRadius: roundedCorners === "none" ? "0" : 
-                             roundedCorners === "sm" ? "0.125rem" : 
-                             roundedCorners === "md" ? "0.375rem" : 
-                             roundedCorners === "lg" ? "0.5rem" : "9999px"
-              }}
-            >
-              Sample Button
-            </Button>
-          </div>
-        </div>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSave}>Simpan Pengaturan</Button>
-      </CardFooter>
+      
+      {/* Add Theme Modal */}
+      <AddThemeModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddTheme={handleAddTheme}
+        existingCategories={categories}
+      />
+      
+      {/* Edit Theme Modal */}
+      {themeToEdit && (
+        <EditThemeModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          theme={themeToEdit}
+          onSave={handleEditTheme}
+          existingCategories={categories}
+        />
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Tema</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus tema "{themeToDelete?.name}"? Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTheme}>Hapus</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

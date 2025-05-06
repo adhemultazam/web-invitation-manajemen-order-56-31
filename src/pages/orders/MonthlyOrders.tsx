@@ -82,6 +82,15 @@ const MonthlyOrders = () => {
   const handleOpenAddOrderModal = () => setIsAddOrderModalOpen(true);
   const handleCloseAddOrderModal = () => setIsAddOrderModalOpen(false);
   
+  // Create a wrapper function for onDeleteOrder to convert from (order) to (id)
+  const handleOrderDelete = (id: string) => {
+    // Find the order from filteredOrders using the ID
+    const orderToDelete = filteredOrders.find(order => order.id === id);
+    if (orderToDelete) {
+      handleDeleteOrder(orderToDelete);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -167,7 +176,7 @@ const MonthlyOrders = () => {
               <CompactOrdersTable 
                 orders={filteredOrders}
                 onEditOrder={handleOpenEditDialog}
-                onDeleteOrder={handleDeleteOrder}
+                onDeleteOrder={handleOrderDelete}
               />
             </div>
           )}

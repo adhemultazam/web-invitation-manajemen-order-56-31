@@ -12,6 +12,7 @@ import {
 import { Calendar, PlusCircle } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
+import { useOrderResources } from "@/hooks/useOrderResources";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
 import { OrderFilter } from "@/components/orders/OrderFilter";
@@ -59,6 +60,7 @@ const MonthlyOrders = () => {
   // Load orders data based on selected year and month
   const { orders, isLoading, addOrder } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
+  const { workStatuses, themes, packages, vendorColors, addonStyles } = useOrderResources();
 
   // Use monthly orders hook for additional functionality
   const {
@@ -67,8 +69,11 @@ const MonthlyOrders = () => {
     handleOpenEditDialog,
     handleDeleteOrder,
     handleFilterChange,
-    vendorColors,
-    addonStyles,
+    handleWorkStatusChange,
+    handleVendorChange,
+    handleThemeChange,
+    handlePackageChange,
+    togglePaymentStatus,
     updatingOrders,
   } = useMonthlyOrders(selectedMonth);
   
@@ -261,6 +266,18 @@ const MonthlyOrders = () => {
                 orders={filteredOrders}
                 onEditOrder={handleOpenEditDialog}
                 onDeleteOrder={handleOrderDelete}
+                vendorColors={vendorColors}
+                addonStyles={addonStyles}
+                updatingOrders={updatingOrders}
+                availableWorkStatuses={workStatuses}
+                availableVendors={vendors}
+                availableThemes={themes}
+                availablePackages={packages}
+                handleVendorChange={handleVendorChange}
+                handleThemeChange={handleThemeChange}
+                handlePackageChange={handlePackageChange}
+                handleWorkStatusChange={handleWorkStatusChange}
+                togglePaymentStatus={togglePaymentStatus}
               />
             </div>
           )}

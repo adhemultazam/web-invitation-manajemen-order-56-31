@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Order } from '@/types/types';
+import React from 'react';
+import { Order, Vendor, Theme, Package, WorkStatus } from '@/types/types';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -10,17 +10,80 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { format } from 'date-fns';
-import { Pencil, Trash, MoreHorizontal, Eye, Check, X } from 'lucide-react';
+import { format, parseISO, differenceInDays } from 'date-fns';
+import { Pencil, Trash, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import VendorDropdown from './VendorDropdown';
+import PackageSelect from './PackageSelect';
+import ThemeSelect from './ThemeSelect';
+import WorkStatusSelect from './WorkStatusSelect';
+import OrderAddons from './OrderAddons';
+import PaymentStatusBadge from './PaymentStatusBadge';
 
 interface CompactOrdersTableProps {
   orders: Order[];
   onEditOrder: (order: Order) => void;
   onDeleteOrder: (id: string) => void;
+  vendorColors?: Record<string, string>;
+  addonStyles?: Record<string, { color: string }>;
+  updatingOrders?: Set<string>;
+  availableWorkStatuses?: WorkStatus[];
+  availableVendors?: Vendor[];
+  availableThemes?: Theme[];
+  availablePackages?: Package[];
+  handleVendorChange?: (orderId: string, vendor: string) => void;
+  handleThemeChange?: (orderId: string, theme: string) => void;
+  handlePackageChange?: (orderId: string, pkg: string) => void;
+  handleWorkStatusChange?: (orderId: string, status: string) => void;
+  togglePaymentStatus?: (order: Order) => void;
 }
 
-export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: CompactOrdersTableProps) {
+export function CompactOrdersTable({ 
+  orders, 
+  onEditOrder, 
+  onDeleteOrder,
+  vendorColors = {},
+  addonStyles = {},
+  updatingOrders = new Set(),
+  availableWorkStatuses = [],
+  availableVendors = [],
+  availableThemes = [],
+  availablePackages = [],
+  handleVendorChange = () => {},
+  handleThemeChange = () => {},
+  handlePackageChange = () => {},
+  handleWorkStatusChange = () => {},
+  togglePaymentStatus = () => {}
+}: CompactOrdersTableProps) {
+  // Format date as dd/MM/yyyy
+  const formatDate = (dateString: string) => {
+    try {
+      return format(parseISO(dateString), 'dd/MM/yyyy');
+    } catch (error) {
+      return dateString;
+    }
+  };
+  
+  // Calculate countdown
+  const getCountdown = (eventDate: string) => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const date = parseISO(eventDate);
+      return differenceInDays(date, today);
+    } catch (error) {
+      return 0;
+    }
+  };
+
+  // Check if date is in the past
+  const isPastDate = (dateString: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = parseISO(dateString);
+    return date < today;
+  };
+
   const formatCurrency = (amount: number | string): string => {
     if (typeof amount === 'string') {
       // Try converting string to number
@@ -36,49 +99,40 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Lunas':
-        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800';
-      case 'Pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700';
-    }
-  };
-
-  const getWorkStatusColor = (status: string) => {
-    switch (status) {
-      case 'Selesai':
-        return 'bg-wedding-light text-wedding-primary border-wedding-secondary dark:bg-wedding-primary/10 dark:text-wedding-secondary dark:border-wedding-primary/30';
-      case 'Proses':
-        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800';
-      case 'Belum':
-        return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400 dark:border-gray-700';
-    }
-  };
-
   return (
     <div className="rounded-xl border overflow-hidden shadow-sm bg-white dark:bg-gray-900">
       <Table compact className="compact-table w-full">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-20">ID</TableHead>
+            <TableHead className="w-10">No</TableHead>
+            <TableHead className="w-24">Tgl Pesan</TableHead>
+            <TableHead className="w-24">Tgl Acara</TableHead>
+            <TableHead className="w-24">Countdown</TableHead>
             <TableHead>Client</TableHead>
-            <TableHead className="hidden md:table-cell">Package & Theme</TableHead>
+            <TableHead className="w-32">Vendor</TableHead>
+            <TableHead className="w-36">Paket & Tema</TableHead>
+            <TableHead className="w-28">Addons</TableHead>
+            <TableHead className="w-28">Pembayaran</TableHead>
             <TableHead className="w-24">Status</TableHead>
-            <TableHead className="hidden sm:table-cell w-28">Tanggal</TableHead>
-            <TableHead className="text-right">Payment</TableHead>
-            <TableHead className="w-20 text-right pr-4">Actions</TableHead>
+            <TableHead className="w-16 text-right pr-4">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/40 group h-10">
+          {orders.map((order, index) => (
+            <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/40 group h-12">
               <TableCell className="font-mono text-xs text-gray-500 py-1.5">
-                {order.id.substring(0, 6)}
+                {index + 1}
+              </TableCell>
+              <TableCell className="font-mono text-xs text-gray-500 py-1.5">
+                {formatDate(order.orderDate)}
+              </TableCell>
+              <TableCell className="font-mono text-xs text-gray-500 py-1.5">
+                {formatDate(order.eventDate)}
+              </TableCell>
+              <TableCell className="font-mono text-xs py-1.5">
+                <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+                  {getCountdown(order.eventDate)} hari
+                </span>
               </TableCell>
               <TableCell className="py-1.5">
                 <div className="flex flex-col gap-0">
@@ -86,27 +140,58 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
                   <span className="text-[11px] text-gray-500 leading-tight">{order.customerName}</span>
                 </div>
               </TableCell>
-              <TableCell className="hidden md:table-cell py-1.5">
-                <div className="flex flex-col gap-0">
-                  <span className="text-[11px] font-medium leading-tight">{order.package}</span>
-                  <span className="text-[11px] text-gray-500 leading-tight">{order.theme}</span>
+              <TableCell className="py-1.5">
+                <VendorDropdown 
+                  vendor={order.vendor} 
+                  vendors={availableVendors}
+                  isDisabled={updatingOrders.has(order.id)}
+                  onChange={(value) => handleVendorChange(order.id, value)}
+                  compact={true}
+                />
+              </TableCell>
+              <TableCell className="py-1.5">
+                <div className="flex flex-col gap-1">
+                  <PackageSelect
+                    value={order.package}
+                    packages={availablePackages}
+                    isDisabled={updatingOrders.has(order.id)}
+                    onChange={(value) => handlePackageChange(order.id, value)}
+                    compact={true}
+                  />
+                  <ThemeSelect
+                    value={order.theme}
+                    themes={availableThemes}
+                    onChange={(value) => handleThemeChange(order.id, value)}
+                    isDisabled={updatingOrders.has(order.id)}
+                    compact={true}
+                  />
                 </div>
               </TableCell>
               <TableCell className="py-1.5">
-                <div className="flex flex-col gap-0.5">
-                  <span className={`compact-badge border ${getStatusColor(order.paymentStatus)}`}>
-                    {order.paymentStatus}
-                  </span>
-                  <span className={`compact-badge border ${getWorkStatusColor(order.workStatus)}`}>
-                    {order.workStatus}
-                  </span>
-                </div>
+                <OrderAddons 
+                  addons={order.addons || []} 
+                  addonStyles={addonStyles}
+                  compact={true}
+                />
               </TableCell>
-              <TableCell className="hidden sm:table-cell text-xs text-gray-600 dark:text-gray-400 py-1.5">
-                {format(new Date(order.orderDate), 'dd/MM/yyyy')}
+              <TableCell className="py-1.5">
+                <PaymentStatusBadge 
+                  status={order.paymentStatus}
+                  amount={order.paymentAmount}
+                  isUpdating={updatingOrders.has(order.id)}
+                  onToggle={() => togglePaymentStatus(order)}
+                  formatCurrency={formatCurrency}
+                  compact={true}
+                />
               </TableCell>
-              <TableCell className="text-right font-medium py-1.5 text-xs">
-                {formatCurrency(order.paymentAmount)}
+              <TableCell className="py-1.5">
+                <WorkStatusSelect
+                  value={order.workStatus}
+                  isDisabled={updatingOrders.has(order.id)}
+                  workStatuses={availableWorkStatuses}
+                  onChange={(value) => handleWorkStatusChange(order.id, value)}
+                  compact={true}
+                />
               </TableCell>
               <TableCell className="p-0 pr-2 text-right">
                 <DropdownMenu>
@@ -136,7 +221,7 @@ export function CompactOrdersTable({ orders, onEditOrder, onDeleteOrder }: Compa
           ))}
           {orders.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                 Tidak ada data pesanan
               </TableCell>
             </TableRow>

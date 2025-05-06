@@ -1,76 +1,39 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
-import { PackageSettings } from "@/components/settings/PackageSettings";
-import { StatusSettings } from "@/components/settings/StatusSettings";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountSettings } from "@/components/settings/AccountSettings";
-import { ThemeSettings } from "@/components/settings/ThemeSettings";
-import { AddonSettings } from "@/components/settings/AddonSettings";
-import { VendorSettings } from "@/components/settings/VendorSettings";
+import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
+import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSettings";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("account");
-
-  // Load the selected tab from localStorage when the component mounts
-  useEffect(() => {
-    const savedTab = localStorage.getItem('settingsActiveTab');
-    if (savedTab) {
-      setActiveTab(savedTab);
-    }
-  }, []);
-
-  // Save the selected tab to localStorage when it changes
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    localStorage.setItem('settingsActiveTab', value);
-  };
+  // Use localStorage to persist the active tab
+  const [activeTab, setActiveTab] = useLocalStorage<string>("settingsActiveTab", "resources");
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Pengaturan</h1>
-        <div>
-          <Button variant="outline">Batal</Button>
-        </div>
-      </div>
+    <div>
+      <h1 className="text-2xl font-bold mb-2">Pengaturan</h1>
+      <p className="text-muted-foreground mb-6">
+        Konfigurasikan pengaturan aplikasi sesuai kebutuhan Anda
+      </p>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <TabsList className="grid grid-cols-7 md:w-[900px]">
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="resources">Data Master</TabsTrigger>
           <TabsTrigger value="account">Akun</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
-          <TabsTrigger value="packages">Paket</TabsTrigger>
-          <TabsTrigger value="statuses">Status</TabsTrigger>
-          <TabsTrigger value="themes">Tema Undangan</TabsTrigger>
-          <TabsTrigger value="addons">Addons</TabsTrigger>
-          <TabsTrigger value="vendors">Vendor</TabsTrigger>
         </TabsList>
-        <TabsContent value="account" className="space-y-4">
+        
+        <TabsContent value="resources">
+          <OrderResourcesSettings />
+        </TabsContent>
+        
+        <TabsContent value="account">
           <AccountSettings />
         </TabsContent>
-        <TabsContent value="invoice" className="space-y-4">
+        
+        <TabsContent value="invoice">
           <InvoiceSettings />
-        </TabsContent>
-        <TabsContent value="packages" className="space-y-4">
-          <PackageSettings />
-        </TabsContent>
-        <TabsContent value="statuses" className="space-y-4">
-          <StatusSettings />
-        </TabsContent>
-        <TabsContent value="themes" className="space-y-4">
-          <ThemeSettings />
-        </TabsContent>
-        <TabsContent value="addons" className="space-y-4">
-          <AddonSettings />
-        </TabsContent>
-        <TabsContent value="vendors" className="space-y-4">
-          <VendorSettings />
         </TabsContent>
       </Tabs>
     </div>

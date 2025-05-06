@@ -1,107 +1,103 @@
-// Data types for the wedding digital order management system
 
-export interface ChartData {
+// Extending the existing types file by adding any missing types
+
+// Order type
+export type Order = {
+  id: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail?: string;
+  eventName: string;
+  brideAndGroom: string;
+  eventDate: string;
+  orderDate: string;
+  package: string;
+  theme: string;
+  workStatus: string;
+  vendor: string;
+  addons: string[];
+  paymentAmount: number | string;
+  paymentStatus: "Lunas" | "Pending";
+};
+
+// Chart data types
+export type ChartData = {
   name: string;
   value: number;
-}
+};
 
 export type ChartDataArray = ChartData[];
 
-export interface MultiBarChartData {
+export type MultiBarChartData = {
   name: string;
-  paid?: number;
-  pending?: number;
-  [key: string]: any;
-}
+  [key: string]: string | number;
+};
 
-export interface Order {
-  id: string;
-  customerName: string;
-  clientName: string;
-  clientUrl?: string;
-  orderDate: string;
-  eventDate: string;
-  countdownDays: number;
-  vendor: string;
-  package: string;
-  theme: string;
-  addons?: string[];
-  bonuses?: string[];
-  paymentStatus: "Lunas" | "Pending";
-  paymentAmount: number;
-  workStatus: string;
-  postPermission: boolean;
-  notes?: string;
-}
-
-export interface Vendor {
+// Vendor type
+export type Vendor = {
   id: string;
   name: string;
-  code: string;
-  color: string;
-  commission: number; // Added commission property
-}
+  code?: string;
+  color?: string;
+};
 
-export interface WorkStatus {
+// WorkStatus type
+export type WorkStatus = {
+  id: string;
+  name: string;
+};
+
+// Package type
+export type Package = {
+  id: string;
+  name: string;
+};
+
+// Addon type
+export type Addon = {
   id: string;
   name: string;
   color: string;
-  order: number; // Added order property
-}
+};
 
-export interface Addon {
-  id: string;
-  name: string;
-  price: number;
-  color: string;
-}
-
-export interface Theme {
-  id: string;
-  name: string;
-  thumbnail: string;
-  category: string;
-  price?: number; // Added price as optional
-  description?: string; // Added description as optional
-}
-
-export interface Package {
-  id: string;
-  name: string;
-  price: number;
-  description?: string;
-  features: string[];
-  themes?: string[]; // Add themes array property to fix type errors
-}
-
-export interface Invoice {
+// Invoice type
+export type Invoice = {
   id: string;
   invoiceNumber: string;
   vendorId: string;
-  vendor: string;
+  vendor: string; // Vendor name, kept for backwards compatibility
   dateIssued: string;
   dueDate: string;
-  dateDue: string; // Added dateDue property
-  totalAmount: number;
   status: "Paid" | "Unpaid";
+  totalAmount: number;
   orders: {
     orderId: string;
     clientName: string;
     orderDate: string;
     amount: number;
   }[];
-}
+};
 
-export interface InvoiceFilter {
-  vendor?: string;
-  status: "Paid" | "Unpaid" | "All";
-  sortBy: "dueDate" | "amount";
-  sortDirection: "asc" | "desc";
-}
-
-export interface BankAccount {
+// Bank account type for invoice settings
+export type BankAccount = {
   id: string;
   bankName: string;
   accountNumber: string;
   accountHolderName: string;
-}
+};
+
+// InvoiceFilter type
+export type InvoiceFilter = {
+  vendor?: string;
+  status: "Paid" | "Unpaid" | "All";
+  sortBy: "dueDate" | "amount";
+  sortDirection: "asc" | "desc";
+};
+
+// User type
+export type User = {
+  name: string;
+  logo?: string;
+  companyName?: string;
+  email?: string;
+};

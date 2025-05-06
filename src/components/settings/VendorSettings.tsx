@@ -1,110 +1,190 @@
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { Vendor } from "@/types/types";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Trash, Save } from "lucide-react";
 import { toast } from "sonner";
-import { VendorForm } from "./vendor/VendorForm";
-import { VendorList } from "./vendor/VendorList";
-import { loadVendors, saveVendors } from "./vendor/vendorUtils";
+import { Vendor } from "@/types/types";
+import { Label } from "@/components/ui/label";
 
 export function VendorSettings() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentVendor, setCurrentVendor] = useState<Vendor | null>(null);
-
+  const [newVendorName, setNewVendorName] = useState("");
+  const [newVendorCode, setNewVendorCode] = useState("");
+  const [newVendorColor, setNewVendorColor] = useState("#9A84FF"); // Default color
+  
+  // Load vendors from localStorage on component mount
   useEffect(() => {
-    // Load vendors from localStorage
-    setVendors(loadVendors());
+    const savedVendors = localStorage.getItem("vendors");
+    
+    if (savedVendors) {
+      try {
+        setVendors(JSON.parse(savedVendors));
+      } catch (error) {
+        console.error("Error parsing vendors:", error);
+        // Initialize with default vendors if there's an error
+        const defaultVendors = [
+          { id: crypto.randomUUID(), name: "Vendor 1", code: "V001", color: "#9A84FF" },
+          { id: crypto.randomUUID(), name: "Vendor 2", code: "V002", color: "#60A5FA" }
+        ];
+        setVendors(defaultVendors);
+        localStorage.setItem("vendors", JSON.stringify(defaultVendors));
+      }
+    } else {
+      // Initialize with default vendors if none exist
+      const defaultVendors = [
+        { id: crypto.randomUUID(), name: "Vendor 1", code: "V001", color: "#9A84FF" },
+        { id: crypto.randomUUID(), name: "Vendor 2", code: "V002", color: "#60A5FA" }
+      ];
+      setVendors(defaultVendors);
+      localStorage.setItem("vendors", JSON.stringify(defaultVendors));
+    }
   }, []);
 
   // Save vendors to localStorage whenever they change
   useEffect(() => {
-    saveVendors(vendors);
+    localStorage.setItem("vendors", JSON.stringify(vendors));
   }, [vendors]);
 
-  const handleOpenDialog = (vendor?: Vendor) => {
-    if (vendor) {
-      setCurrentVendor(vendor);
-    } else {
-      setCurrentVendor(null);
+  // Generate a unique vendor code
+  const generateVendorCode = () => {
+    const prefix = "V";
+    const existingCodes = vendors.map(v => v.code);
+    let counter = 1;
+    let newCode = `${prefix}${String(counter).padStart(3, '0')}`;
+    
+    while (existingCodes.includes(newCode)) {
+      counter++;
+      newCode = `${prefix}${String(counter).padStart(3, '0')}`;
     }
-    setIsDialogOpen(true);
+    
+    return newCode;
   };
 
-  const handleSubmit = (formData: Omit<Vendor, "id">) => {
-    if (currentVendor) {
-      // Edit existing vendor
-      setVendors((prev) =>
-        prev.map((v) =>
-          v.id === currentVendor.id
-            ? { ...v, ...formData }
-            : v
-        )
-      );
-      toast.success(`Vendor ${formData.name} berhasil diperbarui`);
-    } else {
-      // Add new vendor
-      const newVendor: Vendor = {
-        id: Date.now().toString(),
-        ...formData
-      };
-      setVendors((prev) => [...prev, newVendor]);
-      toast.success(`Vendor ${formData.name} berhasil ditambahkan`);
-    }
-
-    setIsDialogOpen(false);
+  // Add a new vendor
+  const handleAddVendor = () => {
+    if (!newVendorName.trim()) return;
+    
+    const vendorCode = newVendorCode.trim() || generateVendorCode();
+    
+    const newVendorItem = { 
+      id: crypto.randomUUID(),
+      name: newVendorName.trim(),
+      code: vendorCode,
+      color: newVendorColor
+    };
+    
+    setVendors([...vendors, newVendorItem]);
+    setNewVendorName("");
+    setNewVendorCode("");
+    setNewVendorColor("#9A84FF"); // Reset to default
+    toast.success("Vendor berhasil ditambahkan");
   };
 
-  const handleDelete = (id: string) => {
-    const vendorToDelete = vendors.find(v => v.id === id);
-    setVendors((prev) => prev.filter((vendor) => vendor.id !== id));
-    if (vendorToDelete) {
-      toast.success(`Vendor ${vendorToDelete.name} berhasil dihapus`);
+  // Delete a vendor
+  const handleDeleteVendor = (id: string) => {
+    setVendors(vendors.filter(vendor => vendor.id !== id));
+    toast.success("Vendor berhasil dihapus");
+  };
+
+  // Handle vendor field changes
+  const handleVendorChange = (id: string, field: keyof Vendor, value: string) => {
+    setVendors(
+      vendors.map(vendor => 
+        vendor.id === id ? { ...vendor, [field]: value } : vendor
+      )
+    );
+  };
+
+  // Save changes to a vendor
+  const handleSaveVendor = (id: string) => {
+    const vendorToSave = vendors.find(vendor => vendor.id === id);
+    if (vendorToSave && vendorToSave.name.trim()) {
+      toast.success(`Vendor ${vendorToSave.name} berhasil disimpan`);
     }
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Vendor & Reseller</CardTitle>
-          <CardDescription>
-            Kelola daftar vendor dan reseller yang bekerja sama dengan Anda.
-          </CardDescription>
+    <div className="space-y-4">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="new-vendor-name">Nama Vendor</Label>
+            <Input
+              id="new-vendor-name"
+              placeholder="Nama vendor baru"
+              value={newVendorName}
+              onChange={e => setNewVendorName(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="new-vendor-code">Kode Vendor</Label>
+            <Input
+              id="new-vendor-code"
+              placeholder="Kode vendor (opsional)"
+              value={newVendorCode}
+              onChange={e => setNewVendorCode(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="new-vendor-color">Warna</Label>
+            <Input
+              id="new-vendor-color"
+              type="color"
+              value={newVendorColor}
+              onChange={e => setNewVendorColor(e.target.value)}
+              className="h-10 mt-1"
+            />
+          </div>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()}>
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Vendor
-            </Button>
-          </DialogTrigger>
-          <VendorForm 
-            currentVendor={currentVendor} 
-            onSubmit={handleSubmit}
-            onCancel={() => setIsDialogOpen(false)}
-          />
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        <VendorList 
-          vendors={vendors} 
-          onEdit={handleOpenDialog} 
-          onDelete={handleDelete} 
-        />
-      </CardContent>
-    </Card>
+        <Button onClick={handleAddVendor}>
+          <Plus className="mr-1 h-4 w-4" />
+          Tambah Vendor
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {vendors.map(vendor => (
+          <div key={vendor.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-center">
+            <Input
+              value={vendor.name}
+              onChange={e => handleVendorChange(vendor.id, "name", e.target.value)}
+              placeholder="Nama vendor"
+            />
+            <Input
+              value={vendor.code}
+              onChange={e => handleVendorChange(vendor.id, "code", e.target.value)}
+              placeholder="Kode vendor"
+            />
+            <Input
+              type="color"
+              value={vendor.color}
+              onChange={e => handleVendorChange(vendor.id, "color", e.target.value)}
+              className="h-10"
+            />
+            <div className="flex gap-2">
+              <Button
+                size="icon"
+                variant="outline"
+                className="shrink-0"
+                onClick={() => handleSaveVendor(vendor.id)}
+              >
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="destructive"
+                className="shrink-0"
+                onClick={() => handleDeleteVendor(vendor.id)}
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

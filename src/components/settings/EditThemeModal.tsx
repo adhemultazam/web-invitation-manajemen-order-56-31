@@ -100,10 +100,10 @@ export function EditThemeModal({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="category">Kategori</Label>
+            <Label htmlFor="category">Kategori Paket</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger>
-                <SelectValue placeholder="Pilih kategori" />
+                <SelectValue placeholder="Pilih kategori paket" />
               </SelectTrigger>
               <SelectContent>
                 {existingCategories.map((cat) => (
@@ -113,6 +113,9 @@ export function EditThemeModal({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Kategori diambil dari daftar nama paket yang tersedia
+            </p>
           </div>
           
           {thumbnail && (

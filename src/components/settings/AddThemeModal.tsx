@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +35,17 @@ export function AddThemeModal({
   const [thumbnail, setThumbnail] = useState("");
   const [category, setCategory] = useState("");
 
+  // Reset form when modal opens or closes
+  useEffect(() => {
+    if (isOpen) {
+      // Keep values if re-opening
+    } else {
+      setName("");
+      setThumbnail("");
+      setCategory("");
+    }
+  }, [isOpen]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -54,10 +64,6 @@ export function AddThemeModal({
       category
     });
     
-    // Reset form
-    setName("");
-    setThumbnail("");
-    setCategory("");
     onClose();
   };
 
@@ -94,10 +100,10 @@ export function AddThemeModal({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="category">Kategori</Label>
+            <Label htmlFor="category">Kategori Paket</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger>
-                <SelectValue placeholder="Pilih kategori" />
+                <SelectValue placeholder="Pilih kategori paket" />
               </SelectTrigger>
               <SelectContent>
                 {existingCategories.map((cat) => (
@@ -107,6 +113,9 @@ export function AddThemeModal({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Kategori diambil dari daftar nama paket yang tersedia
+            </p>
           </div>
           
           <DialogFooter className="pt-2">

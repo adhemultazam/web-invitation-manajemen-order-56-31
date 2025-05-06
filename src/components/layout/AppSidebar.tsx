@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 const months = [
   { name: "Januari", path: "/bulan/januari" },
@@ -55,7 +56,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
   
   return (
     <Sidebar className={cn(
-      "transition-all duration-300 ease-in-out",
+      "transition-all duration-300 ease-in-out fixed z-30 h-screen",
       collapsed ? "w-[70px]" : "w-[260px]",
       isDarkMode 
         ? "bg-[#1E1E2F] border-r border-gray-700/30" 
@@ -124,7 +125,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
           <SidebarGroupLabel className={cn(
             "text-xs font-bold px-6 mb-1",
             isDarkMode ? "text-gray-400" : "text-gray-600",
-            collapsed && "opacity-0"
+            collapsed && "sr-only"
           )}>
             Menu Utama
           </SidebarGroupLabel>
@@ -149,7 +150,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                                 : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
                           )}
                         >
-                          <LayoutDashboard size={collapsed ? 20 : 18} className={cn(
+                          <LayoutDashboard size={collapsed ? 24 : 18} className={cn(
                             location.pathname === "/" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
@@ -181,7 +182,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                                 : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
                           )}
                         >
-                          <FileText size={collapsed ? 20 : 18} className={cn(
+                          <FileText size={collapsed ? 24 : 18} className={cn(
                             location.pathname === "/invoices" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
@@ -213,7 +214,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                                 : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
                           )}
                         >
-                          <Settings size={collapsed ? 20 : 18} className={cn(
+                          <Settings size={collapsed ? 24 : 18} className={cn(
                             location.pathname === "/pengaturan" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
@@ -280,31 +281,64 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
         
         {collapsed && (
           <SidebarGroup className="mt-4">
+            <SidebarGroupLabel className="sr-only">
+              Pesanan Bulanan
+            </SidebarGroupLabel>
             <SidebarGroupContent className="pr-1">
-              <SidebarMenu>
-                <TooltipProvider delayDuration={100}>
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild>
-                          <Link 
-                            to="/bulan" 
-                            className={cn(
-                              "flex items-center justify-center px-3 py-3 rounded-lg transition-all duration-200",
-                              isDarkMode
-                                ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
-                                : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
-                            )}
-                          >
-                            <CalendarDays size={20} />
-                          </Link>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="text-xs">Pesanan Bulanan</TooltipContent>
-                    </Tooltip>
-                  </SidebarMenuItem>
-                </TooltipProvider>
-              </SidebarMenu>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "w-full flex items-center justify-center py-3 rounded-lg transition-all duration-200 mb-1",
+                      isDarkMode
+                        ? "text-gray-200 hover:bg-gray-800/50 hover:text-indigo-300"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-wedding-accent"
+                    )}
+                  >
+                    <CalendarDays size={24} />
+                  </Button>
+                </HoverCardTrigger>
+                <HoverCardContent 
+                  side="right" 
+                  align="start" 
+                  className={cn(
+                    "p-3 w-48 z-50",
+                    isDarkMode 
+                      ? "bg-gray-800 border-gray-700" 
+                      : "bg-white border-gray-200"
+                  )}
+                >
+                  <div className="space-y-1 max-h-[400px] overflow-y-auto">
+                    <p className={cn(
+                      "text-xs font-bold mb-2", 
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    )}>
+                      Pesanan Bulanan
+                    </p>
+                    {months.map((month) => (
+                      <Link
+                        key={month.name}
+                        to={month.path}
+                        className={cn(
+                          "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
+                          location.pathname === month.path 
+                            ? isDarkMode 
+                              ? "bg-indigo-900/40 text-indigo-300" 
+                              : "bg-wedding-muted text-wedding-primary" 
+                            : isDarkMode
+                              ? "text-gray-200 hover:bg-gray-700/50"
+                              : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        <CalendarDays size={14} />
+                        {month.name}
+                      </Link>
+                    ))}
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             </SidebarGroupContent>
           </SidebarGroup>
         )}

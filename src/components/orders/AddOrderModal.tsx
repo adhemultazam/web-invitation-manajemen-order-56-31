@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
 
 interface AddOrderModalProps {
@@ -21,13 +21,24 @@ interface AddOrderModalProps {
   vendors: string[];
   workStatuses: string[];
   addons: Addon[];
+  themes: Theme[];
+  packages: Package[];
 }
 
-export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses, addons: defaultAddons }: AddOrderModalProps) {
-  // Load packages and themes from local storage
-  const [packages, setPackages] = useState<Package[]>([]);
+export function AddOrderModal({ 
+  isOpen, 
+  onClose, 
+  onAddOrder, 
+  vendors, 
+  workStatuses, 
+  addons: defaultAddons,
+  themes: providedThemes,
+  packages: providedPackages
+}: AddOrderModalProps) {
+  // Load packages and themes from props
+  const [packages, setPackages] = useState<Package[]>(providedPackages || []);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
-  const [themes, setThemes] = useState<Theme[]>([]);
+  const [themes, setThemes] = useState<Theme[]>(providedThemes || []);
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
   const [selectedPackage, setSelectedPackage] = useState("");
   
@@ -37,7 +48,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     clientUrl: "",
     orderDate: new Date(),
     eventDate: new Date(),
-    countdownDays: 30,
     vendor: vendors[0] || "",
     package: "",
     theme: "",
@@ -66,7 +76,8 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       }
     };
     
-    const loadPackages = () => {
+    // Only load packages and themes from localStorage if not provided via props
+    if (!providedPackages || providedPackages.length === 0) {
       try {
         const savedPackages = localStorage.getItem("packages");
         if (savedPackages) {
@@ -83,9 +94,13 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       } catch (error) {
         console.error("Error loading packages:", error);
       }
-    };
+    } else if (providedPackages.length > 0 && !formData.package) {
+      // Set default package from props
+      setSelectedPackage(providedPackages[0].name);
+      setFormData(prev => ({...prev, package: providedPackages[0].name}));
+    }
     
-    const loadAddons = () => {
+    if (!defaultAddons || defaultAddons.length === 0) {
       try {
         const savedAddons = localStorage.getItem("addons");
         if (savedAddons) {
@@ -97,9 +112,9 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       } catch (error) {
         console.error("Error loading addons:", error);
       }
-    };
+    }
     
-    const loadThemes = () => {
+    if (!providedThemes || providedThemes.length === 0) {
       try {
         const savedThemes = localStorage.getItem("themes");
         if (savedThemes) {
@@ -115,13 +130,13 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       } catch (error) {
         console.error("Error loading themes:", error);
       }
-    };
+    } else if (providedThemes.length > 0 && !formData.theme) {
+      // Set default theme from props
+      setFormData(prev => ({...prev, theme: providedThemes[0].name}));
+    }
     
     loadVendors();
-    loadPackages();
-    loadAddons();
-    loadThemes();
-  }, []);
+  }, [providedPackages, providedThemes, defaultAddons, formData.package, formData.theme]);
 
   // Get filtered themes based on selected package
   const getFilteredThemes = (): Theme[] => {
@@ -151,11 +166,18 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
   };
 
   const handleAddOrder = () => {
+    // Calculate countdown days based on current date and event date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = formData.eventDate;
+    const countdown = differenceInDays(eventDate, today);
+    
     // Convert Date objects to strings for the API
     const orderData = {
       ...formData,
       orderDate: format(formData.orderDate, 'yyyy-MM-dd'),
       eventDate: format(formData.eventDate, 'yyyy-MM-dd'),
+      countdownDays: countdown
     };
     
     onAddOrder(orderData);
@@ -254,15 +276,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
-              <div className="space-y-2 mt-4">
-                <Label htmlFor="countdownDays">Hari Countdown</Label>
-                <Input
-                  id="countdownDays"
-                  type="number"
-                  value={formData.countdownDays}
-                  onChange={(e) => handleInputChange('countdownDays', parseInt(e.target.value))}
-                />
               </div>
             </div>
           </div>

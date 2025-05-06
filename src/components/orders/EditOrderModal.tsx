@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
 import ThemeSelect from "./ThemeSelect";
 
@@ -23,6 +23,8 @@ interface EditOrderModalProps {
   vendors: string[];
   workStatuses: string[];
   addons: Addon[];
+  themes: Theme[];
+  packages: Package[];
 }
 
 export function EditOrderModal({ 
@@ -32,12 +34,14 @@ export function EditOrderModal({
   onEditOrder, 
   vendors, 
   workStatuses, 
-  addons: defaultAddons 
+  addons: defaultAddons,
+  themes: providedThemes,
+  packages: providedPackages
 }: EditOrderModalProps) {
-  // Load packages and themes from local storage
-  const [packages, setPackages] = useState<Package[]>([]);
+  // Load packages and themes from props
+  const [packages, setPackages] = useState<Package[]>(providedPackages || []);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
-  const [themes, setThemes] = useState<Theme[]>([]);
+  const [themes, setThemes] = useState<Theme[]>(providedThemes || []);
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
   const [themeOpen, setThemeOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(order.package || "");
@@ -65,7 +69,8 @@ export function EditOrderModal({
       }
     };
     
-    const loadPackages = () => {
+    // Only load packages and themes from localStorage if not provided via props
+    if (!providedPackages || providedPackages.length === 0) {
       try {
         const savedPackages = localStorage.getItem("packages");
         if (savedPackages) {
@@ -79,9 +84,12 @@ export function EditOrderModal({
       } catch (error) {
         console.error("Error loading packages:", error);
       }
-    };
+    } else {
+      // Set selected package from order
+      setSelectedPackage(order.package || "");
+    }
     
-    const loadAddons = () => {
+    if (!defaultAddons || defaultAddons.length === 0) {
       try {
         const savedAddons = localStorage.getItem("addons");
         if (savedAddons) {
@@ -93,9 +101,9 @@ export function EditOrderModal({
       } catch (error) {
         console.error("Error loading addons:", error);
       }
-    };
+    }
     
-    const loadThemes = () => {
+    if (!providedThemes || providedThemes.length === 0) {
       try {
         const savedThemes = localStorage.getItem("themes");
         if (savedThemes) {
@@ -107,19 +115,24 @@ export function EditOrderModal({
       } catch (error) {
         console.error("Error loading themes:", error);
       }
-    };
+    }
     
     loadVendors();
-    loadPackages();
-    loadAddons();
-    loadThemes();
-  }, [order]);
+  }, [order, providedPackages, providedThemes, defaultAddons]);
 
   const handleInputChange = (field: keyof Order, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
+    // Calculate countdown days based on current date and event date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = typeof formData.eventDate === 'string' 
+      ? new Date(formData.eventDate) 
+      : formData.eventDate as Date;
+    const countdown = differenceInDays(eventDate, today);
+    
     // Ensure dates are properly formatted as strings
     const updatedOrder = {
       ...formData,
@@ -128,7 +141,8 @@ export function EditOrderModal({
         : formData.orderDate,
       eventDate: typeof formData.eventDate === 'object'
         ? format(formData.eventDate as Date, 'yyyy-MM-dd')
-        : formData.eventDate
+        : formData.eventDate,
+      countdownDays: countdown
     };
     
     onEditOrder(updatedOrder);
@@ -191,7 +205,7 @@ export function EditOrderModal({
                   <Label htmlFor="clientUrl">URL Undangan</Label>
                   <Input
                     id="clientUrl"
-                    value={formData.clientUrl}
+                    value={formData.clientUrl || ''}
                     onChange={(e) => handleInputChange('clientUrl', e.target.value)}
                   />
                 </div>
@@ -258,15 +272,6 @@ export function EditOrderModal({
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
-              <div className="space-y-2 mt-4">
-                <Label htmlFor="countdownDays">Hari Countdown</Label>
-                <Input
-                  id="countdownDays"
-                  type="number"
-                  value={formData.countdownDays}
-                  onChange={(e) => handleInputChange('countdownDays', parseInt(e.target.value))}
-                />
               </div>
             </div>
           </div>
@@ -349,7 +354,7 @@ export function EditOrderModal({
                   <Label>Status Pembayaran</Label>
                   <RadioGroup
                     value={formData.paymentStatus}
-                    onValueChange={(value) => handleInputChange('paymentStatus', value)}
+                    onValueChange={(value: "Lunas" | "Pending") => handleInputChange('paymentStatus', value)}
                     className="flex space-x-4"
                   >
                     <div className="flex items-center space-x-2">

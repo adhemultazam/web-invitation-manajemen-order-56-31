@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -48,6 +47,7 @@ import { OrdersFilter } from "@/components/orders/OrdersFilter";
 import { OrderTable } from "@/components/orders/OrderTable";
 import OrderStats from "@/components/orders/OrderStats";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import { OrderDetailModal } from "@/components/orders/OrderDetailModal";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { useOrderResources } from "@/hooks/useOrderResources";
@@ -61,11 +61,11 @@ import {
   Plus, 
   Search, 
   Trash, 
-  User 
+  User,
+  Eye
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 // Helper function to map month names to their numbers
 const getMonthNumber = (monthName: string): string => {
@@ -142,6 +142,7 @@ export default function MonthlyOrders() {
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
   const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   
@@ -149,7 +150,10 @@ export default function MonthlyOrders() {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   
   // Fetching data
-  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, month ? getMonthTranslation(month) : undefined);
+  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(
+    selectedYear === "Semua Data" ? undefined : selectedYear, 
+    month && selectedMonth !== "Semua Data" ? getMonthTranslation(month) : undefined
+  );
   const { vendors } = useVendorsData();
   const { workStatuses, addons, themes, packages } = useOrderResources();
   
@@ -161,10 +165,16 @@ export default function MonthlyOrders() {
   // Handler for month change
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
-    // Convert month name to URL parameter format
-    const monthParam = Object.entries(getMonthTranslation)
-      .find(([_, value]) => value === month)?.[0] || month.toLowerCase();
-    navigate(`/pesanan/${monthParam}`);
+    
+    if (month === "Semua Data") {
+      // Navigate to all orders page
+      navigate("/pesanan");
+    } else {
+      // Convert month name to URL parameter format
+      const monthParam = Object.entries(getMonthTranslation)
+        .find(([_, value]) => value === month)?.[0] || month.toLowerCase();
+      navigate(`/pesanan/${monthParam}`);
+    }
   };
   
   // Vendor color mapping
@@ -273,6 +283,16 @@ export default function MonthlyOrders() {
     setCurrentOrder(null);
   };
   
+  const handleViewOrderDetail = (order: Order) => {
+    setCurrentOrder(order);
+    setIsDetailModalOpen(true);
+  };
+  
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setTimeout(() => setCurrentOrder(null), 300); // Delay to allow animation to complete
+  };
+  
   const handleOpenDeleteDialog = (orderId: string) => {
     setOrderToDelete(orderId);
     setIsDeleteDialogOpen(true);
@@ -378,25 +398,69 @@ export default function MonthlyOrders() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Pesanan {month && getMonthTranslation(month)}</h2>
-          <p className="text-sm text-muted-foreground">
-            Data pesanan undangan digital untuk periode bulan {month && getMonthTranslation(month)}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Pesanan {month && getMonthTranslation(month)}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Data pesanan undangan digital
+            </p>
+          </div>
+          
+          {/* Year and Month Filter moved here */}
+          <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+            <Select
+              value={selectedYear}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[120px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
+                <SelectValue placeholder="Pilih Tahun" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Semua Data">Semua Tahun</SelectItem>
+                <SelectItem value={(new Date().getFullYear() - 1).toString()}>
+                  {new Date().getFullYear() - 1}
+                </SelectItem>
+                <SelectItem value={new Date().getFullYear().toString()}>
+                  {new Date().getFullYear()}
+                </SelectItem>
+                <SelectItem value={(new Date().getFullYear() + 1).toString()}>
+                  {new Date().getFullYear() + 1}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select
+              value={selectedMonth}
+              onValueChange={handleMonthChange}
+            >
+              <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
+                <SelectValue placeholder="Pilih Bulan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Semua Data">Semua Bulan</SelectItem>
+                <SelectItem value="Januari">Januari</SelectItem>
+                <SelectItem value="Februari">Februari</SelectItem>
+                <SelectItem value="Maret">Maret</SelectItem>
+                <SelectItem value="April">April</SelectItem>
+                <SelectItem value="Mei">Mei</SelectItem>
+                <SelectItem value="Juni">Juni</SelectItem>
+                <SelectItem value="Juli">Juli</SelectItem>
+                <SelectItem value="Agustus">Agustus</SelectItem>
+                <SelectItem value="September">September</SelectItem>
+                <SelectItem value="Oktober">Oktober</SelectItem>
+                <SelectItem value="November">November</SelectItem>
+                <SelectItem value="Desember">Desember</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        
         <Button onClick={handleOpenAddModal}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pesanan
         </Button>
       </div>
-      
-      {/* Year and Month Filter */}
-      <FilterBar
-        onYearChange={handleYearChange}
-        onMonthChange={handleMonthChange}
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth || (month ? getMonthTranslation(month) : "")}
-        className="mb-4"
-      />
       
       {/* Order Stats */}
       <OrderStats 
@@ -431,7 +495,7 @@ export default function MonthlyOrders() {
             updatingOrders={updatingOrders}
             vendorColors={vendorColors}
             addonStyles={addonStyles}
-            handleViewOrderDetail={(order) => console.log("View order", order.id)}
+            handleViewOrderDetail={handleViewOrderDetail}
             handleOpenEditDialog={handleEditOrder}
             handleDeleteOrder={(order) => handleOpenDeleteDialog(order.id)}
             togglePaymentStatus={togglePaymentStatus}
@@ -499,6 +563,15 @@ export default function MonthlyOrders() {
           addons={addons}
           themes={themes}
           packages={packages}
+        />
+      )}
+      
+      {/* Order Detail Modal */}
+      {isDetailModalOpen && currentOrder && (
+        <OrderDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={handleCloseDetailModal}
+          order={currentOrder}
         />
       )}
       

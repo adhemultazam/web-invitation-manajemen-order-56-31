@@ -16,7 +16,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Vendor } from "@/types/types";
+import { Vendor, WorkStatus } from "@/types/types";
 import { useEffect, useState } from "react";
 
 interface OrdersFilterProps {
@@ -29,7 +29,7 @@ interface OrdersFilterProps {
   filterPaymentStatus: string;
   setFilterPaymentStatus: (status: string) => void;
   vendors: Vendor[];
-  workStatuses: string[];
+  workStatuses: WorkStatus[];
 }
 
 export function OrdersFilter({
@@ -63,6 +63,12 @@ export function OrdersFilter({
     setFilterVendor("all");
     setFilterWorkStatus("all");
     setFilterPaymentStatus("all");
+  };
+  
+  // Get vendor name by ID
+  const getVendorName = (vendorId: string): string => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    return vendor ? vendor.name : vendorId;
   };
   
   return (
@@ -108,8 +114,8 @@ export function OrdersFilter({
               <SelectItem value="all">Semua Status</SelectItem>
               {workStatuses.length > 0 ? (
                 workStatuses.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
+                  <SelectItem key={status.id} value={status.name}>
+                    {status.name}
                   </SelectItem>
                 ))
               ) : (
@@ -173,7 +179,7 @@ export function OrdersFilter({
           {filterVendor !== "all" && (
             <Badge variant="outline" className="flex items-center gap-1">
               <User className="h-3 w-3" />
-              {vendors.find(v => v.id === filterVendor)?.name || filterVendor}
+              {getVendorName(filterVendor)}
               <Button 
                 variant="ghost" 
                 size="sm" 

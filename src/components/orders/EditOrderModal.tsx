@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
 import ThemeSelect from "./ThemeSelect";
 
@@ -45,8 +45,8 @@ export function EditOrderModal({
   // Initialize form data with order values
   const [formData, setFormData] = useState<Order>({
     ...order,
-    orderDate: new Date(order.orderDate),
-    eventDate: new Date(order.eventDate),
+    orderDate: typeof order.orderDate === 'string' ? order.orderDate : format(new Date(order.orderDate), 'yyyy-MM-dd'),
+    eventDate: typeof order.eventDate === 'string' ? order.eventDate : format(new Date(order.eventDate), 'yyyy-MM-dd'),
   });
 
   // Load data from localStorage when component mounts
@@ -120,7 +120,18 @@ export function EditOrderModal({
   };
 
   const handleSubmit = () => {
-    onEditOrder(formData);
+    // Ensure dates are properly formatted as strings
+    const updatedOrder = {
+      ...formData,
+      orderDate: typeof formData.orderDate === 'object' 
+        ? format(formData.orderDate as Date, 'yyyy-MM-dd')
+        : formData.orderDate,
+      eventDate: typeof formData.eventDate === 'object'
+        ? format(formData.eventDate as Date, 'yyyy-MM-dd')
+        : formData.eventDate
+    };
+    
+    onEditOrder(updatedOrder);
   };
 
   // Get filtered themes based on selected package
@@ -132,7 +143,7 @@ export function EditOrderModal({
       return themes;
     }
     
-    return themes.filter(theme => packageObj.themes.includes(theme.name));
+    return themes.filter(theme => packageObj.themes?.includes(theme.name));
   };
 
   const handlePackageChange = (packageName: string) => {
@@ -201,17 +212,20 @@ export function EditOrderModal({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {formData.orderDate
-                          ? format(formData.orderDate, "PPP")
+                          ? (typeof formData.orderDate === 'string' 
+                            ? format(parseISO(formData.orderDate), "PPP")
+                            : format(formData.orderDate as Date, "PPP"))
                           : "Pilih tanggal"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
-                        selected={formData.orderDate}
-                        onSelect={(date) => handleInputChange('orderDate', date)}
+                        selected={typeof formData.orderDate === 'string' 
+                          ? parseISO(formData.orderDate) 
+                          : formData.orderDate as Date}
+                        onSelect={(date) => date && handleInputChange('orderDate', date)}
                         initialFocus
-                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
@@ -226,17 +240,20 @@ export function EditOrderModal({
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {formData.eventDate
-                          ? format(formData.eventDate, "PPP")
+                          ? (typeof formData.eventDate === 'string' 
+                            ? format(parseISO(formData.eventDate), "PPP")
+                            : format(formData.eventDate as Date, "PPP"))
                           : "Pilih tanggal"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
-                        selected={formData.eventDate}
-                        onSelect={(date) => handleInputChange('eventDate', date)}
+                        selected={typeof formData.eventDate === 'string' 
+                          ? parseISO(formData.eventDate) 
+                          : formData.eventDate as Date}
+                        onSelect={(date) => date && handleInputChange('eventDate', date)}
                         initialFocus
-                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

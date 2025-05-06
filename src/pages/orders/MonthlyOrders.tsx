@@ -47,6 +47,7 @@ import { EditOrderModal } from "@/components/orders/EditOrderModal";
 import { OrdersFilter } from "@/components/orders/OrdersFilter";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
+import { useOrderResources } from "@/hooks/useOrderResources";
 import { Order } from "@/types/types";
 import { 
   Calendar, 
@@ -140,7 +141,8 @@ export default function MonthlyOrders() {
   
   // Fetching data
   const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(currentYear, month ? getMonthTranslation(month) : undefined);
-  const { vendors, workStatuses, addons, themes, packages } = useVendorsData();
+  const { vendors } = useVendorsData();
+  const { workStatuses, addons, themes, packages } = useOrderResources();
   
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -156,7 +158,7 @@ export default function MonthlyOrders() {
       const matchesSearch = 
         searchQuery === "" || 
         order.clientName.toLowerCase().includes(searchLower) ||
-        order.clientUrl.toLowerCase().includes(searchLower) ||
+        (order.clientUrl && order.clientUrl.toLowerCase().includes(searchLower)) ||
         order.id.toLowerCase().includes(searchLower);
       
       // Vendor filter
@@ -379,7 +381,7 @@ export default function MonthlyOrders() {
             toast.success("Pesanan berhasil ditambahkan");
           }}
           vendors={vendors.map(v => v.id)}
-          workStatuses={workStatuses}
+          workStatuses={workStatuses.map(ws => ws.name)}
           addons={addons}
         />
       )}
@@ -391,12 +393,12 @@ export default function MonthlyOrders() {
           onClose={handleCloseEditModal}
           order={currentOrder}
           onEditOrder={(updated) => {
-            editOrder(updated);
+            editOrder(updated.id, updated);
             handleCloseEditModal();
             toast.success("Pesanan berhasil diperbarui");
           }}
           vendors={vendors.map(v => v.id)}
-          workStatuses={workStatuses}
+          workStatuses={workStatuses.map(ws => ws.name)}
           addons={addons}
         />
       )}

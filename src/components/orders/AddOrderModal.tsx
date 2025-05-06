@@ -132,7 +132,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
       return themes;
     }
     
-    return themes.filter(theme => packageObj.themes.includes(theme.name));
+    return themes.filter(theme => packageObj.themes?.includes(theme.name));
   };
 
   const handlePackageChange = (packageName: string) => {
@@ -151,10 +151,11 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
   };
 
   const handleAddOrder = () => {
-    // Generate a random ID for the order (this will be replaced on the server)
+    // Convert Date objects to strings for the API
     const orderData = {
       ...formData,
-      id: crypto.randomUUID(),
+      orderDate: format(formData.orderDate, 'yyyy-MM-dd'),
+      eventDate: format(formData.eventDate, 'yyyy-MM-dd'),
     };
     
     onAddOrder(orderData);

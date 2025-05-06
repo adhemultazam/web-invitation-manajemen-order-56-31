@@ -72,6 +72,7 @@ export interface Package {
   price: number;
   description?: string;
   features: string[]; // Added features array
+  themes?: string[]; // Added themes array to fix type errors
 }
 
 export interface Invoice {

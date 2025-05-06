@@ -13,41 +13,40 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Order, Addon, Package, Theme, Vendor } from "@/types/types";
+import ThemeSelect from "./ThemeSelect";
 
-interface AddOrderModalProps {
+interface EditOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddOrder: (orderData: Omit<Order, "id">) => void;
+  order: Order;
+  onEditOrder: (orderData: Order) => void;
   vendors: string[];
   workStatuses: string[];
   addons: Addon[];
 }
 
-export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatuses, addons: defaultAddons }: AddOrderModalProps) {
+export function EditOrderModal({ 
+  isOpen, 
+  onClose, 
+  order, 
+  onEditOrder, 
+  vendors, 
+  workStatuses, 
+  addons: defaultAddons 
+}: EditOrderModalProps) {
   // Load packages and themes from local storage
   const [packages, setPackages] = useState<Package[]>([]);
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState("");
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(order.package || "");
   
-  const [formData, setFormData] = useState({
-    customerName: "",
-    clientName: "",
-    clientUrl: "",
-    orderDate: new Date(),
-    eventDate: new Date(),
-    countdownDays: 30,
-    vendor: vendors[0] || "",
-    package: "",
-    theme: "",
-    addons: [] as string[],
-    bonuses: [] as string[],
-    paymentStatus: "Pending" as "Lunas" | "Pending",
-    paymentAmount: 0,
-    workStatus: workStatuses[0] || "",
-    postPermission: false,
-    notes: "",
+  // Initialize form data with order values
+  const [formData, setFormData] = useState<Order>({
+    ...order,
+    orderDate: new Date(order.orderDate),
+    eventDate: new Date(order.eventDate),
   });
 
   // Load data from localStorage when component mounts
@@ -73,11 +72,8 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
           const parsedPackages = JSON.parse(savedPackages);
           if (Array.isArray(parsedPackages) && parsedPackages.length > 0) {
             setPackages(parsedPackages);
-            // Set default package if available
-            if (parsedPackages.length > 0 && !formData.package) {
-              setSelectedPackage(parsedPackages[0].name);
-              setFormData(prev => ({...prev, package: parsedPackages[0].name}));
-            }
+            // Set selected package
+            setSelectedPackage(order.package || parsedPackages[0].name);
           }
         }
       } catch (error) {
@@ -106,10 +102,6 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
           const parsedThemes = JSON.parse(savedThemes);
           if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
             setThemes(parsedThemes);
-            // Set default theme if available
-            if (parsedThemes.length > 0 && !formData.theme) {
-              setFormData(prev => ({...prev, theme: parsedThemes[0].name}));
-            }
           }
         }
       } catch (error) {
@@ -121,7 +113,15 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     loadPackages();
     loadAddons();
     loadThemes();
-  }, []);
+  }, [order]);
+
+  const handleInputChange = (field: keyof Order, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    onEditOrder(formData);
+  };
 
   // Get filtered themes based on selected package
   const getFilteredThemes = (): Theme[] => {
@@ -141,30 +141,18 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
     
     // Reset theme if current theme is not available for new package
     const filteredThemes = getFilteredThemes();
-    if (filteredThemes.length > 0) {
+    const themeIsAvailable = filteredThemes.some(theme => theme.name === formData.theme);
+    
+    if (!themeIsAvailable && filteredThemes.length > 0) {
       handleInputChange('theme', filteredThemes[0].name);
     }
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddOrder = () => {
-    // Generate a random ID for the order (this will be replaced on the server)
-    const orderData = {
-      ...formData,
-      id: crypto.randomUUID(),
-    };
-    
-    onAddOrder(orderData);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Tambah Pesanan Baru</DialogTitle>
+          <DialogTitle>Edit Pesanan</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
           {/* Customer Information */}
@@ -420,7 +408,7 @@ export function AddOrderModal({ isOpen, onClose, onAddOrder, vendors, workStatus
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
-          <Button onClick={handleAddOrder}>Tambah Pesanan</Button>
+          <Button onClick={handleSubmit}>Simpan Perubahan</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

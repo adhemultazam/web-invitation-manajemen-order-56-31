@@ -1,7 +1,29 @@
 
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { 
   Select, 
   SelectContent, 
@@ -9,297 +31,391 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Calendar, PlusCircle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { AddOrderModal } from "@/components/orders/AddOrderModal";
+import { EditOrderModal } from "@/components/orders/EditOrderModal";
+import { OrdersFilter } from "@/components/orders/OrdersFilter";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
-import { useOrderResources } from "@/hooks/useOrderResources";
-import { AddOrderModal } from "@/components/orders/AddOrderModal";
-import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
-import { OrderFilter } from "@/components/orders/OrderFilter";
-import { useMonthlyOrders } from "@/hooks/useMonthlyOrders";
-import { formatCurrency } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { ShoppingCart, DollarSign, Check, X } from "lucide-react";
+import { Order } from "@/types/types";
+import { 
+  Calendar, 
+  Clock, 
+  Edit, 
+  MoreHorizontal, 
+  Package, 
+  Plus, 
+  Search, 
+  Trash, 
+  User 
+} from "lucide-react";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
-const MonthlyOrders = () => {
-  const { month } = useParams();
-  const navigate = useNavigate();
+// Helper function to map month names to their numbers
+const getMonthNumber = (monthName: string): string => {
+  const months: { [key: string]: string } = {
+    'januari': '01',
+    'februari': '02',
+    'maret': '03',
+    'april': '04',
+    'mei': '05',
+    'juni': '06',
+    'juli': '07',
+    'agustus': '08',
+    'september': '09',
+    'oktober': '10',
+    'november': '11',
+    'desember': '12'
+  };
   
-  // Get current year and month
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
+  return months[monthName.toLowerCase()] || '';
+};
+
+// Helper to get month translation
+const getMonthTranslation = (monthName: string): string => {
+  const translations: { [key: string]: string } = {
+    'januari': 'Januari',
+    'februari': 'Februari',
+    'maret': 'Maret',
+    'april': 'April',
+    'mei': 'Mei',
+    'juni': 'Juni',
+    'juli': 'Juli',
+    'agustus': 'Agustus',
+    'september': 'September',
+    'oktober': 'Oktober',
+    'november': 'November',
+    'desember': 'Desember'
+  };
   
-  // State for selected year and month
-  const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    month ? 
-      month.charAt(0).toUpperCase() + month.slice(1) : 
-      getMonthName(currentMonth)
-  );
-  const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
-  
-  // Generate years (past 2 years, current year, next year)
-  const years = [
-    (currentYear - 2).toString(),
-    (currentYear - 1).toString(),
-    currentYear.toString(),
-    (currentYear + 1).toString()
-  ];
-  
-  // Month names
-  const months = [
-    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-  ];
-  
-  // Helper function to get month name
-  function getMonthName(monthIndex: number): string {
-    return months[monthIndex];
+  return translations[monthName.toLowerCase()] || 'Unknown Month';
+};
+
+// Format currency to rupiah
+const formatCurrency = (amount: string | number): string => {
+  // Parse amount to number if it's a string
+  let numericAmount: number;
+  if (typeof amount === 'string') {
+    // Remove non-numeric characters except decimal point
+    const sanitized = amount.replace(/[^0-9.]/g, '');
+    numericAmount = parseFloat(sanitized);
+  } else {
+    numericAmount = amount;
   }
   
-  // Load orders data based on selected year and month
-  const { orders, isLoading, addOrder } = useOrdersData(selectedYear, selectedMonth);
-  const { vendors } = useVendorsData();
-  const { workStatuses, themes, packages, vendorColors, addonStyles } = useOrderResources();
+  // Check if it's a valid number
+  if (isNaN(numericAmount)) {
+    return 'Rp 0';
+  }
+  
+  // Format to IDR
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(numericAmount);
+};
 
-  // Use monthly orders hook for additional functionality
-  const {
-    filteredOrders,
-    handleAddOrder,
-    handleOpenEditDialog,
-    handleDeleteOrder,
-    handleFilterChange,
-    handleWorkStatusChange,
-    handleVendorChange,
-    handleThemeChange,
-    handlePackageChange,
-    togglePaymentStatus,
-    updatingOrders,
-  } = useMonthlyOrders(selectedMonth);
+export default function MonthlyOrders() {
+  const { month } = useParams<{ month: string }>();
+  const currentYear = new Date().getFullYear().toString();
   
-  // Effect to update URL when selections change
-  useEffect(() => {
-    const monthParam = selectedMonth.toLowerCase();
-    navigate(`/pesanan/${monthParam}`, { replace: true });
-  }, [selectedMonth, navigate]);
+  // State for modals
+  const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
+  const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   
-  // Handlers for modal
-  const handleOpenAddOrderModal = () => setIsAddOrderModalOpen(true);
-  const handleCloseAddOrderModal = () => setIsAddOrderModalOpen(false);
+  // Fetching data
+  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(currentYear, month ? getMonthTranslation(month) : undefined);
+  const { vendors, workStatuses, addons, themes, packages } = useVendorsData();
   
-  // Create a wrapper function for onDeleteOrder to convert from (order) to (id)
-  const handleOrderDelete = (id: string) => {
-    // Find the order from filteredOrders using the ID
-    const orderToDelete = filteredOrders.find(order => order.id === id);
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterVendor, setFilterVendor] = useState<string>("all");
+  const [filterWorkStatus, setFilterWorkStatus] = useState<string>("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>("all");
+  
+  // Apply filters to orders
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      // Search query filter
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        searchQuery === "" || 
+        order.clientName.toLowerCase().includes(searchLower) ||
+        order.clientUrl.toLowerCase().includes(searchLower) ||
+        order.id.toLowerCase().includes(searchLower);
+      
+      // Vendor filter
+      const matchesVendor = filterVendor === "all" || order.vendor === filterVendor;
+      
+      // Work status filter
+      const matchesWorkStatus = filterWorkStatus === "all" || order.workStatus === filterWorkStatus;
+      
+      // Payment status filter
+      const matchesPaymentStatus = filterPaymentStatus === "all" || order.paymentStatus === filterPaymentStatus;
+      
+      return matchesSearch && matchesVendor && matchesWorkStatus && matchesPaymentStatus;
+    });
+  }, [orders, searchQuery, filterVendor, filterWorkStatus, filterPaymentStatus]);
+  
+  // Handler functions
+  const handleOpenAddModal = () => {
+    setIsAddOrderModalOpen(true);
+  };
+  
+  const handleCloseAddModal = () => {
+    setIsAddOrderModalOpen(false);
+  };
+  
+  const handleEditOrder = (order: Order) => {
+    setCurrentOrder(order);
+    setIsEditOrderModalOpen(true);
+  };
+  
+  const handleCloseEditModal = () => {
+    setIsEditOrderModalOpen(false);
+    setCurrentOrder(null);
+  };
+  
+  const handleOpenDeleteDialog = (orderId: string) => {
+    setOrderToDelete(orderId);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleConfirmDelete = () => {
     if (orderToDelete) {
-      handleDeleteOrder(orderToDelete);
+      deleteOrder(orderToDelete);
+      toast.success("Pesanan berhasil dihapus");
+      setIsDeleteDialogOpen(false);
+      setOrderToDelete(null);
     }
   };
-
-  // Helper function to ensure values are numeric
-  const getNumericAmount = (amount: any): number => {
-    if (typeof amount === 'number' && !isNaN(amount)) {
-      return amount;
-    }
-    if (typeof amount === 'string' && amount.trim() !== '') {
-      const numericAmount = parseFloat(amount.replace(/[^\d.-]/g, ''));
-      return !isNaN(numericAmount) ? numericAmount : 0;
-    }
-    return 0;
+  
+  // Get vendor name by ID
+  const getVendorName = (vendorId: string): string => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    return vendor ? vendor.name : vendorId;
   };
-
-  // Calculate stats for the stat cards
-  const totalOrders = orders.length;
-  
-  let totalRevenue = 0;
-  orders.forEach(order => {
-    totalRevenue += getNumericAmount(order.paymentAmount);
-  });
-  
-  const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
-  const paidOrdersCount = paidOrders.length;
-  
-  let paidRevenue = 0;
-  paidOrders.forEach(order => {
-    paidRevenue += getNumericAmount(order.paymentAmount);
-  });
-  
-  const unpaidOrders = orders.filter(order => order.paymentStatus === "Pending");
-  const unpaidOrdersCount = unpaidOrders.length;
-  
-  let unpaidRevenue = 0;
-  unpaidOrders.forEach(order => {
-    unpaidRevenue += getNumericAmount(order.paymentAmount);
-  });
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Pesanan Bulanan</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Kelola pesanan undangan digital per bulan
+          <h2 className="text-2xl font-bold tracking-tight">Pesanan {month && getMonthTranslation(month)}</h2>
+          <p className="text-sm text-muted-foreground">
+            Data pesanan undangan digital untuk periode bulan {month && getMonthTranslation(month)}
           </p>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <Select
-              value={selectedYear}
-              onValueChange={setSelectedYear}
-            >
-              <SelectTrigger className="w-[120px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
-                <SelectValue placeholder="Pilih Tahun" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select
-              value={selectedMonth}
-              onValueChange={setSelectedMonth}
-            >
-              <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
-                <SelectValue placeholder="Pilih Bulan" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month} value={month}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <Button className="bg-wedding-primary hover:bg-wedding-accent" onClick={handleOpenAddOrderModal}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Tambah Pesanan
-          </Button>
-        </div>
+        <Button onClick={handleOpenAddModal}>
+          <Plus className="mr-2 h-4 w-4" /> Tambah Pesanan
+        </Button>
       </div>
       
-      {isLoading ? (
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-wedding-primary"></div>
-        </div>
-      ) : (
-        <>
-          {/* Compact Stat Cards */}
-          <div className="grid grid-cols-4 gap-4">
-            {/* Total Pesanan Card */}
-            <Card className="p-4 bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800/40">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs text-blue-700 dark:text-blue-300 font-medium">Total Pesanan</h3>
-                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-blue-500">
-                  <ShoppingCart className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{totalOrders}</p>
-            </Card>
-            
-            {/* Total Omset Card */}
-            <Card className="p-4 bg-purple-50 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800/40">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs text-purple-700 dark:text-purple-300 font-medium">Total Omset</h3>
-                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-purple-500">
-                  <DollarSign className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{formatCurrency(totalRevenue)}</p>
-            </Card>
-            
-            {/* Sudah Lunas Card */}
-            <Card className="p-4 bg-green-50 border border-green-100 dark:bg-green-900/20 dark:border-green-800/40">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs text-green-700 dark:text-green-300 font-medium">Sudah Lunas</h3>
-                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-green-500">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-green-800 dark:text-green-200">
-                {paidOrdersCount} <span className="text-sm">(Rp {paidRevenue.toLocaleString('id-ID')})</span>
-              </p>
-            </Card>
-            
-            {/* Belum Lunas Card */}
-            <Card className="p-4 bg-red-50 border border-red-100 dark:bg-red-900/20 dark:border-red-800/40">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs text-red-700 dark:text-red-300 font-medium">Belum Lunas</h3>
-                <div className="rounded-full w-6 h-6 flex items-center justify-center bg-red-500">
-                  <X className="w-3 h-3 text-white" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-red-800 dark:text-red-200">
-                {unpaidOrdersCount} <span className="text-sm">(Rp {unpaidRevenue.toLocaleString('id-ID')})</span>
-              </p>
-            </Card>
-          </div>
-          
-          {/* Order Filters */}
-          <OrderFilter 
-            onFilter={handleFilterChange} 
-            vendors={vendors.map(v => v.id)}
-            workStatuses={["Belum", "Proses", "Selesai"]}
-          />
-          
-          {orders.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-              <h3 className="text-lg font-medium mb-2">Belum ada pesanan</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Belum ada pesanan untuk bulan {selectedMonth} {selectedYear}
-              </p>
-              <Button variant="outline" onClick={handleOpenAddOrderModal}>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Tambah Pesanan Baru
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              <CompactOrdersTable 
-                orders={filteredOrders}
-                onEditOrder={handleOpenEditDialog}
-                onDeleteOrder={handleOrderDelete}
-                vendorColors={vendorColors}
-                addonStyles={addonStyles}
-                updatingOrders={updatingOrders}
-                availableWorkStatuses={workStatuses}
-                availableVendors={vendors}
-                availableThemes={themes}
-                availablePackages={packages}
-                handleVendorChange={handleVendorChange}
-                handleThemeChange={handleThemeChange}
-                handlePackageChange={handlePackageChange}
-                handleWorkStatusChange={handleWorkStatusChange}
-                togglePaymentStatus={togglePaymentStatus}
-              />
-            </div>
-          )}
-        </>
-      )}
+      <OrdersFilter 
+        vendors={vendors}
+        workStatuses={workStatuses}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterVendor={filterVendor}
+        setFilterVendor={setFilterVendor}
+        filterWorkStatus={filterWorkStatus}
+        setFilterWorkStatus={setFilterWorkStatus}
+        filterPaymentStatus={filterPaymentStatus}
+        setFilterPaymentStatus={setFilterPaymentStatus}
+      />
       
-      {/* AddOrderModal will appear when isAddOrderModalOpen is true */}
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <CardTitle>Daftar Pesanan</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">ID</TableHead>
+                  <TableHead>Pelanggan</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Paket</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Pembayaran</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-10">
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-wedding-primary border-t-transparent"></div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{order.clientName}</span>
+                            {order.clientUrl && (
+                              <span className="text-xs text-muted-foreground">{order.clientUrl}</span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs">{format(new Date(order.orderDate), "dd MMM yyyy")}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs">{format(new Date(order.eventDate), "dd MMM yyyy")}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getVendorName(order.vendor)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-200 text-xs">
+                            <Package className="mr-1 h-3 w-3" />
+                            {order.package}
+                          </Badge>
+                          <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-50 border-purple-200 text-xs">
+                            {order.theme}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={
+                          order.workStatus === 'Selesai' ? 'bg-green-100 text-green-800 hover:bg-green-100' :
+                          order.workStatus === 'Proses' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' :
+                          'bg-orange-100 text-orange-800 hover:bg-orange-100'
+                        }>
+                          {order.workStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={order.paymentStatus === "Lunas" ? "outline" : "default"} 
+                            className={order.paymentStatus === "Lunas" ? 
+                              "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}>
+                            {order.paymentStatus}
+                          </Badge>
+                          <span className="text-xs font-medium">{formatCurrency(order.paymentAmount)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleEditOrder(order)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => handleOpenDeleteDialog(order.id)}
+                            >
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                      {searchQuery || filterVendor !== "all" || filterWorkStatus !== "all" || filterPaymentStatus !== "all" ?
+                        "Tidak ada pesanan yang sesuai dengan filter" :
+                        "Belum ada pesanan untuk bulan ini"
+                      }
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Add Order Modal */}
       {isAddOrderModalOpen && (
         <AddOrderModal
           isOpen={isAddOrderModalOpen}
-          onClose={handleCloseAddOrderModal}
+          onClose={handleCloseAddModal}
           onAddOrder={(order) => {
-            handleAddOrder(order);
-            handleCloseAddOrderModal();
+            addOrder(order);
+            handleCloseAddModal();
+            toast.success("Pesanan berhasil ditambahkan");
           }}
           vendors={vendors.map(v => v.id)}
-          workStatuses={["Belum", "Proses", "Selesai"]} 
-          addons={[]}
+          workStatuses={workStatuses}
+          addons={addons}
         />
       )}
+      
+      {/* Edit Order Modal */}
+      {isEditOrderModalOpen && currentOrder && (
+        <EditOrderModal
+          isOpen={isEditOrderModalOpen}
+          onClose={handleCloseEditModal}
+          order={currentOrder}
+          onEditOrder={(updated) => {
+            editOrder(updated);
+            handleCloseEditModal();
+            toast.success("Pesanan berhasil diperbarui");
+          }}
+          vendors={vendors.map(v => v.id)}
+          workStatuses={workStatuses}
+          addons={addons}
+        />
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus pesanan ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Batal</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>Hapus</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default MonthlyOrders;
+}

@@ -13,6 +13,12 @@ import { Calendar, PlusCircle } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
+import OrderStats from "@/components/orders/OrderStats";
+import { CompactOrdersTable } from "@/components/orders/CompactOrdersTable";
+import { OrderFilter } from "@/components/orders/OrderFilter";
+import { useMonthlyOrders } from "@/hooks/useMonthlyOrders";
+import { MonthlyStats } from "@/components/orders/MonthlyStats";
+import { formatCurrency } from "@/lib/utils";
 
 const MonthlyOrders = () => {
   const { month } = useParams();
@@ -50,14 +56,21 @@ const MonthlyOrders = () => {
     return months[monthIndex];
   }
   
-  // Helper function to get month index
-  function getMonthIndex(monthName: string): number {
-    return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
-  }
-  
   // Load orders data based on selected year and month
-  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, selectedMonth);
+  const { orders, isLoading, addOrder } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
+
+  // Use monthly orders hook for additional functionality
+  const {
+    filteredOrders,
+    handleAddOrder,
+    handleOpenEditDialog,
+    handleDeleteOrder,
+    handleFilterChange,
+    vendorColors,
+    addonStyles,
+    updatingOrders,
+  } = useMonthlyOrders(selectedMonth);
   
   // Effect to update URL when selections change
   useEffect(() => {
@@ -128,6 +141,16 @@ const MonthlyOrders = () => {
         </div>
       ) : (
         <>
+          {/* Monthly Statistics */}
+          <MonthlyStats orders={orders} month={selectedMonth} />
+          
+          {/* Order Filters */}
+          <OrderFilter 
+            onFilter={handleFilterChange} 
+            vendors={vendors.map(v => v.id)}
+            workStatuses={["Belum", "Proses", "Selesai"]}
+          />
+          
           {orders.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
               <h3 className="text-lg font-medium mb-2">Belum ada pesanan</h3>
@@ -141,13 +164,11 @@ const MonthlyOrders = () => {
             </div>
           ) : (
             <div className="grid gap-4">
-              {/* If you have a CompactOrdersTable component, use it here */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                {/* Table showing orders goes here */}
-                <div className="p-4 text-center">
-                  Menampilkan {orders.length} pesanan untuk {selectedMonth} {selectedYear}
-                </div>
-              </div>
+              <CompactOrdersTable 
+                orders={filteredOrders}
+                onEditOrder={handleOpenEditDialog}
+                onDeleteOrder={handleDeleteOrder}
+              />
             </div>
           )}
         </>
@@ -159,7 +180,7 @@ const MonthlyOrders = () => {
           isOpen={isAddOrderModalOpen}
           onClose={handleCloseAddOrderModal}
           onAddOrder={(order) => {
-            addOrder(order);
+            handleAddOrder(order);
             handleCloseAddOrderModal();
           }}
           vendors={vendors.map(v => v.id)}

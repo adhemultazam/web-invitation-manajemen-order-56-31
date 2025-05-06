@@ -5,10 +5,12 @@
 export type Order = {
   id: string;
   clientName: string;
-  clientPhone: string;
+  customerName?: string; // Added missing field
+  clientPhone?: string;
   clientEmail?: string;
-  eventName: string;
-  brideAndGroom: string;
+  clientUrl?: string; // Added missing field
+  eventName?: string;
+  brideAndGroom?: string;
   eventDate: string;
   orderDate: string;
   package: string;
@@ -16,8 +18,12 @@ export type Order = {
   workStatus: string;
   vendor: string;
   addons: string[];
+  bonuses?: string[]; // Added missing field
   paymentAmount: number | string;
   paymentStatus: "Lunas" | "Pending";
+  countdownDays?: number; // Added missing field
+  postPermission?: boolean; // Added missing field
+  notes?: string; // Added missing field
 };
 
 // Chart data types
@@ -45,12 +51,16 @@ export type Vendor = {
 export type WorkStatus = {
   id: string;
   name: string;
+  color: string; // Added missing field
+  order?: number; // Added missing field
 };
 
 // Package type
 export type Package = {
   id: string;
   name: string;
+  price?: number | string; // Added missing field
+  themes?: string[]; // Added missing field
 };
 
 // Addon type
@@ -58,6 +68,14 @@ export type Addon = {
   id: string;
   name: string;
   color: string;
+};
+
+// Theme type - Added missing type
+export type Theme = {
+  id: string;
+  name: string;
+  thumbnail?: string;
+  category?: string;
 };
 
 // Invoice type

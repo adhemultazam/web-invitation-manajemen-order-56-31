@@ -138,7 +138,7 @@ export function EditOrderDialog({
         // If theme selection needs to be updated based on new package
         const compatibleThemes = themes.filter(theme => theme.category === selectedPackage.name);
         if (compatibleThemes.length > 0 && 
-            (!prevState.theme || !compatibleThemes.some(t => t.name === prevState.theme))) {
+            (!formData.theme || !compatibleThemes.some(t => t.name === formData.theme))) {
           setFormData(prevState => ({ ...prevState, theme: compatibleThemes[0].name }));
         }
       }

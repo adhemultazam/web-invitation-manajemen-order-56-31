@@ -39,9 +39,12 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
       return false;
     }
     
-    // Then filter by search query
-    return theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (theme.category && theme.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Then filter by search query - Add null checks before calling toLowerCase()
+    const themeName = theme.name?.toLowerCase() || "";
+    const themeCategory = theme.category?.toLowerCase() || "";
+    const query = searchQuery.toLowerCase();
+    
+    return themeName.includes(query) || themeCategory.includes(query);
   });
 
   return (
@@ -76,7 +79,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
           <div className="pt-2 pb-1">
             {filteredThemes.length > 0 ? (
               filteredThemes.map((theme) => (
-                <SelectItem key={theme.id} value={theme.name}>
+                <SelectItem key={theme.id} value={theme.name || ""}>
                   <div className="flex items-center">
                     <span>{theme.name}</span>
                     {theme.category && (

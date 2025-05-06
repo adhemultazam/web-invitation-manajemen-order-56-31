@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -115,18 +116,18 @@ export function EditOrderDialog({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
   const handleSelectChange = (value: string, name: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prevState => ({ ...prevState, [name]: value }));
     
     // If package changes, update the payment amount and category
     if (name === "package") {
       const selectedPackage = packages.find(pkg => pkg.name === value);
       if (selectedPackage) {
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData(prevState => ({ 
+          ...prevState, 
           [name]: value,
           paymentAmount: selectedPackage.price || 0
         }));
@@ -137,24 +138,24 @@ export function EditOrderDialog({
         // If theme selection needs to be updated based on new package
         const compatibleThemes = themes.filter(theme => theme.category === selectedPackage.name);
         if (compatibleThemes.length > 0 && 
-            (!prev.theme || !compatibleThemes.some(t => t.name === prev.theme))) {
-          setFormData(prev => ({ ...prev, theme: compatibleThemes[0].name }));
+            (!prevState.theme || !compatibleThemes.some(t => t.name === prevState.theme))) {
+          setFormData(prevState => ({ ...prevState, theme: compatibleThemes[0].name }));
         }
       }
     }
   };
 
   const handleCheckboxChange = (checked: boolean, name: string) => {
-    setFormData(prev => ({ ...prev, [name]: checked }));
+    setFormData(prevState => ({ ...prevState, [name]: checked }));
   };
 
   const handleAddonToggle = (addonName: string, checked: boolean) => {
-    setFormData(prev => {
-      const currentAddons = prev.addons || [];
+    setFormData(prevState => {
+      const currentAddons = prevState.addons || [];
       if (checked) {
-        return { ...prev, addons: [...currentAddons, addonName] };
+        return { ...prevState, addons: [...currentAddons, addonName] };
       } else {
-        return { ...prev, addons: currentAddons.filter(name => name !== addonName) };
+        return { ...prevState, addons: currentAddons.filter(name => name !== addonName) };
       }
     });
   };
@@ -164,7 +165,7 @@ export function EditOrderDialog({
     if (date) {
       // Convert Date to string when storing in state to avoid type issues
       const dateStr = format(date, 'yyyy-MM-dd');
-      setFormData(prev => ({ ...prev, [fieldName]: dateStr }));
+      setFormData(prevState => ({ ...prevState, [fieldName]: dateStr }));
     }
   };
   
@@ -414,7 +415,7 @@ export function EditOrderDialog({
                 <RadioGroup
                   value={formData.paymentStatus}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, paymentStatus: value as "Lunas" | "Pending" })
+                    setFormData(prevState => ({ ...prevState, paymentStatus: value as "Lunas" | "Pending" }))
                   }
                   className="flex gap-4"
                 >

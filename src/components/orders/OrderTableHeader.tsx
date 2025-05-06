@@ -1,25 +1,20 @@
 
 import React from "react";
-import {
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const OrderTableHeader: React.FC = () => {
   return (
-    <TableHeader className="bg-muted">
+    <TableHeader>
       <TableRow>
-        <TableHead className="w-[50px]">No</TableHead>
-        <TableHead className="w-[100px]">Tgl Pesan</TableHead>
-        <TableHead className="w-[100px]">Tgl Acara</TableHead>
-        <TableHead className="w-[100px]">Countdown</TableHead>
-        <TableHead className="w-[200px]">Client</TableHead>
-        <TableHead className="w-[150px]">Vendor</TableHead>
-        <TableHead className="w-[180px]">Paket & Tema</TableHead>
-        <TableHead className="w-[180px]">Addons</TableHead>
-        <TableHead className="w-[130px]">Pembayaran</TableHead>
-        <TableHead className="w-[150px]">Status</TableHead>
+        <TableHead className="w-[30px]">No</TableHead>
+        <TableHead className="w-[150px]">Tanggal</TableHead>
+        <TableHead className="w-[80px]">Countdown</TableHead>
+        <TableHead>Nama</TableHead>
+        <TableHead className="w-[110px]">Vendor</TableHead>
+        <TableHead className="w-[145px]">Paket/Tema</TableHead>
+        <TableHead className="w-[145px]">Fitur</TableHead>
+        <TableHead className="w-[120px]">Pembayaran</TableHead>
+        <TableHead className="w-[110px]">Status</TableHead>
         <TableHead className="w-[100px] text-right">Aksi</TableHead>
       </TableRow>
     </TableHeader>

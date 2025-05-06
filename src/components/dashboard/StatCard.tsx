@@ -8,10 +8,9 @@ interface StatCardProps {
   icon: React.ReactNode;
   description?: string | number;
   type?: "default" | "success" | "warning" | "danger";
-  trend?: number;
 }
 
-export function StatCard({ title, value, icon, description, type = "default", trend }: StatCardProps) {
+export function StatCard({ title, value, icon, description, type = "default" }: StatCardProps) {
   const [animatedValue, setAnimatedValue] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -101,29 +100,6 @@ export function StatCard({ title, value, icon, description, type = "default", tr
         return "text-wedding-primary dark:text-wedding-secondary";
     }
   };
-  
-  // Get trend element - REMOVED PERCENTAGE DISPLAY
-  const getTrendElement = () => {
-    if (trend === undefined) return null;
-    
-    if (trend > 0) {
-      return (
-        <div className="flex items-center text-green-600 text-xs font-medium">
-          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-          </svg>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center text-red-600 text-xs font-medium">
-          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-          </svg>
-        </div>
-      );
-    }
-  };
 
   // Format the value if it's a large number to prevent overflow
   const formatValue = () => {
@@ -185,7 +161,6 @@ export function StatCard({ title, value, icon, description, type = "default", tr
               </p>
             )}
           </div>
-          {getTrendElement()}
         </div>
       </CardContent>
     </Card>

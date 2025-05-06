@@ -84,14 +84,21 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         {index + 1}
       </TableCell>
       
-      {/* Tgl Pesan */}
-      <TableCell className="font-mono text-xs py-2 px-2">
-        {formatDate(order.orderDate)}
-      </TableCell>
-      
-      {/* Tgl Acara */}
-      <TableCell className="font-mono text-xs py-2 px-2">
-        {formatDate(order.eventDate)}
+      {/* Combined Dates - Tgl Pesan & Tgl Acara */}
+      <TableCell className="py-2 px-2">
+        <div className="flex flex-col">
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">
+            Tanggal
+          </span>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[10px] font-mono text-gray-600 dark:text-gray-400">
+              Pesan: {formatDate(order.orderDate)}
+            </span>
+            <span className={`text-[10px] font-mono ${isPastDate(order.eventDate) ? "text-red-500" : "text-gray-600 dark:text-gray-400"}`}>
+              Acara: {formatDate(order.eventDate)}
+            </span>
+          </div>
+        </div>
       </TableCell>
       
       {/* Countdown */}

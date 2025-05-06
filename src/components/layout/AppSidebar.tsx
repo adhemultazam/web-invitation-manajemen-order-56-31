@@ -43,13 +43,15 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
   const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
   
   return (
-    <Sidebar className={cn(
-      "transition-all duration-300 ease-in-out fixed z-30 h-screen",
-      collapsed ? "w-[70px]" : "w-[260px]",
-      isDarkMode 
-        ? "bg-[#1E1E2F] border-r border-gray-700/30" 
-        : "bg-white border-r border-gray-200 shadow-sm"
-    )}>
+    <div 
+      className={cn(
+        "transition-all duration-300 ease-in-out fixed z-30 h-screen",
+        collapsed ? "w-[70px]" : "w-[260px]",
+        isDarkMode 
+          ? "bg-[#1E1E2F] border-r border-gray-700/30" 
+          : "bg-white border-r border-gray-200 shadow-sm"
+      )}
+    >
       <div className="absolute right-[-12px] top-6 z-10">
         <Button 
           size="sm" 
@@ -68,7 +70,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
           }
         </Button>
       </div>
-      <SidebarContent>
+      <div className="h-full flex flex-col">
         <div className={cn(
           "transition-all duration-300 ease-in-out",
           collapsed ? "px-3 py-6" : "px-6 py-6"
@@ -110,25 +112,25 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
           </div>
         </div>
         
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(
-            "text-xs font-bold px-6 mb-1",
-            isDarkMode ? "text-gray-400" : "text-gray-600",
-            collapsed && "sr-only"
-          )}>
-            Menu Utama
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <TooltipProvider delayDuration={100}>
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild>
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-2">
+            <TooltipProvider delayDuration={100}>
+              <div className={cn(
+                "text-xs font-bold px-4 mb-1",
+                isDarkMode ? "text-gray-400" : "text-gray-600",
+                collapsed && "sr-only"
+              )}>
+                Menu Utama
+              </div>
+              <div className="mt-2">
+                <ul className="flex flex-col gap-1">
+                  <li>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Link 
                           to="/" 
                           className={cn(
-                            "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
                             collapsed && "justify-center px-3",
                             location.pathname === "/" 
                               ? isDarkMode 
@@ -146,20 +148,18 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                           )} />
                           {!collapsed && <span className="text-sm">Dashboard</span>}
                         </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    {collapsed && <TooltipContent side="right" className="text-xs">Dashboard</TooltipContent>}
-                  </Tooltip>
-                </SidebarMenuItem>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right" className="text-xs">Dashboard</TooltipContent>}
+                    </Tooltip>
+                  </li>
 
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild>
+                  <li>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Link 
                           to={`/pesanan/${currentMonth}`}
                           className={cn(
-                            "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
                             collapsed && "justify-center px-3",
                             location.pathname.includes("/pesanan") || location.pathname.includes("/bulan") 
                               ? isDarkMode 
@@ -177,20 +177,18 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                           )} />
                           {!collapsed && <span className="text-sm">Catatan Pesanan</span>}
                         </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    {collapsed && <TooltipContent side="right" className="text-xs">Catatan Pesanan</TooltipContent>}
-                  </Tooltip>
-                </SidebarMenuItem>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right" className="text-xs">Catatan Pesanan</TooltipContent>}
+                    </Tooltip>
+                  </li>
 
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild>
+                  <li>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Link 
                           to="/invoices" 
                           className={cn(
-                            "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
                             collapsed && "justify-center px-3",
                             location.pathname === "/invoices" 
                               ? isDarkMode 
@@ -208,20 +206,18 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                           )} />
                           {!collapsed && <span className="text-sm">Invoice</span>}
                         </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    {collapsed && <TooltipContent side="right" className="text-xs">Invoice</TooltipContent>}
-                  </Tooltip>
-                </SidebarMenuItem>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right" className="text-xs">Invoice</TooltipContent>}
+                    </Tooltip>
+                  </li>
 
-                <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild>
+                  <li>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Link 
                           to="/pengaturan" 
                           className={cn(
-                            "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
                             collapsed && "justify-center px-3",
                             location.pathname === "/pengaturan" 
                               ? isDarkMode 
@@ -239,16 +235,16 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                           )} />
                           {!collapsed && <span className="text-sm">Pengaturan</span>}
                         </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    {collapsed && <TooltipContent side="right" className="text-xs">Pengaturan</TooltipContent>}
-                  </Tooltip>
-                </SidebarMenuItem>
-              </TooltipProvider>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right" className="text-xs">Pengaturan</TooltipContent>}
+                    </Tooltip>
+                  </li>
+                </ul>
+              </div>
+            </TooltipProvider>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

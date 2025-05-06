@@ -44,6 +44,8 @@ import {
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 import { EditOrderModal } from "@/components/orders/EditOrderModal";
 import { OrdersFilter } from "@/components/orders/OrdersFilter";
+import { OrderTable } from "@/components/orders/OrderTable";
+import OrderStats from "@/components/orders/OrderStats";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { useOrderResources } from "@/hooks/useOrderResources";
@@ -138,10 +140,31 @@ export default function MonthlyOrders() {
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   
+  // Track orders being updated for UI feedback
+  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  
   // Fetching data
   const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(currentYear, month ? getMonthTranslation(month) : undefined);
   const { vendors } = useVendorsData();
   const { workStatuses, addons, themes, packages } = useOrderResources();
+  
+  // Vendor color mapping
+  const vendorColors = useMemo(() => {
+    const colors: Record<string, string> = {};
+    vendors.forEach(vendor => {
+      colors[vendor.id] = vendor.color || "#6366f1";
+    });
+    return colors;
+  }, [vendors]);
+  
+  // Addon style mapping
+  const addonStyles = useMemo(() => {
+    const styles: Record<string, { color: string }> = {};
+    addons.forEach(addon => {
+      styles[addon.name] = { color: addon.color || "#6366f1" };
+    });
+    return styles;
+  }, [addons]);
   
   // Calculate countdown days for each order
   useEffect(() => {
@@ -245,6 +268,88 @@ export default function MonthlyOrders() {
     }
   };
   
+  // Field update handlers
+  const handleWorkStatusChange = (orderId: string, status: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    editOrder(orderId, { workStatus: status });
+    
+    // Remove visual indicator after a delay
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }, 500);
+  };
+  
+  const handleVendorChange = (orderId: string, vendor: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    editOrder(orderId, { vendor });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }, 500);
+  };
+  
+  const handleThemeChange = (orderId: string, theme: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    editOrder(orderId, { theme });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }, 500);
+  };
+  
+  const handlePackageChange = (orderId: string, pkg: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+    
+    // Find package price
+    const packageObj = packages.find(p => p.name === pkg);
+    if (packageObj) {
+      editOrder(orderId, { 
+        package: pkg,
+        paymentAmount: typeof packageObj.price === 'number' ? packageObj.price : 0
+      });
+    } else {
+      editOrder(orderId, { package: pkg });
+    }
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }, 500);
+  };
+  
+  const togglePaymentStatus = (order: Order) => {
+    setUpdatingOrders(prev => new Set(prev).add(order.id));
+    
+    const newStatus = order.paymentStatus === "Lunas" ? "Pending" : "Lunas";
+    editOrder(order.id, { paymentStatus: newStatus });
+    
+    setTimeout(() => {
+      setUpdatingOrders(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(order.id);
+        return newSet;
+      });
+    }, 500);
+  };
+  
   // Get vendor name by ID
   const getVendorName = (vendorId: string): string => {
     const vendor = vendors.find(v => v.id === vendorId);
@@ -265,6 +370,12 @@ export default function MonthlyOrders() {
         </Button>
       </div>
       
+      {/* Restored Order Stats */}
+      <OrderStats 
+        orders={filteredOrders} 
+        formatCurrency={formatCurrency} 
+      />
+      
       <OrdersFilter 
         vendors={vendors}
         workStatuses={workStatuses}
@@ -283,146 +394,28 @@ export default function MonthlyOrders() {
           <CardTitle>Daftar Pesanan</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table className="w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead>Pelanggan</TableHead>
-                  <TableHead>Tanggal</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Paket</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Pembayaran</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-10">
-                      <div className="flex justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-wedding-primary border-t-transparent"></div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            {order.clientUrl ? (
-                              <a 
-                                href={order.clientUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-medium text-sm text-blue-500 hover:underline"
-                              >
-                                {order.clientName}
-                              </a>
-                            ) : (
-                              <span className="font-medium text-sm">{order.clientName}</span>
-                            )}
-                            <span className="text-xs text-muted-foreground">{order.customerName}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-xs">{format(new Date(order.orderDate), "dd MMM yyyy")}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Clock className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-xs">{format(new Date(order.eventDate), "dd MMM yyyy")}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className={`text-xs ${order.countdownDays < 0 ? "text-red-500 font-semibold" : ""}`}>
-                              {order.countdownDays} hari lagi
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getVendorName(order.vendor)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-200 text-xs">
-                            <Package className="mr-1 h-3 w-3" />
-                            {order.package}
-                          </Badge>
-                          <Badge variant="outline" className="bg-purple-50 text-purple-700 hover:bg-purple-50 border-purple-200 text-xs">
-                            {order.theme}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={
-                          order.workStatus === 'Selesai' ? 'bg-green-100 text-green-800 hover:bg-green-100' :
-                          order.workStatus === 'Proses' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' :
-                          'bg-orange-100 text-orange-800 hover:bg-orange-100'
-                        }>
-                          {order.workStatus}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant={order.paymentStatus === "Lunas" ? "outline" : "default"} 
-                            className={order.paymentStatus === "Lunas" ? 
-                              "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" : ""}>
-                            {order.paymentStatus}
-                          </Badge>
-                          <span className="text-xs font-medium">{formatCurrency(order.paymentAmount)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleEditOrder(order)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => handleOpenDeleteDialog(order.id)}
-                            >
-                              <Trash className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                      {searchQuery || filterVendor !== "all" || filterWorkStatus !== "all" || filterPaymentStatus !== "all" ?
-                        "Tidak ada pesanan yang sesuai dengan filter" :
-                        "Belum ada pesanan untuk bulan ini"
-                      }
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <OrderTable 
+            orders={filteredOrders}
+            availableWorkStatuses={workStatuses}
+            availableVendors={vendors}
+            availableThemes={themes}
+            availablePackages={packages}
+            updatingOrders={updatingOrders}
+            vendorColors={vendorColors}
+            addonStyles={addonStyles}
+            handleViewOrderDetail={(order) => console.log("View order", order.id)}
+            handleOpenEditDialog={handleEditOrder}
+            handleDeleteOrder={(order) => handleOpenDeleteDialog(order.id)}
+            togglePaymentStatus={togglePaymentStatus}
+            handleWorkStatusChange={handleWorkStatusChange}
+            handleVendorChange={handleVendorChange}
+            handleThemeChange={handleThemeChange}
+            handlePackageChange={handlePackageChange}
+          />
         </CardContent>
       </Card>
       
-      {/* Add Order Modal - Remove countdown days input and auto-calculate */}
+      {/* Add Order Modal */}
       {isAddOrderModalOpen && (
         <AddOrderModal
           isOpen={isAddOrderModalOpen}
@@ -451,7 +444,7 @@ export default function MonthlyOrders() {
         />
       )}
       
-      {/* Edit Order Modal - Remove countdown days input and auto-calculate */}
+      {/* Edit Order Modal */}
       {isEditOrderModalOpen && currentOrder && (
         <EditOrderModal
           isOpen={isEditOrderModalOpen}

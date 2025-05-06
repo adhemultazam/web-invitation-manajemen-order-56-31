@@ -10,6 +10,7 @@ import VendorDropdown from "./VendorDropdown";
 import PackageSelect from "./PackageSelect";
 import OrderActions from "./OrderActions";
 import { WorkStatus, Package } from "@/types/types";
+import { Calendar, Clock } from "lucide-react";
 
 interface OrderTableRowProps {
   order: Order;
@@ -86,17 +87,12 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       
       {/* Combined Dates - Tgl Pesan & Tgl Acara */}
       <TableCell className="py-2 px-2">
-        <div className="flex flex-col">
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">
-            Tanggal
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[10px] font-mono text-gray-600 dark:text-gray-400">
-              Pesan: {formatDate(order.orderDate)}
-            </span>
-            <span className={`text-[10px] font-mono ${isPastDate(order.eventDate) ? "text-red-500" : "text-gray-600 dark:text-gray-400"}`}>
-              Acara: {formatDate(order.eventDate)}
-            </span>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1 text-[10px] font-mono text-gray-600 dark:text-gray-400">
+            <Calendar className="h-3 w-3" /> {formatDate(order.orderDate)}
+          </div>
+          <div className={`flex items-center gap-1 text-[10px] font-mono ${isPastDate(order.eventDate) ? "text-red-500" : "text-gray-600 dark:text-gray-400"}`}>
+            <Clock className="h-3 w-3" /> {formatDate(order.eventDate)}
           </div>
         </div>
       </TableCell>

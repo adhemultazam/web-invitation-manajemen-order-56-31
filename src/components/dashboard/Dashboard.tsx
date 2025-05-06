@@ -7,6 +7,7 @@ import { useOrdersData } from "@/hooks/useOrdersData";
 import { ChartData, MultiBarChartData } from "@/types/types";
 import { format, isAfter, parseISO } from "date-fns";
 import { useVendorsData } from "@/hooks/useVendorsData";
+import { useOrderResources } from "@/hooks/useOrderResources";
 import { Button } from "@/components/ui/button";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
 
@@ -18,6 +19,7 @@ export function Dashboard() {
   // Ambil data pesanan berdasarkan filter
   const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
+  const { workStatuses, addons, themes, packages } = useOrderResources();
   
   // Helper function to ensure amounts are processed safely
   const getNumericAmount = (amount: any): number => {
@@ -436,8 +438,10 @@ export function Dashboard() {
             handleCloseAddOrderModal();
           }}
           vendors={vendors.map(v => v.id)}
-          workStatuses={["Belum", "Proses", "Selesai"]} 
-          addons={[]}
+          workStatuses={workStatuses.map(ws => ws.name)}
+          addons={addons}
+          themes={themes}
+          packages={packages}
         />
       )}
     </div>

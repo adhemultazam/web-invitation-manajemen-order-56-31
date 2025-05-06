@@ -45,7 +45,8 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
   return (
     <div 
       className={cn(
-        "transition-all duration-300 ease-in-out fixed z-30 h-screen",
+        "transition-all duration-300 ease-in-out z-30 h-screen",
+        "md:fixed",  // Only fixed on desktop, not on mobile
         collapsed ? "w-[70px]" : "w-[260px]",
         isDarkMode 
           ? "bg-[#1E1E2F] border-r border-gray-700/30" 
@@ -58,6 +59,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
           variant="outline" 
           className={cn(
             "rounded-full h-6 w-6 p-0 flex items-center justify-center border",
+            "md:flex hidden", // Hide on mobile, only show on desktop
             isDarkMode 
               ? "bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-300" 
               : "bg-white hover:bg-gray-100"

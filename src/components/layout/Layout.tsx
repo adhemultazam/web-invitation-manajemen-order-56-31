@@ -24,8 +24,9 @@ export function Layout({ children }: LayoutProps) {
   return (
     <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
       <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
-        <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-        <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]")}>
+        {!isMobile && <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />}
+        <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", 
+          !isMobile ? (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]") : "")}>
           <div className="p-4 md:p-6 w-full">
             <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
               {isMobile && (

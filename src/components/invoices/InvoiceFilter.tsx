@@ -51,59 +51,61 @@ export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
   
   return (
     <div className="flex flex-col space-y-4 md:flex-row md:items-end md:space-y-0 md:space-x-4 bg-muted p-4 rounded-lg">
-      <div className="grid gap-2">
-        <Label htmlFor="vendor">Vendor</Label>
-        <Select
-          value={filters.vendor}
-          onValueChange={(value) => handleFilterChange('vendor', value)}
-        >
-          <SelectTrigger id="vendor" className="w-[180px]">
-            <SelectValue placeholder="Semua Vendor" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Vendor</SelectItem>
-            {vendors.map((vendor) => (
-              <SelectItem key={vendor.id} value={vendor.id}>
-                {vendor.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={filters.status}
-          onValueChange={(value) => handleFilterChange('status', value as 'Paid' | 'Unpaid' | 'All')}
-        >
-          <SelectTrigger id="status" className="w-[180px]">
-            <SelectValue placeholder="Semua Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">Semua Status</SelectItem>
-            <SelectItem value="Paid">Lunas</SelectItem>
-            <SelectItem value="Unpaid">Belum Lunas</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-0">
+        <div className="grid gap-2">
+          <Label htmlFor="vendor">Vendor</Label>
+          <Select
+            value={filters.vendor}
+            onValueChange={(value) => handleFilterChange('vendor', value)}
+          >
+            <SelectTrigger id="vendor" className="w-full md:w-[180px]">
+              <SelectValue placeholder="Semua Vendor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Vendor</SelectItem>
+              {vendors.map((vendor) => (
+                <SelectItem key={vendor.id} value={vendor.id}>
+                  {vendor.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="grid gap-2">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => handleFilterChange('status', value as 'Paid' | 'Unpaid' | 'All')}
+          >
+            <SelectTrigger id="status" className="w-full md:w-[180px]">
+              <SelectValue placeholder="Semua Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">Semua Status</SelectItem>
+              <SelectItem value="Paid">Lunas</SelectItem>
+              <SelectItem value="Unpaid">Belum Lunas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       <div className="flex space-x-2">
         <Button 
           variant={filters.sortBy === 'dueDate' ? "default" : "outline"} 
-          className="h-10"
+          className="h-10 w-full md:w-auto"
           onClick={() => setSortBy('dueDate')}
         >
           <Calendar className="mr-2 h-4 w-4" />
-          Tanggal
+          <span className="sm:inline">Tanggal</span>
         </Button>
         <Button 
           variant={filters.sortBy === 'amount' ? "default" : "outline"}
-          className="h-10"
+          className="h-10 w-full md:w-auto"
           onClick={() => setSortBy('amount')}
         >
           <DollarSign className="mr-2 h-4 w-4" />
-          Jumlah
+          <span className="sm:inline">Jumlah</span>
         </Button>
         <Button 
           variant="outline" 

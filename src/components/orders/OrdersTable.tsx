@@ -210,7 +210,7 @@ export function OrdersTable({
                   <Badge variant="outline" className={`${getCountdownClass(order.id)} text-xs`}>
                     {order.eventDate ? (
                       <div className="flex items-center">
-                        <span className="text-[10px] md:text-xs">{orderStatuses[order.id] || "..."}</span>
+                        <span className="text-[9px] md:text-xs">{orderStatuses[order.id] || "..."}</span>
                       </div>
                     ) : (
                       "-"

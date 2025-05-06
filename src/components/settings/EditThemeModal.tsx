@@ -42,8 +42,8 @@ export function EditThemeModal({
   useEffect(() => {
     setName(theme.name);
     setThumbnail(theme.thumbnail || "");
-    setCategory(theme.category || "");
-  }, [theme]);
+    setCategory(theme.category || (existingCategories.length > 0 ? existingCategories[0] : ""));
+  }, [theme, existingCategories]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

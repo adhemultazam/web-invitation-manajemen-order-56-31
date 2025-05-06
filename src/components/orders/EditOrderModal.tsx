@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,6 @@ export function EditOrderModal({
   const [addons, setAddons] = useState<Addon[]>(defaultAddons);
   const [themes, setThemes] = useState<Theme[]>(providedThemes || []);
   const [vendorList, setVendorList] = useState<Vendor[]>([]);
-  const [themeOpen, setThemeOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(order.package || "");
   
   // Initialize form data with order values
@@ -164,28 +162,30 @@ export function EditOrderModal({
     onEditOrder(updatedOrder);
   };
 
-  // Get filtered themes based on selected package
-  const getFilteredThemes = (): Theme[] => {
-    if (!selectedPackage) return themes;
-    
+  // Get current package's category for theme filtering
+  const getCurrentPackageCategory = (): string | undefined => {
+    if (!selectedPackage) return undefined;
     const packageObj = packages.find(pkg => pkg.name === selectedPackage);
-    if (!packageObj || !packageObj.themes || packageObj.themes.length === 0) {
-      return themes;
-    }
-    
-    return themes.filter(theme => packageObj.themes?.includes(theme.name));
+    return packageObj?.name;
   };
 
   const handlePackageChange = (packageName: string) => {
     setSelectedPackage(packageName);
     handleInputChange('package', packageName);
     
-    // Reset theme if current theme is not available for new package
-    const filteredThemes = getFilteredThemes();
-    const themeIsAvailable = filteredThemes.some(theme => theme.name === formData.theme);
+    // Check if current theme is appropriate for new package
+    const packageCategory = packages.find(pkg => pkg.name === packageName)?.name;
+    const currentTheme = formData.theme;
+    const isThemeCompatible = themes.some(theme => 
+      theme.name === currentTheme && (!packageCategory || theme.category === packageCategory)
+    );
     
-    if (!themeIsAvailable && filteredThemes.length > 0) {
-      handleInputChange('theme', filteredThemes[0].name);
+    // If current theme is not compatible with new package, select the first compatible theme
+    if (!isThemeCompatible) {
+      const compatibleThemes = themes.filter(theme => !packageCategory || theme.category === packageCategory);
+      if (compatibleThemes.length > 0) {
+        handleInputChange('theme', compatibleThemes[0].name);
+      }
     }
   };
 
@@ -326,7 +326,7 @@ export function EditOrderModal({
                   <Label htmlFor="package">Paket</Label>
                   <Select 
                     value={selectedPackage} 
-                    onValueChange={(value) => handlePackageChange(value)}
+                    onValueChange={handlePackageChange}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih paket" />
@@ -347,25 +347,12 @@ export function EditOrderModal({
                 
                 <div className="space-y-2">
                   <Label htmlFor="theme">Tema</Label>
-                  <Select 
-                    value={formData.theme} 
-                    onValueChange={(value) => handleInputChange('theme', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih tema" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getFilteredThemes().length > 0 ? (
-                        getFilteredThemes().map((theme) => (
-                          <SelectItem key={theme.id} value={theme.name}>
-                            {theme.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="elegant">Tema Elegant</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <ThemeSelect
+                    value={formData.theme}
+                    themes={themes}
+                    onChange={(value) => handleInputChange('theme', value)}
+                    packageCategory={getCurrentPackageCategory()}
+                  />
                 </div>
                 
                 {/* Addons Section */}

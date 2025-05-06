@@ -44,7 +44,7 @@ interface FormDataState {
   package: string;
   theme: string;
   paymentStatus: "Lunas" | "Pending";
-  paymentAmount: number | string; // Updated to match Order type
+  paymentAmount: number | string;
   workStatus: string;
   postPermission: boolean;
   notes?: string;
@@ -133,6 +133,13 @@ export function EditOrderDialog({
         
         // Update the package category
         updatePackageCategory(value);
+        
+        // If theme selection needs to be updated based on new package
+        const compatibleThemes = themes.filter(theme => theme.category === selectedPackage.name);
+        if (compatibleThemes.length > 0 && 
+            (!prev.theme || !compatibleThemes.some(t => t.name === prev.theme))) {
+          setFormData(prev => ({ ...prev, theme: compatibleThemes[0].name }));
+        }
       }
     }
   };

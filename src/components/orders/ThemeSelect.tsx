@@ -18,7 +18,7 @@ interface ThemeSelectProps {
   onChange: (value: string) => void;
   isDisabled?: boolean;
   packageCategory?: string;
-  compact?: boolean; // Added compact prop
+  compact?: boolean; // Added compact prop for smaller size option
 }
 
 const ThemeSelect: React.FC<ThemeSelectProps> = ({
@@ -27,7 +27,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
   onChange,
   isDisabled = false,
   packageCategory,
-  compact = false // Default to false
+  compact = false
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);

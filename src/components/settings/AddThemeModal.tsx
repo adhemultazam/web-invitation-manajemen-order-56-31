@@ -33,18 +33,21 @@ export function AddThemeModal({
 }: AddThemeModalProps) {
   const [name, setName] = useState("");
   const [thumbnail, setThumbnail] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(existingCategories.length > 0 ? existingCategories[0] : "");
 
   // Reset form when modal opens or closes
   useEffect(() => {
     if (isOpen) {
-      // Keep values if re-opening
+      // Initialize with first category if available
+      if (existingCategories.length > 0 && !category) {
+        setCategory(existingCategories[0]);
+      }
     } else {
       setName("");
       setThumbnail("");
-      setCategory("");
+      // Don't reset category - keep the last selected one for convenience
     }
-  }, [isOpen]);
+  }, [isOpen, existingCategories, category]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,11 +109,17 @@ export function AddThemeModal({
                 <SelectValue placeholder="Pilih kategori paket" />
               </SelectTrigger>
               <SelectContent>
-                {existingCategories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                {existingCategories.length > 0 ? (
+                  existingCategories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>
+                    Tidak ada paket tersedia
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">

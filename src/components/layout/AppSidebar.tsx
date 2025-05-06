@@ -64,17 +64,17 @@ export function AppSidebar() {
         </div>
         
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-500 font-medium text-xs px-6 mb-1">Menu Utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-600 font-semibold text-xs px-6 mb-1">Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/" 
-                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-all ${
                       location.pathname === "/" 
-                        ? "bg-wedding-muted text-wedding-accent font-medium" 
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : "text-gray-700 font-medium hover:bg-gray-50 hover:scale-[1.02]"
                     }`}
                   >
                     <LayoutDashboard size={18} className={location.pathname === "/" ? "text-wedding-accent" : ""} />
@@ -87,10 +87,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/invoices" 
-                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-all ${
                       location.pathname === "/invoices" 
-                        ? "bg-wedding-muted text-wedding-accent font-medium" 
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : "text-gray-700 font-medium hover:bg-gray-50 hover:scale-[1.02]"
                     }`}
                   >
                     <FileText size={18} className={location.pathname === "/invoices" ? "text-wedding-accent" : ""} />
@@ -103,10 +103,10 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link 
                     to="/pengaturan" 
-                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-6 py-3 rounded-lg transition-all ${
                       location.pathname === "/pengaturan" 
-                        ? "bg-wedding-muted text-wedding-accent font-medium" 
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : "text-gray-700 font-medium hover:bg-gray-50 hover:scale-[1.02]"
                     }`}
                   >
                     <Settings size={18} className={location.pathname === "/pengaturan" ? "text-wedding-accent" : ""} />
@@ -119,7 +119,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className="text-gray-500 font-medium text-xs px-6 mb-1">Pesanan Bulanan</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-600 font-semibold text-xs px-6 mb-1">Pesanan Bulanan</SidebarGroupLabel>
           <SidebarGroupContent className="max-h-[calc(100vh-350px)] overflow-y-auto pr-1 custom-scrollbar">
             <SidebarMenu>
               {months.map((month) => (
@@ -127,10 +127,10 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <Link 
                       to={month.path} 
-                      className={`flex items-center gap-3 px-6 py-2.5 rounded-lg transition-colors ${
+                      className={`flex items-center gap-3 px-6 py-2.5 rounded-lg transition-all ${
                         location.pathname === month.path 
-                          ? "bg-wedding-muted text-wedding-accent font-medium" 
-                          : "text-gray-600 hover:bg-gray-50"
+                          ? "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                          : "text-gray-700 font-medium hover:bg-gray-50 hover:scale-[1.02]"
                       }`}
                     >
                       <CalendarDays size={16} className={location.pathname === month.path ? "text-wedding-accent" : ""} />

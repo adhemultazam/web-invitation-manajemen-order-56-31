@@ -18,9 +18,9 @@ export function RecentOrders({ className }: RecentOrdersProps) {
     .slice(0, 5);
 
   return (
-    <Card className={`shadow-sm ${className}`}>
+    <Card className={`shadow-card rounded-xl ${className}`}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-gray-800">Pesanan Terbaru</CardTitle>
+        <CardTitle className="text-lg font-bold text-gray-800 font-poppins">Pesanan Terbaru</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <CompactOrdersTable

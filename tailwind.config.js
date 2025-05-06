@@ -70,7 +70,7 @@ export default {
       },
       boxShadow: {
         'soft': '0 2px 10px rgba(0, 0, 0, 0.08)',
-        'card': '0 4px 15px rgba(0, 0, 0, 0.05)',
+        'card': '0 8px 20px rgba(0, 0, 0, 0.06)',
       },
       keyframes: {
         "accordion-down": {
@@ -81,10 +81,15 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "hover-scale": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(1.03)" }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "hover-scale": "hover-scale 0.3s ease-out forwards",
       },
     },
   },

@@ -120,20 +120,20 @@ export function StatCard({ title, value, icon, description, type = "default", tr
 
   return (
     <Card className={`overflow-hidden border shadow-card ${getBackgroundClass()}`}>
-      <CardContent className="p-4">
+      <CardContent className="p-5">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">{title}</h3>
-          <div className={`rounded-full w-8 h-8 flex items-center justify-center ${getIconColorClass()}`}>
+          <h3 className="text-xs font-semibold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
+          <div className={`rounded-full w-9 h-9 flex items-center justify-center shadow-sm ${getIconColorClass()}`}>
             {icon}
           </div>
         </div>
         <div className="flex items-end justify-between">
           <div>
-            <div className={`text-xl lg:text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap ${getTextColorClass()}`}>
+            <div className={`text-xl lg:text-2xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
               {formatValue()}
             </div>
             {description && (
-              <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+              <p className="text-xs mt-1 text-gray-500 dark:text-gray-400 font-inter">
                 {formatDescription()}
               </p>
             )}

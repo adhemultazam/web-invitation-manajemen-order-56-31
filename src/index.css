@@ -35,7 +35,7 @@
     --input: 240 5.9% 90%;
     --ring: 252 94% 76%;
  
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
  
   .dark {
@@ -77,7 +77,7 @@
     @apply bg-background text-foreground font-inter;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-poppins font-medium;
+    @apply font-poppins font-semibold;
   }
 }
 
@@ -88,7 +88,7 @@
   }
   
   .sidebar-menu-active {
-    @apply bg-white/80 text-wedding-primary font-medium;
+    @apply bg-white/80 text-wedding-primary font-bold;
   }
   
   .sidebar-menu-inactive {
@@ -145,5 +145,15 @@
   
   .compact-badge {
     @apply inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full;
+  }
+  
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px];
+  }
+  
+  /* Navigation hover effects */
+  .nav-item-hover {
+    @apply transition-all duration-200 hover:bg-gradient-to-r from-wedding-light to-white;
   }
 }

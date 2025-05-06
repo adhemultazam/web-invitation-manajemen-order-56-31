@@ -1,3 +1,4 @@
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +9,7 @@ import { UserMenu } from "./UserMenu";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +18,8 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const isMobile = useIsMobile();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   return (
     <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
@@ -142,14 +146,16 @@ export function Layout({ children }: LayoutProps) {
         }
         
         /* Fixed mobile sidebar background */
-        [data-mobile="true"].bg-sidebar {
-          background-color: var(--sidebar-background, #fff) !important;
+        [data-mobile="true"] .lov-sidebar {
+          background-color: ${isDarkMode ? '#1E1E2F' : '#fff'} !important;
         }
-        .dark [data-mobile="true"].bg-sidebar {
-          background-color: var(--sidebar-background, #1E1E2F) !important;
+
+        .dark [data-mobile="true"] .lov-sidebar {
+          background-color: #1E1E2F !important;
         }
         `}
       </style>
     </SidebarProvider>
   );
 }
+

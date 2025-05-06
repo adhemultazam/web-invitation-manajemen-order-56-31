@@ -142,9 +142,8 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                             location.pathname === "/" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
-                            collapsed && "ml-0"
                           )} />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">Dashboard</span>}
+                          {!collapsed && <span className="text-sm">Dashboard</span>}
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>
@@ -174,9 +173,8 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                             location.pathname.includes("/pesanan") || location.pathname.includes("/bulan")
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
-                            collapsed && "ml-0"
                           )} />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">Catatan Pesanan</span>}
+                          {!collapsed && <span className="text-sm">Catatan Pesanan</span>}
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>
@@ -206,9 +204,8 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                             location.pathname === "/invoices" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
-                            collapsed && "ml-0"
                           )} />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">Invoice</span>}
+                          {!collapsed && <span className="text-sm">Invoice</span>}
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>
@@ -238,9 +235,8 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                             location.pathname === "/pengaturan" 
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
-                            collapsed && "ml-0"
                           )} />
-                          {!collapsed && <span className="text-sm transition-opacity duration-300">Pengaturan</span>}
+                          {!collapsed && <span className="text-sm">Pengaturan</span>}
                         </Link>
                       </SidebarMenuButton>
                     </TooltipTrigger>
@@ -255,3 +251,4 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
     </Sidebar>
   );
 }
+

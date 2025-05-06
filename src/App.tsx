@@ -76,7 +76,16 @@ const App = () => {
                   </ProtectedRoute>
                 } />
                 
-                {/* New consolidated route */}
+                {/* Route for all months */}
+                <Route path="/pesanan" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MonthlyOrders />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Route for specific month */}
                 <Route path="/pesanan/:month" element={
                   <ProtectedRoute>
                     <Layout>
@@ -88,7 +97,7 @@ const App = () => {
                 {/* Redirect old routes to new format */}
                 <Route path="/bulan/:month" element={
                   <ProtectedRoute>
-                    <Navigate to={`/pesanan/:month`} replace />
+                    <Navigate to="/pesanan/:month" replace />
                   </ProtectedRoute>
                 } />
                 

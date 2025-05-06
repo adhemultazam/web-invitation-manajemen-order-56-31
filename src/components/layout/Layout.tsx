@@ -102,6 +102,37 @@ export function Layout({ children }: LayoutProps) {
           transform: scale(1.05);
           box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
+
+        /* Mobile navbar styling */
+        .mobile-navbar {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: space-around;
+          background-color: white;
+          border-top: 1px solid #e5e7eb;
+          padding: 0.5rem 0;
+        }
+        
+        .mobile-navbar-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0.5rem;
+          flex: 1;
+        }
+        
+        .mobile-navbar-icon {
+          width: 1.25rem;
+          height: 1.25rem;
+          margin-bottom: 0.25rem;
+        }
+        
+        .mobile-navbar-label {
+          font-size: 0.625rem;
+        }
         `}
       </style>
     </SidebarProvider>

@@ -32,7 +32,7 @@ export function MobileNavbar() {
         className={`mobile-navbar-item ${isActive("/pesanan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
         <CalendarDays className="mobile-navbar-icon" />
-        <span className="mobile-navbar-label">Catatan</span>
+        <span className="mobile-navbar-label">Catatan Pesanan</span>
       </Link>
       
       <Link 

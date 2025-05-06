@@ -331,7 +331,6 @@ export function Dashboard() {
               value={stats.totalOrders}
               icon={<ShoppingCart className="h-3 w-3 text-white" />}
               description="Keseluruhan pesanan"
-              trend={2.5}
             />
             <StatCard
               title="Total Omset"
@@ -339,7 +338,6 @@ export function Dashboard() {
               icon={<DollarSign className="h-3 w-3 text-white" />}
               description={`${stats.totalOrders} pesanan`}
               type="warning"
-              trend={3.2}
             />
             <StatCard
               title="Sudah Lunas"
@@ -347,7 +345,6 @@ export function Dashboard() {
               icon={<Check className="h-3 w-3 text-white" />}
               description={stats.paidRevenue}
               type="success"
-              trend={1.8}
             />
             <StatCard
               title="Belum Lunas"
@@ -355,7 +352,6 @@ export function Dashboard() {
               icon={<X className="h-3 w-3 text-white" />}
               description={stats.pendingRevenue}
               type="danger"
-              trend={-0.5}
             />
           </div>
 

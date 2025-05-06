@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Order } from "@/types/types";
 import { format, formatDistance, parseISO } from "date-fns";
@@ -134,7 +135,8 @@ export function OrdersTable({
     }
   };
   
-  const handleEdit = (editedOrder: Order) => {
+  // Changed the function name from handleEdit to match what EditOrderModal expects
+  const handleEditOrder = (editedOrder: Order) => {
     onEditOrder(editedOrder);
     closeEditModal();
   };
@@ -261,7 +263,7 @@ export function OrdersTable({
         <EditOrderModal
           isOpen={isEditModalOpen}
           onClose={closeEditModal}
-          onSave={handleEdit}
+          onEditOrder={handleEditOrder}  // Changed from onSave to onEditOrder to match props
           order={orderToEdit}
           vendors={vendors}
           workStatuses={workStatuses}

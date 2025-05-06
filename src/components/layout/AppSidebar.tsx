@@ -28,21 +28,6 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
-const months = [
-  { name: "Januari", path: "/bulan/januari" },
-  { name: "Februari", path: "/bulan/februari" },
-  { name: "Maret", path: "/bulan/maret" },
-  { name: "April", path: "/bulan/april" },
-  { name: "Mei", path: "/bulan/mei" },
-  { name: "Juni", path: "/bulan/juni" },
-  { name: "Juli", path: "/bulan/juli" },
-  { name: "Agustus", path: "/bulan/agustus" },
-  { name: "September", path: "/bulan/september" },
-  { name: "Oktober", path: "/bulan/oktober" },
-  { name: "November", path: "/bulan/november" },
-  { name: "Desember", path: "/bulan/desember" },
-];
-
 interface AppSidebarProps {
   collapsed?: boolean;
   onCollapseToggle?: () => void;
@@ -53,6 +38,9 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
   const { user } = useAuth();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+  
+  // Get current month name in lowercase for the initial pesanan link
+  const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
   
   return (
     <Sidebar className={cn(
@@ -169,6 +157,38 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                     <TooltipTrigger asChild>
                       <SidebarMenuButton asChild>
                         <Link 
+                          to={`/pesanan/${currentMonth}`}
+                          className={cn(
+                            "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
+                            collapsed && "justify-center px-3",
+                            location.pathname.includes("/pesanan") || location.pathname.includes("/bulan") 
+                              ? isDarkMode 
+                                ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                                : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                              : isDarkMode
+                                ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                                : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                          )}
+                        >
+                          <CalendarDays size={collapsed ? 24 : 18} className={cn(
+                            location.pathname.includes("/pesanan") || location.pathname.includes("/bulan")
+                              ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                              : "",
+                            collapsed && "ml-0"
+                          )} />
+                          {!collapsed && <span className="text-sm transition-opacity duration-300">Pesanan Bulanan</span>}
+                        </Link>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    {collapsed && <TooltipContent side="right" className="text-xs">Pesanan Bulanan</TooltipContent>}
+                  </Tooltip>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton asChild>
+                        <Link 
                           to="/invoices" 
                           className={cn(
                             "flex items-center gap-3 px-6 py-3 rounded-lg transition-all duration-200",
@@ -231,117 +251,6 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {!collapsed && (
-          <SidebarGroup className="mt-4">
-            <SidebarGroupLabel className={cn(
-              "text-xs font-bold px-6 mb-1 transition-opacity duration-300",
-              isDarkMode ? "text-gray-400" : "text-gray-600"
-            )}>
-              Pesanan Bulanan
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="max-h-[calc(100vh-350px)] overflow-y-auto pr-1 custom-scrollbar">
-              <SidebarMenu>
-                <TooltipProvider delayDuration={100}>
-                  {months.map((month) => (
-                    <SidebarMenuItem key={month.name}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild>
-                            <Link 
-                              to={month.path} 
-                              className={cn(
-                                "flex items-center gap-3 px-6 py-2.5 rounded-lg transition-all duration-200",
-                                location.pathname === month.path 
-                                  ? isDarkMode 
-                                    ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
-                                    : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
-                                  : isDarkMode
-                                    ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
-                                    : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
-                              )}
-                            >
-                              <CalendarDays size={16} className={cn(
-                                location.pathname === month.path 
-                                  ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
-                                  : ""
-                              )} />
-                              <span className="text-sm transition-opacity duration-300">{month.name}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                      </Tooltip>
-                    </SidebarMenuItem>
-                  ))}
-                </TooltipProvider>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-        
-        {collapsed && (
-          <SidebarGroup className="mt-4">
-            <SidebarGroupLabel className="sr-only">
-              Pesanan Bulanan
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="pr-1">
-              <HoverCard>
-                <HoverCardTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "w-full flex items-center justify-center py-3 rounded-lg transition-all duration-200 mb-1",
-                      isDarkMode
-                        ? "text-gray-200 hover:bg-gray-800/50 hover:text-indigo-300"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-wedding-accent"
-                    )}
-                  >
-                    <CalendarDays size={24} />
-                  </Button>
-                </HoverCardTrigger>
-                <HoverCardContent 
-                  side="right" 
-                  align="start" 
-                  className={cn(
-                    "p-3 w-48 z-50",
-                    isDarkMode 
-                      ? "bg-gray-800 border-gray-700" 
-                      : "bg-white border-gray-200"
-                  )}
-                >
-                  <div className="space-y-1 max-h-[400px] overflow-y-auto">
-                    <p className={cn(
-                      "text-xs font-bold mb-2", 
-                      isDarkMode ? "text-gray-400" : "text-gray-600"
-                    )}>
-                      Pesanan Bulanan
-                    </p>
-                    {months.map((month) => (
-                      <Link
-                        key={month.name}
-                        to={month.path}
-                        className={cn(
-                          "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
-                          location.pathname === month.path 
-                            ? isDarkMode 
-                              ? "bg-indigo-900/40 text-indigo-300" 
-                              : "bg-wedding-muted text-wedding-primary" 
-                            : isDarkMode
-                              ? "text-gray-200 hover:bg-gray-700/50"
-                              : "text-gray-700 hover:bg-gray-100"
-                        )}
-                      >
-                        <CalendarDays size={14} />
-                        {month.name}
-                      </Link>
-                    ))}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
     </Sidebar>
   );

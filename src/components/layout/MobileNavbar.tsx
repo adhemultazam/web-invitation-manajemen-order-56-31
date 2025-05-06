@@ -1,15 +1,18 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Calendar, Settings, FileText } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Settings, FileText } from "lucide-react";
 
 export function MobileNavbar() {
   const location = useLocation();
   const path = location.pathname;
   
+  // Get current month name in lowercase for the pesanan link
+  const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
+  
   const isActive = (route: string) => {
     if (route === "/" && path === "/") return true;
     if (route === "/pengaturan" && path === "/pengaturan") return true;
-    if (route === "/bulan" && path.includes("/bulan")) return true;
+    if (route === "/pesanan" && (path.includes("/pesanan") || path.includes("/bulan"))) return true;
     if (route === "/invoices" && path === "/invoices") return true;
     return false;
   };
@@ -25,10 +28,10 @@ export function MobileNavbar() {
       </Link>
       
       <Link 
-        to="/bulan/januari" 
-        className={`mobile-navbar-item ${isActive("/bulan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
+        to={`/pesanan/${currentMonth}`}
+        className={`mobile-navbar-item ${isActive("/pesanan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
       >
-        <Calendar className="mobile-navbar-icon" />
+        <CalendarDays className="mobile-navbar-icon" />
         <span className="mobile-navbar-label">Pesanan</span>
       </Link>
       

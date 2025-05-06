@@ -23,11 +23,11 @@ export function MobileNavbar() {
         to="/" 
         className={`flex flex-col items-center justify-center w-full h-full ${
           isActive("/") 
-            ? "text-primary" 
+            ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
             : "text-muted-foreground"
-        }`}
+        } relative`}
       >
-        <LayoutDashboard className="h-4 w-4" />
+        <LayoutDashboard className="h-5 w-5" />
         <span className="text-xs mt-1">Dashboard</span>
       </Link>
       
@@ -35,11 +35,11 @@ export function MobileNavbar() {
         to={`/pesanan/${currentMonth}`}
         className={`flex flex-col items-center justify-center w-full h-full ${
           isActive("/pesanan") 
-            ? "text-primary" 
+            ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
             : "text-muted-foreground"
-        }`}
+        } relative`}
       >
-        <CalendarDays className="h-4 w-4" />
+        <CalendarDays className="h-5 w-5" />
         <span className="text-xs mt-1">Pesanan</span>
       </Link>
       
@@ -47,11 +47,11 @@ export function MobileNavbar() {
         to="/invoices" 
         className={`flex flex-col items-center justify-center w-full h-full ${
           isActive("/invoices") 
-            ? "text-primary" 
+            ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
             : "text-muted-foreground"
-        }`}
+        } relative`}
       >
-        <FileText className="h-4 w-4" />
+        <FileText className="h-5 w-5" />
         <span className="text-xs mt-1">Invoice</span>
       </Link>
       
@@ -59,11 +59,11 @@ export function MobileNavbar() {
         to="/pengaturan" 
         className={`flex flex-col items-center justify-center w-full h-full ${
           isActive("/pengaturan") 
-            ? "text-primary" 
+            ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
             : "text-muted-foreground"
-        }`}
+        } relative`}
       >
-        <Settings className="h-4 w-4" />
+        <Settings className="h-5 w-5" />
         <span className="text-xs mt-1">Setting</span>
       </Link>
     </div>

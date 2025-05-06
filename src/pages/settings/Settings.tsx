@@ -11,18 +11,20 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useLocalStorage<string>("settingsActiveTab", "resources");
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-2">Pengaturan</h1>
-      <p className="text-muted-foreground mb-6">
+    <div className="px-1 sm:px-0">
+      <h1 className="text-xl sm:text-2xl font-bold mb-2">Pengaturan</h1>
+      <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
         Konfigurasikan pengaturan aplikasi sesuai kebutuhan Anda
       </p>
 
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="resources">Data Master</TabsTrigger>
-          <TabsTrigger value="account">Akun</TabsTrigger>
-          <TabsTrigger value="invoice">Invoice</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="mb-4 w-auto h-9 sm:h-10 px-1">
+            <TabsTrigger value="resources" className="text-sm px-3">Data Master</TabsTrigger>
+            <TabsTrigger value="account" className="text-sm px-3">Akun</TabsTrigger>
+            <TabsTrigger value="invoice" className="text-sm px-3">Invoice</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="resources">
           <OrderResourcesSettings />

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash, Save } from "lucide-react";
+import { Plus, Trash, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Package } from "@/types/types";
 
@@ -10,6 +10,7 @@ export function PackageSettings() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [newPackage, setNewPackage] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const isMounted = useRef(true);
   
   // Load packages from localStorage on component mount
@@ -80,7 +81,17 @@ export function PackageSettings() {
     toast.success("Paket berhasil dihapus");
   };
 
-  // Handle package name change
+  // Start editing a package
+  const startEditing = (id: string) => {
+    setEditingId(id);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
+  // Handle package name or price change
   const handlePackageChange = (id: string, field: string, value: any) => {
     setPackages(
       packages.map(pkg => {
@@ -95,84 +106,100 @@ export function PackageSettings() {
     );
   };
 
-  // Format price to IDR
-  const formatPrice = (price: number | string | undefined) => {
-    if (price === undefined) return "0";
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    return numPrice.toLocaleString('id-ID');
-  };
-
   // Save changes to a package
   const handleSavePackage = (id: string) => {
     const packageToSave = packages.find(pkg => pkg.id === id);
     if (packageToSave && packageToSave.name.trim()) {
+      setEditingId(null);
       toast.success(`Paket ${packageToSave.name} berhasil disimpan`);
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <Input
-            placeholder="Nama paket baru"
-            value={newPackage}
-            onChange={e => setNewPackage(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && handleAddPackage()}
-          />
-        </div>
-        <div className="space-y-2">
-          <Input
-            placeholder="Harga paket (Rp)"
-            value={newPrice}
-            onChange={e => setNewPrice(e.target.value.replace(/[^0-9]/g, ''))}
-            onKeyDown={e => e.key === "Enter" && handleAddPackage()}
-            type="text"
-          />
-        </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          placeholder="Nama paket baru"
+          value={newPackage}
+          onChange={e => setNewPackage(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleAddPackage()}
+          className="flex-1"
+        />
+        <Input
+          placeholder="Harga paket (Rp)"
+          value={newPrice}
+          onChange={e => setNewPrice(e.target.value.replace(/[^0-9]/g, ''))}
+          onKeyDown={e => e.key === "Enter" && handleAddPackage()}
+          type="text"
+          className="flex-1"
+        />
+        <Button onClick={handleAddPackage} className="whitespace-nowrap">
+          <Plus className="mr-1 h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Tambah</span>
+        </Button>
       </div>
 
-      <Button onClick={handleAddPackage} className="w-full">
-        <Plus className="mr-1 h-4 w-4" />
-        Tambah Paket
-      </Button>
-
-      <div className="space-y-2">
+      <div className="space-y-2 mt-4">
         {packages.map(pkg => (
-          <div key={pkg.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
-            <div className="col-span-2">
-              <Input
-                value={pkg.name}
-                placeholder="Nama paket"
-                onChange={e => handlePackageChange(pkg.id, 'name', e.target.value)}
-              />
-            </div>
-            <div className="col-span-1">
-              <Input
-                value={pkg.price === 0 ? '' : String(pkg.price)}
-                placeholder="Harga (Rp)"
-                onChange={e => handlePackageChange(pkg.id, 'price', e.target.value.replace(/[^0-9]/g, ''))}
-                type="text"
-              />
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="col-span-1"
-              onClick={() => handleSavePackage(pkg.id)}
-            >
-              <Save className="mr-1 h-4 w-4" />
-              Simpan
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="col-span-1"
-              onClick={() => handleDeletePackage(pkg.id)}
-            >
-              <Trash className="mr-1 h-4 w-4" />
-              Hapus
-            </Button>
+          <div key={pkg.id} className="border rounded-md p-2">
+            {editingId === pkg.id ? (
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_auto] gap-2 items-center">
+                <Input
+                  value={pkg.name}
+                  placeholder="Nama paket"
+                  onChange={e => handlePackageChange(pkg.id, 'name', e.target.value)}
+                  autoFocus
+                />
+                <Input
+                  value={pkg.price === 0 ? '' : String(pkg.price)}
+                  placeholder="Harga (Rp)"
+                  onChange={e => handlePackageChange(pkg.id, 'price', e.target.value.replace(/[^0-9]/g, ''))}
+                  type="text"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSavePackage(pkg.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEditing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-medium">{pkg.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Rp {pkg.price.toLocaleString('id-ID')}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => startEditing(pkg.id)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleDeletePackage(pkg.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

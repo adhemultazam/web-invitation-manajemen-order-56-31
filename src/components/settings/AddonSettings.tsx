@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash, Save } from "lucide-react";
+import { Plus, Trash, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Addon } from "@/types/types";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ export function AddonSettings() {
   const [addons, setAddons] = useState<Addon[]>([]);
   const [newAddonName, setNewAddonName] = useState("");
   const [newAddonColor, setNewAddonColor] = useState("#9A84FF"); // Default color
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Load addons from localStorage on component mount
   useEffect(() => {
@@ -70,6 +71,16 @@ export function AddonSettings() {
     toast.success("Addon berhasil dihapus");
   };
 
+  // Start editing
+  const startEditing = (id: string) => {
+    setEditingId(id);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
   // Handle addon name change
   const handleAddonNameChange = (id: string, newName: string) => {
     setAddons(
@@ -92,73 +103,100 @@ export function AddonSettings() {
   const handleSaveAddon = (id: string) => {
     const addonToSave = addons.find(addon => addon.id === id);
     if (addonToSave && addonToSave.name.trim()) {
+      setEditingId(null);
       toast.success(`Addon ${addonToSave.name} berhasil disimpan`);
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <Label htmlFor="new-addon-name">Nama Addon</Label>
-            <Input
-              id="new-addon-name"
-              placeholder="Nama addon baru"
-              value={newAddonName}
-              onChange={e => setNewAddonName(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleAddAddon()}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="new-addon-color">Warna</Label>
-            <Input
-              id="new-addon-color"
-              type="color"
-              value={newAddonColor}
-              onChange={e => setNewAddonColor(e.target.value)}
-              className="h-10 mt-1"
-            />
-          </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex-1">
+          <Input
+            placeholder="Nama addon baru"
+            value={newAddonName}
+            onChange={e => setNewAddonName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleAddAddon()}
+          />
         </div>
-        <Button onClick={handleAddAddon}>
-          <Plus className="mr-1 h-4 w-4" />
-          Tambah Addon
-        </Button>
+        <div className="flex gap-2">
+          <Input
+            type="color"
+            value={newAddonColor}
+            onChange={e => setNewAddonColor(e.target.value)}
+            className="w-12 p-1 h-10"
+          />
+          <Button onClick={handleAddAddon}>
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tambah</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 mt-4">
         {addons.map(addon => (
-          <div key={addon.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto] gap-2 items-center">
-            <Input
-              value={addon.name}
-              onChange={e => handleAddonNameChange(addon.id, e.target.value)}
-            />
-            <Input
-              type="color"
-              value={addon.color}
-              onChange={e => handleAddonColorChange(addon.id, e.target.value)}
-              className="h-10"
-            />
-            <div className="flex gap-2">
-              <Button
-                size="icon"
-                variant="outline"
-                className="shrink-0"
-                onClick={() => handleSaveAddon(addon.id)}
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="destructive"
-                className="shrink-0"
-                onClick={() => handleDeleteAddon(addon.id)}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
+          <div 
+            key={addon.id} 
+            className="border rounded-md p-2"
+          >
+            {editingId === addon.id ? (
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_auto] gap-2 items-center">
+                <Input
+                  value={addon.name}
+                  onChange={e => handleAddonNameChange(addon.id, e.target.value)}
+                  autoFocus
+                />
+                <Input
+                  type="color"
+                  value={addon.color}
+                  onChange={e => handleAddonColorChange(addon.id, e.target.value)}
+                  className="h-10"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSaveAddon(addon.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEditing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-4 h-4 rounded-full" 
+                    style={{ backgroundColor: addon.color }}
+                  />
+                  <span className="font-medium">{addon.name}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => startEditing(addon.id)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteAddon(addon.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

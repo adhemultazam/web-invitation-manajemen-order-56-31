@@ -2,16 +2,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash, Save } from "lucide-react";
+import { Plus, Trash, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Vendor } from "@/types/types";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export function VendorSettings() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [newVendorName, setNewVendorName] = useState("");
   const [newVendorCode, setNewVendorCode] = useState("");
   const [newVendorColor, setNewVendorColor] = useState("#9A84FF"); // Default color
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Load vendors from localStorage on component mount
   useEffect(() => {
@@ -87,6 +88,16 @@ export function VendorSettings() {
     toast.success("Vendor berhasil dihapus");
   };
 
+  // Start editing
+  const startEditing = (id: string) => {
+    setEditingId(id);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
   // Handle vendor field changes
   const handleVendorChange = (id: string, field: keyof Vendor, value: string) => {
     setVendors(
@@ -100,88 +111,115 @@ export function VendorSettings() {
   const handleSaveVendor = (id: string) => {
     const vendorToSave = vendors.find(vendor => vendor.id === id);
     if (vendorToSave && vendorToSave.name.trim()) {
+      setEditingId(null);
       toast.success(`Vendor ${vendorToSave.name} berhasil disimpan`);
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="new-vendor-name">Nama Vendor</Label>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <Input
+            placeholder="Nama vendor"
+            value={newVendorName}
+            onChange={e => setNewVendorName(e.target.value)}
+          />
+          <Input
+            placeholder="Kode vendor (opsional)"
+            value={newVendorCode}
+            onChange={e => setNewVendorCode(e.target.value)}
+          />
+          <div className="flex gap-2">
             <Input
-              id="new-vendor-name"
-              placeholder="Nama vendor baru"
-              value={newVendorName}
-              onChange={e => setNewVendorName(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="new-vendor-code">Kode Vendor</Label>
-            <Input
-              id="new-vendor-code"
-              placeholder="Kode vendor (opsional)"
-              value={newVendorCode}
-              onChange={e => setNewVendorCode(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="new-vendor-color">Warna</Label>
-            <Input
-              id="new-vendor-color"
               type="color"
               value={newVendorColor}
               onChange={e => setNewVendorColor(e.target.value)}
-              className="h-10 mt-1"
+              className="w-12 p-1 h-10"
             />
+            <Button 
+              onClick={handleAddVendor} 
+              className="flex-1"
+            >
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Tambah</span>
+            </Button>
           </div>
         </div>
-        <Button onClick={handleAddVendor}>
-          <Plus className="mr-1 h-4 w-4" />
-          Tambah Vendor
-        </Button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 mt-4">
         {vendors.map(vendor => (
-          <div key={vendor.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-center">
-            <Input
-              value={vendor.name}
-              onChange={e => handleVendorChange(vendor.id, "name", e.target.value)}
-              placeholder="Nama vendor"
-            />
-            <Input
-              value={vendor.code}
-              onChange={e => handleVendorChange(vendor.id, "code", e.target.value)}
-              placeholder="Kode vendor"
-            />
-            <Input
-              type="color"
-              value={vendor.color}
-              onChange={e => handleVendorChange(vendor.id, "color", e.target.value)}
-              className="h-10"
-            />
-            <div className="flex gap-2">
-              <Button
-                size="icon"
-                variant="outline"
-                className="shrink-0"
-                onClick={() => handleSaveVendor(vendor.id)}
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="destructive"
-                className="shrink-0"
-                onClick={() => handleDeleteVendor(vendor.id)}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
-            </div>
+          <div 
+            key={vendor.id} 
+            className="border rounded-md p-2"
+          >
+            {editingId === vendor.id ? (
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr_auto] gap-2 items-center">
+                <Input
+                  value={vendor.name}
+                  onChange={e => handleVendorChange(vendor.id, "name", e.target.value)}
+                  placeholder="Nama vendor"
+                  autoFocus
+                />
+                <Input
+                  value={vendor.code}
+                  onChange={e => handleVendorChange(vendor.id, "code", e.target.value)}
+                  placeholder="Kode vendor"
+                />
+                <Input
+                  type="color"
+                  value={vendor.color}
+                  onChange={e => handleVendorChange(vendor.id, "color", e.target.value)}
+                  className="h-10"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSaveVendor(vendor.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEditing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge
+                    style={{ backgroundColor: vendor.color }}
+                    className="text-white"
+                  >
+                    {vendor.code}
+                  </Badge>
+                  <span className="font-medium">{vendor.name}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => startEditing(vendor.id)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteVendor(vendor.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

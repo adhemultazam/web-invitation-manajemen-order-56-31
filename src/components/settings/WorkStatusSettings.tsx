@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash, Save, Palette } from "lucide-react";
+import { Plus, Trash, Check, X, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { WorkStatus } from "@/types/types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -27,16 +27,13 @@ const colorOptions = [
   "#EC4899", // Pink
   "#F43F5E", // Rose
   "#64748B", // Slate
-  "#6B7280", // Gray
-  "#71717A", // Zinc
-  "#737373", // Neutral
-  "#78716C", // Stone
 ];
 
 export function WorkStatusSettings() {
   const [workStatuses, setWorkStatuses] = useState<WorkStatus[]>([]);
   const [newWorkStatus, setNewWorkStatus] = useState("");
   const [newColor, setNewColor] = useState("#64748b"); // Default color
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Load work statuses from localStorage on component mount
   useEffect(() => {
@@ -98,6 +95,16 @@ export function WorkStatusSettings() {
     toast.success("Status pengerjaan berhasil dihapus");
   };
 
+  // Start editing a status
+  const startEditing = (id: string) => {
+    setEditingId(id);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
   // Handle work status name or color change
   const handleWorkStatusChange = (id: string, field: string, value: string) => {
     setWorkStatuses(
@@ -111,14 +118,15 @@ export function WorkStatusSettings() {
   const handleSaveWorkStatus = (id: string) => {
     const statusToSave = workStatuses.find(status => status.id === id);
     if (statusToSave && statusToSave.name.trim()) {
+      setEditingId(null);
       toast.success(`Status ${statusToSave.name} berhasil disimpan`);
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-center">
-        <div className="col-span-3 md:col-span-4">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex-1">
           <Input
             placeholder="Status pengerjaan baru"
             value={newWorkStatus}
@@ -126,24 +134,24 @@ export function WorkStatusSettings() {
             onKeyDown={e => e.key === "Enter" && handleAddWorkStatus()}
           />
         </div>
-        <div className="col-span-1">
+        <div className="flex gap-2">
           <Popover>
             <PopoverTrigger asChild>
               <Button 
                 variant="outline" 
-                className="w-full h-10 flex items-center justify-center" 
+                className="flex-shrink-0 h-10" 
                 style={{ backgroundColor: newColor }}
               >
-                <Palette className="h-4 w-4 mr-2" color="white" />
-                <span className="text-white">Warna</span>
+                <Palette className="h-4 w-4 mr-0 sm:mr-2" color="white" />
+                <span className="text-white hidden sm:inline">Warna</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64">
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-6 gap-2">
                 {colorOptions.map((color) => (
                   <button
                     key={color}
-                    className="w-6 h-6 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    className="w-8 h-8 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                     style={{ backgroundColor: color }}
                     onClick={() => setNewColor(color)}
                     aria-label={`Select color ${color}`}
@@ -152,67 +160,95 @@ export function WorkStatusSettings() {
               </div>
             </PopoverContent>
           </Popover>
+          <Button onClick={handleAddWorkStatus}>
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tambah</span>
+          </Button>
         </div>
       </div>
 
-      <Button onClick={handleAddWorkStatus} className="w-full">
-        <Plus className="mr-1 h-4 w-4" />
-        Tambah Status
-      </Button>
-
-      <div className="space-y-2">
+      <div className="space-y-2 mt-4">
         {workStatuses.map(status => (
-          <div key={status.id} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">
-            <div className="col-span-3">
-              <Input
-                value={status.name}
-                onChange={e => handleWorkStatusChange(status.id, 'name', e.target.value)}
-              />
-            </div>
-            <div className="col-span-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full h-10 flex items-center justify-center" 
-                    style={{ backgroundColor: status.color }}
+          <div 
+            key={status.id} 
+            className="border rounded-md p-2"
+          >
+            {editingId === status.id ? (
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_auto] gap-2 items-center">
+                <Input
+                  value={status.name}
+                  onChange={e => handleWorkStatusChange(status.id, 'name', e.target.value)}
+                  autoFocus
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-10" 
+                      style={{ backgroundColor: status.color }}
+                    >
+                      <Palette className="h-4 w-4 text-white" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64">
+                    <div className="grid grid-cols-6 gap-2">
+                      {colorOptions.map((color) => (
+                        <button
+                          key={color}
+                          className="w-8 h-8 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleWorkStatusChange(status.id, 'color', color)}
+                          aria-label={`Select color ${color}`}
+                        />
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleSaveWorkStatus(status.id)}
                   >
-                    <Palette className="h-4 w-4" color="white" />
+                    <Check className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64">
-                  <div className="grid grid-cols-7 gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color}
-                        className="w-6 h-6 rounded-md border border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                        style={{ backgroundColor: color }}
-                        onClick={() => handleWorkStatusChange(status.id, 'color', color)}
-                        aria-label={`Select color ${color}`}
-                      />
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="col-span-1"
-              onClick={() => handleSaveWorkStatus(status.id)}
-            >
-              <Save className="mr-1 h-4 w-4" />
-              Simpan
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="col-span-1"
-              onClick={() => handleDeleteWorkStatus(status.id)}
-            >
-              <Trash className="mr-1 h-4 w-4" />
-              Hapus
-            </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={cancelEditing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-4 h-4 rounded-full" 
+                    style={{ backgroundColor: status.color }}
+                  />
+                  <span className="font-medium">{status.name}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => startEditing(status.id)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteWorkStatus(status.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

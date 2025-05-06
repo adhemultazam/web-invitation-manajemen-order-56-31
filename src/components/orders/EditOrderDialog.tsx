@@ -355,7 +355,7 @@ export function EditOrderDialog({
                     <SelectContent>
                       {packages.map((pkg) => (
                         <SelectItem key={pkg.id} value={pkg.name}>
-                          {pkg.name} - {new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR", minimumFractionDigits: 0}).format(pkg.price)}
+                          {pkg.name} - {typeof pkg.price === 'number' ? new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR", minimumFractionDigits: 0}).format(pkg.price) : 'Price not available'}
                         </SelectItem>
                       ))}
                     </SelectContent>

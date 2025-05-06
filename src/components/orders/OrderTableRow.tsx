@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor, Theme } from "@/types/types";
@@ -170,7 +169,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       <TableCell className="py-2 px-2">
         <PaymentStatusBadge 
           status={order.paymentStatus}
-          amount={order.paymentAmount}
+          amount={typeof order.paymentAmount === 'number' ? order.paymentAmount : parseFloat(order.paymentAmount.toString()) || 0}
           isUpdating={updatingOrders.has(order.id)}
           onToggle={() => togglePaymentStatus(order)}
           formatCurrency={formatCurrency}

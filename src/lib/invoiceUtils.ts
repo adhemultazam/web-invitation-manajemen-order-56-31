@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice, Order } from '@/types/types';
 import { toast } from 'sonner';
@@ -79,7 +78,12 @@ export const generateInvoice = (
   dueDate: string
 ): Invoice => {
   // Calculate total amount from orders
-  const totalAmount = orders.reduce((sum, order) => sum + order.paymentAmount, 0);
+  const totalAmount = orders.reduce((sum, order) => {
+    const amount = typeof order.paymentAmount === 'number' ? 
+      order.paymentAmount : 
+      parseFloat(order.paymentAmount.toString()) || 0;
+    return sum + amount;
+  }, 0);
   
   // Generate invoice number (format: INV-YYYYMMDD-XXXX)
   const today = new Date();
@@ -88,12 +92,19 @@ export const generateInvoice = (
   const invoiceNumber = `INV-${dateStr}-${randomPart}`;
   
   // Map orders to the format needed for invoices
-  const invoiceOrders = orders.map(order => ({
-    orderId: order.id,
-    clientName: order.clientName,
-    orderDate: order.orderDate,
-    amount: order.paymentAmount
-  }));
+  const invoiceOrders = orders.map(order => {
+    // Ensure amount is a number
+    const numericAmount = typeof order.paymentAmount === 'number' ? 
+      order.paymentAmount : 
+      parseFloat(order.paymentAmount.toString()) || 0;
+    
+    return {
+      orderId: order.id,
+      clientName: order.clientName,
+      orderDate: order.orderDate,
+      amount: numericAmount
+    };
+  });
   
   return {
     id: uuidv4(),

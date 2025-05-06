@@ -1,4 +1,3 @@
-
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
@@ -140,6 +139,14 @@ export function Layout({ children }: LayoutProps) {
           .stat-card {
             padding: 0.75rem !important;
           }
+        }
+        
+        /* Fixed mobile sidebar background */
+        [data-mobile="true"].bg-sidebar {
+          background-color: var(--sidebar-background, #fff) !important;
+        }
+        .dark [data-mobile="true"].bg-sidebar {
+          background-color: var(--sidebar-background, #1E1E2F) !important;
         }
         `}
       </style>

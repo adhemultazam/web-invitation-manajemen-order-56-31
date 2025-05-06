@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AppSidebarProps {
   collapsed?: boolean;
@@ -38,15 +39,160 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
   const { user } = useAuth();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+  const isMobile = useIsMobile();
   
   // Get current month name in lowercase for the initial pesanan link
   const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
   
+  if (isMobile) {
+    // For mobile, we use the Sidebar component directly
+    return (
+      <Sidebar variant="sidebar" collapsible="offcanvas">
+        <SidebarContent>
+          <div className="px-4 py-6">
+            <div className="rounded-xl p-4 shadow-sm mb-4 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center">
+                <Avatar className="h-10 w-10 mr-3">
+                  <AvatarImage src={user?.logo || ''} alt="Logo" />
+                  <AvatarFallback className={cn(
+                    "text-white",
+                    isDarkMode ? "bg-indigo-600" : "bg-wedding-accent"
+                  )}>
+                    <Image className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className={cn(
+                    "text-base font-bold", 
+                    isDarkMode ? "text-gray-100" : "text-gray-800"
+                  )}>
+                    Undangan Digital
+                  </h1>
+                  <p className={cn(
+                    "text-xs",
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  )}>
+                    Manajemen Pesanan
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="px-2">
+            <div className={cn(
+              "text-xs font-bold px-4 mb-1",
+              isDarkMode ? "text-gray-400" : "text-gray-600"
+            )}>
+              Menu Utama
+            </div>
+            <div className="mt-2">
+              <ul className="flex flex-col gap-1">
+                <li>
+                  <Link 
+                    to="/" 
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                      location.pathname === "/" 
+                        ? isDarkMode 
+                          ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                          : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : isDarkMode
+                          ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                          : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                    )}
+                  >
+                    <LayoutDashboard size={18} className={cn(
+                      location.pathname === "/" 
+                        ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                        : "",
+                    )} />
+                    <span className="text-sm">Dashboard</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to={`/pesanan/${currentMonth}`}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                      location.pathname.includes("/pesanan") || location.pathname.includes("/bulan") 
+                        ? isDarkMode 
+                          ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                          : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : isDarkMode
+                          ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                          : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                    )}
+                  >
+                    <CalendarDays size={18} className={cn(
+                      location.pathname.includes("/pesanan") || location.pathname.includes("/bulan")
+                        ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                        : "",
+                    )} />
+                    <span className="text-sm">Catatan Pesanan</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to="/invoices" 
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                      location.pathname === "/invoices" 
+                        ? isDarkMode 
+                          ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                          : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : isDarkMode
+                          ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                          : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                    )}
+                  >
+                    <FileText size={18} className={cn(
+                      location.pathname === "/invoices" 
+                        ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                        : "",
+                    )} />
+                    <span className="text-sm">Invoice</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to="/pengaturan" 
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                      location.pathname === "/pengaturan" 
+                        ? isDarkMode 
+                          ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                          : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : isDarkMode
+                          ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                          : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                    )}
+                  >
+                    <Settings size={18} className={cn(
+                      location.pathname === "/pengaturan" 
+                        ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                        : "",
+                    )} />
+                    <span className="text-sm">Pengaturan</span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+  // For desktop mode with collapsible sidebar
   return (
     <div 
       className={cn(
         "transition-all duration-300 ease-in-out z-30 h-screen",
-        "md:fixed",  // Only fixed on desktop, not on mobile
+        "md:fixed", 
         collapsed ? "w-[70px]" : "w-[260px]",
         isDarkMode 
           ? "bg-[#1E1E2F] border-r border-gray-700/30" 

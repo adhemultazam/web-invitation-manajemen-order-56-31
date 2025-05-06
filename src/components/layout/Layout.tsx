@@ -51,6 +51,9 @@ export function Layout({ children }: LayoutProps) {
           </div>
           {isMobile && <MobileNavbar />}
         </main>
+        
+        {/* For mobile sidebar */}
+        {isMobile && <AppSidebar collapsed={false} onCollapseToggle={() => {}} />}
       </div>
       <Toaster />
       <Sonner />

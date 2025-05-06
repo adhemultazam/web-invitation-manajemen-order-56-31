@@ -51,6 +51,7 @@ export function EditOrderModal({
     ...order,
     orderDate: typeof order.orderDate === 'string' ? order.orderDate : format(new Date(order.orderDate), 'yyyy-MM-dd'),
     eventDate: typeof order.eventDate === 'string' ? order.eventDate : format(new Date(order.eventDate), 'yyyy-MM-dd'),
+    addons: order.addons || [],
   });
 
   // Load data from localStorage when component mounts
@@ -122,6 +123,21 @@ export function EditOrderModal({
 
   const handleInputChange = (field: keyof Order, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddonToggle = (addonName: string) => {
+    const currentAddons = [...(formData.addons || [])];
+    const addonIndex = currentAddons.indexOf(addonName);
+    
+    if (addonIndex === -1) {
+      // Add the addon
+      currentAddons.push(addonName);
+    } else {
+      // Remove the addon
+      currentAddons.splice(addonIndex, 1);
+    }
+    
+    handleInputChange('addons', currentAddons);
   };
 
   const handleSubmit = () => {
@@ -240,6 +256,7 @@ export function EditOrderModal({
                           : formData.orderDate as Date}
                         onSelect={(date) => date && handleInputChange('orderDate', date)}
                         initialFocus
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
@@ -268,6 +285,7 @@ export function EditOrderModal({
                           : formData.eventDate as Date}
                         onSelect={(date) => date && handleInputChange('eventDate', date)}
                         initialFocus
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
@@ -348,6 +366,29 @@ export function EditOrderModal({
                       )}
                     </SelectContent>
                   </Select>
+                </div>
+                
+                {/* Addons Section */}
+                <div className="space-y-2">
+                  <Label>Addons</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {addons.map((addon) => (
+                      <div key={addon.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`addon-${addon.id}`} 
+                          checked={formData.addons?.includes(addon.name)}
+                          onCheckedChange={() => handleAddonToggle(addon.name)}
+                        />
+                        <Label 
+                          htmlFor={`addon-${addon.id}`} 
+                          className="text-sm font-normal"
+                          style={{ color: addon.color }}
+                        >
+                          {addon.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

@@ -165,6 +165,21 @@ export function AddOrderModal({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleAddonToggle = (addonName: string) => {
+    const currentAddons = [...formData.addons];
+    const addonIndex = currentAddons.indexOf(addonName);
+    
+    if (addonIndex === -1) {
+      // Add the addon
+      currentAddons.push(addonName);
+    } else {
+      // Remove the addon
+      currentAddons.splice(addonIndex, 1);
+    }
+    
+    handleInputChange('addons', currentAddons);
+  };
+
   const handleAddOrder = () => {
     // Calculate countdown days based on current date and event date
     const today = new Date();
@@ -352,6 +367,29 @@ export function AddOrderModal({
                       )}
                     </SelectContent>
                   </Select>
+                </div>
+                
+                {/* Addons Section */}
+                <div className="space-y-2">
+                  <Label>Addons</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {addons.map((addon) => (
+                      <div key={addon.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`addon-${addon.id}`} 
+                          checked={formData.addons.includes(addon.name)}
+                          onCheckedChange={() => handleAddonToggle(addon.name)}
+                        />
+                        <Label 
+                          htmlFor={`addon-${addon.id}`} 
+                          className="text-sm font-normal"
+                          style={{ color: addon.color }}
+                        >
+                          {addon.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

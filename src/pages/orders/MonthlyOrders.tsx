@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { 
@@ -46,6 +47,7 @@ import { EditOrderModal } from "@/components/orders/EditOrderModal";
 import { OrdersFilter } from "@/components/orders/OrdersFilter";
 import { OrderTable } from "@/components/orders/OrderTable";
 import OrderStats from "@/components/orders/OrderStats";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useVendorsData } from "@/hooks/useVendorsData";
 import { useOrderResources } from "@/hooks/useOrderResources";
@@ -63,6 +65,7 @@ import {
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Helper function to map month names to their numbers
 const getMonthNumber = (monthName: string): string => {
@@ -131,7 +134,9 @@ const formatCurrency = (amount: string | number): string => {
 
 export default function MonthlyOrders() {
   const { month } = useParams<{ month: string }>();
-  const currentYear = new Date().getFullYear().toString();
+  const navigate = useNavigate();
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedMonth, setSelectedMonth] = useState<string>(month ? getMonthTranslation(month) : "");
   
   // State for modals
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
@@ -144,9 +149,23 @@ export default function MonthlyOrders() {
   const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
   
   // Fetching data
-  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(currentYear, month ? getMonthTranslation(month) : undefined);
+  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, month ? getMonthTranslation(month) : undefined);
   const { vendors } = useVendorsData();
   const { workStatuses, addons, themes, packages } = useOrderResources();
+  
+  // Handler for year change
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+  };
+
+  // Handler for month change
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
+    // Convert month name to URL parameter format
+    const monthParam = Object.entries(getMonthTranslation)
+      .find(([_, value]) => value === month)?.[0] || month.toLowerCase();
+    navigate(`/pesanan/${monthParam}`);
+  };
   
   // Vendor color mapping
   const vendorColors = useMemo(() => {
@@ -370,7 +389,16 @@ export default function MonthlyOrders() {
         </Button>
       </div>
       
-      {/* Restored Order Stats */}
+      {/* Year and Month Filter */}
+      <FilterBar
+        onYearChange={handleYearChange}
+        onMonthChange={handleMonthChange}
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth || (month ? getMonthTranslation(month) : "")}
+        className="mb-4"
+      />
+      
+      {/* Order Stats */}
       <OrderStats 
         orders={filteredOrders} 
         formatCurrency={formatCurrency} 

@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { Invoice, Order } from '@/types/types';
 import { toast } from 'sonner';
@@ -113,7 +114,6 @@ export const generateInvoice = (
     vendor: vendorName,
     dateIssued: today.toISOString().split('T')[0],
     dueDate: dueDate,
-    dateDue: dueDate, // Both dueDate and dateDue properties to maintain compatibility
     orders: invoiceOrders,
     totalAmount,
     status: "Unpaid"

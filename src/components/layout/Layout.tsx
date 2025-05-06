@@ -25,7 +25,7 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
       <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
         <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-        <main className="flex-1 overflow-auto pb-16 md:pb-0">
+        <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]")}>
           <div className="p-4 md:p-6 w-full">
             <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
               {isMobile && (
@@ -159,3 +159,7 @@ export function Layout({ children }: LayoutProps) {
   );
 }
 
+// Helper function to conditionally join class names
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(' ');
+};

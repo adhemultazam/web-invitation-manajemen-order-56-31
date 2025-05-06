@@ -75,12 +75,13 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
         )}>
           <div className={cn(
             "transition-all duration-300 ease-in-out rounded-xl p-4 shadow-sm mb-4",
+            collapsed && "p-2 flex justify-center",
             isDarkMode 
               ? "bg-gray-800/50" 
               : "bg-gray-50"
           )}>
-            <div className="flex items-center">
-              <Avatar className="h-10 w-10 mr-3">
+            <div className={cn("flex items-center", collapsed && "justify-center")}>
+              <Avatar className={cn("h-10 w-10", collapsed ? "mr-0" : "mr-3")}>
                 <AvatarImage src={user?.logo || ''} alt="Logo" />
                 <AvatarFallback className={cn(
                   "text-white",
@@ -251,4 +252,3 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
     </Sidebar>
   );
 }
-

@@ -47,6 +47,10 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
     return themeName.includes(query) || themeCategory.includes(query);
   });
 
+  console.log("ThemeSelect - Package category:", packageCategory);
+  console.log("ThemeSelect - Available themes:", themes);
+  console.log("ThemeSelect - Filtered themes:", filteredThemes);
+
   return (
     <div className="space-y-1">
       <Select

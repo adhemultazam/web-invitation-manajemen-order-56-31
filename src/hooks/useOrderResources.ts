@@ -29,20 +29,30 @@ export const useOrderResources = () => {
           setAddons(parsedAddons);
         }
 
-        // Load themes from localStorage
-        const storedThemes = localStorage.getItem("themes");
-        if (storedThemes && isMounted) {
-          const parsedThemes = JSON.parse(storedThemes);
-          
-          // Convert string themes to object themes if necessary
-          const processedThemes = parsedThemes.map((theme: any) => {
-            if (typeof theme === 'string') {
-              return { id: crypto.randomUUID(), name: theme, thumbnail: "", category: "" };
-            }
-            return theme;
-          });
-          
-          setThemes(processedThemes);
+        // First check for weddingThemes (new format themes)
+        const storedWeddingThemes = localStorage.getItem("weddingThemes");
+        if (storedWeddingThemes && isMounted) {
+          const parsedThemes = JSON.parse(storedWeddingThemes);
+          setThemes(parsedThemes);
+          console.log("Loaded wedding themes:", parsedThemes);
+        } 
+        // If no weddingThemes, fall back to old "themes" key
+        else {
+          const storedThemes = localStorage.getItem("themes");
+          if (storedThemes && isMounted) {
+            const parsedThemes = JSON.parse(storedThemes);
+            
+            // Convert string themes to object themes if necessary
+            const processedThemes = parsedThemes.map((theme: any) => {
+              if (typeof theme === 'string') {
+                return { id: crypto.randomUUID(), name: theme, thumbnail: "", category: "" };
+              }
+              return theme;
+            });
+            
+            setThemes(processedThemes);
+            console.log("Loaded old themes format:", processedThemes);
+          }
         }
 
         // Load packages from localStorage
@@ -50,6 +60,7 @@ export const useOrderResources = () => {
         if (storedPackages && isMounted) {
           const parsedPackages = JSON.parse(storedPackages);
           setPackages(parsedPackages);
+          console.log("Loaded packages:", parsedPackages);
         }
       } catch (error) {
         console.error("Error loading order resources:", error);

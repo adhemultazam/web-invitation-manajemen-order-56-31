@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -60,8 +61,14 @@ export function AddOrderModal({
     notes: "",
   });
 
+  useEffect(() => {
+    console.log("AddOrderModal - Provided Themes:", providedThemes);
+  }, [providedThemes]);
+
   // Load data from localStorage when component mounts
   useEffect(() => {
+    console.log("AddOrderModal - Initial load");
+    
     const loadVendors = () => {
       try {
         const savedVendors = localStorage.getItem("vendors");
@@ -116,17 +123,37 @@ export function AddOrderModal({
     
     if (!providedThemes || providedThemes.length === 0) {
       try {
-        const savedThemes = localStorage.getItem("themes");
-        if (savedThemes) {
-          const parsedThemes = JSON.parse(savedThemes);
+        // First try to get weddingThemes (new format)
+        const savedWeddingThemes = localStorage.getItem("weddingThemes");
+        if (savedWeddingThemes) {
+          const parsedThemes = JSON.parse(savedWeddingThemes);
           if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
+            console.log("AddOrderModal - Loaded weddingThemes:", parsedThemes);
             setThemes(parsedThemes);
-            // Don't set default theme here, we'll handle it after package selection
+          }
+        } else {
+          // Fall back to old "themes" key
+          const savedThemes = localStorage.getItem("themes");
+          if (savedThemes) {
+            const parsedThemes = JSON.parse(savedThemes);
+            if (Array.isArray(parsedThemes) && parsedThemes.length > 0) {
+              console.log("AddOrderModal - Loaded old themes:", parsedThemes);
+              // Convert string themes to object themes if necessary
+              const processedThemes = parsedThemes.map((theme: any) => {
+                if (typeof theme === 'string') {
+                  return { id: crypto.randomUUID(), name: theme, thumbnail: "", category: "" };
+                }
+                return theme;
+              });
+              setThemes(processedThemes);
+            }
           }
         }
       } catch (error) {
         console.error("Error loading themes:", error);
       }
+    } else {
+      console.log("AddOrderModal - Using provided themes:", providedThemes);
     }
     
     loadVendors();
@@ -140,12 +167,14 @@ export function AddOrderModal({
   };
 
   const handlePackageChange = (packageName: string) => {
+    console.log("Package changed to:", packageName);
     setSelectedPackage(packageName);
     handleInputChange('package', packageName);
     
     // Get appropriate themes for this package
-    const packageCategory = packages.find(pkg => pkg.name === packageName)?.name;
+    const packageCategory = packageName;
     const filteredThemes = themes.filter(theme => !packageCategory || theme.category === packageCategory);
+    console.log("Filtered themes for category", packageCategory, ":", filteredThemes);
     
     // Reset theme if we have available themes for this package
     if (filteredThemes.length > 0) {

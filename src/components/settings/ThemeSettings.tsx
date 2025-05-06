@@ -49,6 +49,16 @@ export function ThemeSettings() {
       try {
         const parsedPackages = JSON.parse(savedPackages);
         setPackages(parsedPackages);
+        console.log("ThemeSettings - Loaded packages:", parsedPackages);
+        
+        // Extract unique categories from packages
+        if (parsedPackages && parsedPackages.length > 0) {
+          const uniqueCategories = Array.from(
+            new Set(parsedPackages.map((pkg: Package) => pkg.name).filter(Boolean))
+          );
+          setCategories(uniqueCategories as string[]);
+          console.log("ThemeSettings - Extracted categories:", uniqueCategories);
+        }
       } catch (error) {
         console.error("Error parsing packages:", error);
       }
@@ -59,14 +69,7 @@ export function ThemeSettings() {
       try {
         const parsedThemes = JSON.parse(savedThemes);
         setThemes(parsedThemes);
-        
-        // Extract unique categories from packages instead
-        if (packages && packages.length > 0) {
-          const uniqueCategories = Array.from(
-            new Set(packages.map((pkg: Package) => pkg.name).filter(Boolean))
-          );
-          setCategories(uniqueCategories as string[]);
-        }
+        console.log("ThemeSettings - Loaded themes:", parsedThemes);
       } catch (error) {
         console.error("Error parsing themes:", error);
       }
@@ -79,17 +82,13 @@ export function ThemeSettings() {
         { id: "4", name: "Floral Garden", category: "Premium", thumbnail: "https://placehold.co/200x280/f5f5f5/333333?text=Floral+Garden" },
       ];
       setThemes(defaultThemes);
+      console.log("ThemeSettings - Created default themes:", defaultThemes);
       
       // Save default themes to localStorage
       localStorage.setItem('weddingThemes', JSON.stringify(defaultThemes));
-    }
-
-    // Extract categories from packages if they exist
-    if (packages && packages.length > 0) {
-      const uniqueCategories = Array.from(
-        new Set(packages.map((pkg: Package) => pkg.name).filter(Boolean))
-      );
-      setCategories(uniqueCategories as string[]);
+      
+      // Also ensure themes is available under the old key for backward compatibility
+      localStorage.setItem('themes', JSON.stringify(defaultThemes.map(theme => theme.name)));
     }
   }, []);
 
@@ -100,6 +99,7 @@ export function ThemeSettings() {
         new Set(packages.map((pkg: Package) => pkg.name).filter(Boolean))
       );
       setCategories(uniqueCategories as string[]);
+      console.log("ThemeSettings - Updated categories from packages:", uniqueCategories);
     }
   }, [packages]);
 
@@ -124,10 +124,12 @@ export function ThemeSettings() {
     const updatedThemes = [...themes, themeWithId];
     setThemes(updatedThemes);
     
-    // Save to localStorage
+    // Save to localStorage - both new and old format for compatibility
     localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    localStorage.setItem('themes', JSON.stringify(updatedThemes.map(theme => theme.name)));
     
     toast.success("Tema baru berhasil ditambahkan");
+    console.log("ThemeSettings - Theme added:", themeWithId);
   };
 
   // Handle edit theme
@@ -138,10 +140,12 @@ export function ThemeSettings() {
     
     setThemes(updatedThemes);
     
-    // Save to localStorage
+    // Save to localStorage - both new and old format for compatibility
     localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    localStorage.setItem('themes', JSON.stringify(updatedThemes.map(theme => theme.name)));
     
     toast.success("Tema berhasil diperbarui");
+    console.log("ThemeSettings - Theme edited:", editedTheme);
   };
 
   // Handle delete theme
@@ -151,14 +155,16 @@ export function ThemeSettings() {
     const updatedThemes = themes.filter(theme => theme.id !== themeToDelete.id);
     setThemes(updatedThemes);
     
-    // Save to localStorage
+    // Save to localStorage - both new and old format for compatibility
     localStorage.setItem('weddingThemes', JSON.stringify(updatedThemes));
+    localStorage.setItem('themes', JSON.stringify(updatedThemes.map(theme => theme.name)));
     
     // Close dialog
     setShowDeleteDialog(false);
     setThemeToDelete(null);
     
     toast.success("Tema berhasil dihapus");
+    console.log("ThemeSettings - Theme deleted:", themeToDelete);
   };
 
   // Handler for edit button click

@@ -18,37 +18,53 @@ export function MobileNavbar() {
   };
 
   return (
-    <div className="mobile-navbar shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50 flex items-center justify-around h-14 md:hidden">
       <Link 
         to="/" 
-        className={`mobile-navbar-item ${isActive("/") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
+        className={`flex flex-col items-center justify-center w-full h-full ${
+          isActive("/") 
+            ? "text-primary" 
+            : "text-muted-foreground"
+        }`}
       >
-        <LayoutDashboard className="mobile-navbar-icon" />
-        <span className="mobile-navbar-label">Dashboard</span>
+        <LayoutDashboard className="h-4 w-4" />
+        <span className="text-xs mt-1">Dashboard</span>
       </Link>
       
       <Link 
         to={`/pesanan/${currentMonth}`}
-        className={`mobile-navbar-item ${isActive("/pesanan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
+        className={`flex flex-col items-center justify-center w-full h-full ${
+          isActive("/pesanan") 
+            ? "text-primary" 
+            : "text-muted-foreground"
+        }`}
       >
-        <CalendarDays className="mobile-navbar-icon" />
-        <span className="mobile-navbar-label">Catatan Pesanan</span>
+        <CalendarDays className="h-4 w-4" />
+        <span className="text-xs mt-1">Pesanan</span>
       </Link>
       
       <Link 
         to="/invoices" 
-        className={`mobile-navbar-item ${isActive("/invoices") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
+        className={`flex flex-col items-center justify-center w-full h-full ${
+          isActive("/invoices") 
+            ? "text-primary" 
+            : "text-muted-foreground"
+        }`}
       >
-        <FileText className="mobile-navbar-icon" />
-        <span className="mobile-navbar-label">Invoice</span>
+        <FileText className="h-4 w-4" />
+        <span className="text-xs mt-1">Invoice</span>
       </Link>
       
       <Link 
         to="/pengaturan" 
-        className={`mobile-navbar-item ${isActive("/pengaturan") ? "active text-wedding-primary" : "text-gray-600 dark:text-gray-400"}`}
+        className={`flex flex-col items-center justify-center w-full h-full ${
+          isActive("/pengaturan") 
+            ? "text-primary" 
+            : "text-muted-foreground"
+        }`}
       >
-        <Settings className="mobile-navbar-icon" />
-        <span className="mobile-navbar-label">Pengaturan</span>
+        <Settings className="h-4 w-4" />
+        <span className="text-xs mt-1">Setting</span>
       </Link>
     </div>
   );

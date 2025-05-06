@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PackageSettings } from "./PackageSettings";
 import { WorkStatusSettings } from "./WorkStatusSettings";
@@ -12,42 +12,65 @@ export function OrderResourcesSettings() {
   const [activeResourceTab, setActiveResourceTab] = useState<string>("packages");
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle>Data Master Pesanan</CardTitle>
-        <CardDescription>
-          Kelola data master untuk pesanan seperti paket, status pengerjaan, tema, addons, dan vendor
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className="border-0 shadow-sm">
+      <CardContent className="p-0">
         <Tabs value={activeResourceTab} onValueChange={setActiveResourceTab} className="w-full">
-          <TabsList className="mb-4 grid grid-cols-2 md:grid-cols-5">
-            <TabsTrigger value="packages">Paket</TabsTrigger>
-            <TabsTrigger value="workStatus">Status Pengerjaan</TabsTrigger>
-            <TabsTrigger value="themes">Tema</TabsTrigger>
-            <TabsTrigger value="addons">Addons</TabsTrigger>
-            <TabsTrigger value="vendors">Vendor</TabsTrigger>
-          </TabsList>
+          <div className="border-b bg-muted/20">
+            <TabsList className="w-full h-12 bg-transparent justify-start px-4 gap-2">
+              <TabsTrigger 
+                value="packages" 
+                className="px-3 py-1.5 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              >
+                Paket
+              </TabsTrigger>
+              <TabsTrigger 
+                value="workStatus" 
+                className="px-3 py-1.5 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              >
+                Status
+              </TabsTrigger>
+              <TabsTrigger 
+                value="themes" 
+                className="px-3 py-1.5 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              >
+                Tema
+              </TabsTrigger>
+              <TabsTrigger 
+                value="addons" 
+                className="px-3 py-1.5 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              >
+                Addons
+              </TabsTrigger>
+              <TabsTrigger 
+                value="vendors" 
+                className="px-3 py-1.5 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-background data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              >
+                Vendor
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
-          <TabsContent value="packages">
-            <PackageSettings />
-          </TabsContent>
-          
-          <TabsContent value="workStatus">
-            <WorkStatusSettings />
-          </TabsContent>
-          
-          <TabsContent value="themes">
-            <ThemeSettings />
-          </TabsContent>
-          
-          <TabsContent value="addons">
-            <AddonSettings />
-          </TabsContent>
-          
-          <TabsContent value="vendors">
-            <VendorSettings />
-          </TabsContent>
+          <div className="p-4">
+            <TabsContent value="packages" className="mt-0">
+              <PackageSettings />
+            </TabsContent>
+            
+            <TabsContent value="workStatus" className="mt-0">
+              <WorkStatusSettings />
+            </TabsContent>
+            
+            <TabsContent value="themes" className="mt-0">
+              <ThemeSettings />
+            </TabsContent>
+            
+            <TabsContent value="addons" className="mt-0">
+              <AddonSettings />
+            </TabsContent>
+            
+            <TabsContent value="vendors" className="mt-0">
+              <VendorSettings />
+            </TabsContent>
+          </div>
         </Tabs>
       </CardContent>
     </Card>

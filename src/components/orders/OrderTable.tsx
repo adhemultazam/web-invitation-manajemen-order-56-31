@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
@@ -10,8 +10,6 @@ import {
 import OrderTableHeader from "./OrderTableHeader";
 import OrderTableRow from "./OrderTableRow";
 import { Order, WorkStatus, Vendor, Theme, Package } from "@/types/types";
-import { format, parseISO, differenceInDays } from "date-fns";
-import { id } from "date-fns/locale";
 
 interface OrderTableProps {
   orders: Order[];
@@ -54,8 +52,8 @@ export function OrderTable({
   const formatDate = (dateString: string) => {
     try {
       if (!dateString) return "-";
-      const date = parseISO(dateString);
-      return format(date, "dd/MM/yyyy", { locale: id });
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch (error) {
       console.error("Invalid date:", dateString);
       return "-";
@@ -68,7 +66,7 @@ export function OrderTable({
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const date = parseISO(dateString);
+      const date = new Date(dateString);
       return date < today;
     } catch (error) {
       return false;
@@ -85,8 +83,8 @@ export function OrderTable({
   };
 
   return (
-    <div className="rounded-md border">
-      <Table compact className="w-full">
+    <div className="rounded-md border shadow-sm overflow-hidden">
+      <Table className="w-full">
         <OrderTableHeader />
         <TableBody>
           {orders.length > 0 ? (
@@ -117,7 +115,7 @@ export function OrderTable({
             ))
           ) : (
             <TableRow>
-              <TableHead colSpan={12} className="h-24 text-center">
+              <TableHead colSpan={12} className="h-24 text-center text-muted-foreground">
                 Tidak ada data pesanan
               </TableHead>
             </TableRow>

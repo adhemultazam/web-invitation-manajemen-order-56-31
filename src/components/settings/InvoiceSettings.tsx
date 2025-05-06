@@ -36,23 +36,33 @@ export function InvoiceSettings() {
   useEffect(() => {
     const savedSettings = localStorage.getItem("invoiceSettings");
     if (savedSettings) {
-      const parsed = JSON.parse(savedSettings);
-      setFormData(prev => ({
-        ...prev,
-        ...parsed
-      }));
-      if (parsed.logo) {
-        setPreviewImage(parsed.logo);
+      try {
+        const parsed = JSON.parse(savedSettings);
+        
+        // Ensure all required fields are present
+        const defaultedSettings = {
+          ...formData,
+          ...parsed
+        };
+        
+        setFormData(defaultedSettings);
+        
+        if (parsed.logo) {
+          setPreviewImage(parsed.logo);
+        }
+      } catch (error) {
+        console.error("Error parsing saved invoice settings:", error);
+        toast.error("Error loading saved settings");
       }
     }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
   const handleBankAccountChange = (index: number, field: keyof BankAccount, value: string) => {
@@ -62,10 +72,10 @@ export function InvoiceSettings() {
       [field]: value
     };
     
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       bankAccounts: updatedAccounts
-    });
+    }));
   };
 
   const handleAddBankAccount = () => {
@@ -76,20 +86,20 @@ export function InvoiceSettings() {
       accountHolderName: ""
     };
     
-    setFormData({
-      ...formData,
-      bankAccounts: [...formData.bankAccounts, newAccount]
-    });
+    setFormData(prev => ({
+      ...prev,
+      bankAccounts: [...prev.bankAccounts, newAccount]
+    }));
   };
 
   const handleRemoveBankAccount = (index: number) => {
     const updatedAccounts = [...formData.bankAccounts];
     updatedAccounts.splice(index, 1);
     
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       bankAccounts: updatedAccounts
-    });
+    }));
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,10 +125,10 @@ export function InvoiceSettings() {
     reader.onloadend = () => {
       if (typeof reader.result === 'string') {
         setPreviewImage(reader.result);
-        setFormData({
-          ...formData,
+        setFormData(prev => ({
+          ...prev,
           logo: reader.result
-        });
+        }));
       }
       setIsUploading(false);
     };
@@ -135,10 +145,10 @@ export function InvoiceSettings() {
   
   const handleDeleteLogo = () => {
     setPreviewImage('');
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       logo: ''
-    });
+    }));
     toast.success('Logo berhasil dihapus');
   };
 

@@ -62,7 +62,7 @@ const PackageSelect: React.FC<PackageSelectProps> = ({
       onValueChange={onChange}
       disabled={isDisabled}
     >
-      <SelectTrigger className={compact ? "h-8 w-full text-xs py-0 px-2" : "h-10 w-full"}>
+      <SelectTrigger className={compact ? "h-7 w-full text-xs py-0 px-2" : "h-10 w-full"}>
         <SelectValue>
           {value ? value : "Pilih paket"}
         </SelectValue>

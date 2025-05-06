@@ -53,7 +53,7 @@ const ThemeSelect: React.FC<ThemeSelectProps> = ({
         open={isOpen}
         onOpenChange={setIsOpen}
       >
-        <SelectTrigger id="theme" className={`w-full ${compact ? "h-8 text-xs py-0 px-2" : ""}`}>
+        <SelectTrigger id="theme" className={`w-full ${compact ? "h-7 text-xs py-0 px-2" : ""}`}>
           <SelectValue placeholder="Pilih tema">{value}</SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">

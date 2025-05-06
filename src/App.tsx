@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -41,6 +41,12 @@ const initializeLocalStorage = () => {
       description: "Semua data akan disimpan secara otomatis di browser Anda"
     });
   }
+};
+
+// Helper component for redirection
+const RedirectWithParams = () => {
+  const { month } = useParams();
+  return <Navigate to={`/pesanan/${month}`} replace />;
 };
 
 const queryClient = new QueryClient();
@@ -97,7 +103,7 @@ const App = () => {
                 {/* Redirect old routes to new format */}
                 <Route path="/bulan/:month" element={
                   <ProtectedRoute>
-                    <Navigate to="/pesanan/:month" replace />
+                    <RedirectWithParams />
                   </ProtectedRoute>
                 } />
                 

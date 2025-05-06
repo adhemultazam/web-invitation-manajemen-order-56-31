@@ -29,9 +29,9 @@ export function RecentOrders({ className }: RecentOrdersProps) {
     .slice(0, 5);
 
   return (
-    <Card className={`shadow-lg rounded-xl border overflow-hidden ${className}`}>
-      <CardHeader className="pb-3 bg-gradient-to-r from-wedding-light to-white dark:from-gray-800 dark:to-gray-900">
-        <CardTitle className="text-lg font-bold text-gray-800 dark:text-white font-poppins">Pesanan Terbaru</CardTitle>
+    <Card className={`shadow-sm rounded-xl border overflow-hidden ${className}`}>
+      <CardHeader className="pb-2 bg-gradient-to-r from-wedding-light to-white dark:from-gray-800 dark:to-gray-900">
+        <CardTitle className="text-md font-bold text-gray-800 dark:text-white font-poppins">Pesanan Terbaru</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <AnimatePresence>

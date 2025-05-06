@@ -142,21 +142,21 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   };
 
   return (
-    <Card className={`overflow-hidden border rounded-xl shadow-lg stat-card ${getBackgroundClass()}`}>
-      <CardContent className="p-3 sm:p-4 md:p-6">
-        <div className="flex justify-between items-center mb-2 md:mb-3">
+    <Card className={`overflow-hidden border rounded-xl shadow-sm stat-card ${getBackgroundClass()}`}>
+      <CardContent className="p-2 sm:p-3 md:p-4">
+        <div className="flex justify-between items-center mb-1 md:mb-2">
           <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
-          <div className={`rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
+          <div className={`rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
             {icon}
           </div>
         </div>
         <div className="flex items-end justify-between">
           <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
-            <div className={`text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
+            <div className={`text-sm sm:text-md md:text-lg lg:text-xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
               {formatValue()}
             </div>
             {description && (
-              <p className="text-xs mt-1 text-gray-500 dark:text-gray-400 font-inter">
+              <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
                 {formatDescription()}
               </p>
             )}

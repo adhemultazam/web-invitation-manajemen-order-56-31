@@ -67,7 +67,7 @@ export function MonthlyStats({ orders, month }: MonthlyStatsProps) {
   }, [orders]);
   
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4 mb-4">
       <StatCard
         title="Total Pesanan"
         value={stats.totalOrders}

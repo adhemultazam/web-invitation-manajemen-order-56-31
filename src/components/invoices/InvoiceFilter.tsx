@@ -50,15 +50,15 @@ export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
   };
   
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:items-end md:space-y-0 md:space-x-4 bg-muted p-4 rounded-lg">
-      <div className="grid grid-cols-2 md:grid-cols-1 gap-2 md:gap-0">
-        <div className="grid gap-2">
-          <Label htmlFor="vendor">Vendor</Label>
+    <div className="flex flex-col md:flex-row md:items-center bg-muted p-4 rounded-lg gap-4">
+      <div className="flex flex-col md:flex-row gap-4 w-full">
+        <div className="w-full md:w-auto">
+          <Label htmlFor="vendor" className="mb-1 block">Vendor</Label>
           <Select
             value={filters.vendor}
             onValueChange={(value) => handleFilterChange('vendor', value)}
           >
-            <SelectTrigger id="vendor" className="w-full md:w-[180px]">
+            <SelectTrigger id="vendor" className="w-full">
               <SelectValue placeholder="Semua Vendor" />
             </SelectTrigger>
             <SelectContent>
@@ -72,13 +72,13 @@ export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
           </Select>
         </div>
         
-        <div className="grid gap-2">
-          <Label htmlFor="status">Status</Label>
+        <div className="w-full md:w-auto">
+          <Label htmlFor="status" className="mb-1 block">Status</Label>
           <Select
             value={filters.status}
             onValueChange={(value) => handleFilterChange('status', value as 'Paid' | 'Unpaid' | 'All')}
           >
-            <SelectTrigger id="status" className="w-full md:w-[180px]">
+            <SelectTrigger id="status" className="w-full">
               <SelectValue placeholder="Semua Status" />
             </SelectTrigger>
             <SelectContent>
@@ -90,7 +90,7 @@ export function InvoiceFilter({ vendors, onFilterChange }: InvoiceFilterProps) {
         </div>
       </div>
       
-      <div className="flex space-x-2">
+      <div className="flex gap-2 w-full md:w-auto">
         <Button 
           variant={filters.sortBy === 'dueDate' ? "default" : "outline"} 
           className="h-10 w-full md:w-auto"

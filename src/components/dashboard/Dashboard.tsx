@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -325,7 +326,8 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Mengubah grid layout menjadi 2 kolom pada mobile dan 4 kolom pada desktop */}
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-4">
             <StatCard
               title="Total Pesanan"
               value={stats.totalOrders}

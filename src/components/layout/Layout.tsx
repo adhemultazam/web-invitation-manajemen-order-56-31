@@ -99,7 +99,7 @@ export function Layout({ children }: LayoutProps) {
         }
         
         .stat-card:hover {
-          transform: scale(1.05);
+          transform: scale(1.02);
           box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
@@ -114,6 +114,7 @@ export function Layout({ children }: LayoutProps) {
           background-color: white;
           border-top: 1px solid #e5e7eb;
           padding: 0.5rem 0;
+          z-index: 50;
         }
         
         .mobile-navbar-item {
@@ -132,6 +133,13 @@ export function Layout({ children }: LayoutProps) {
         
         .mobile-navbar-label {
           font-size: 0.625rem;
+        }
+
+        /* Responsive card grid for mobile */
+        @media (max-width: 640px) {
+          .stat-card {
+            padding: 0.75rem !important;
+          }
         }
         `}
       </style>

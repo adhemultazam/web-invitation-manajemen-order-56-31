@@ -31,7 +31,16 @@ export const useOrderResources = () => {
         const storedThemes = localStorage.getItem("themes");
         if (storedThemes) {
           const parsedThemes = JSON.parse(storedThemes);
-          setThemes(parsedThemes);
+          
+          // Convert string themes to object themes if necessary
+          const processedThemes = parsedThemes.map((theme: any) => {
+            if (typeof theme === 'string') {
+              return { id: crypto.randomUUID(), name: theme, thumbnail: "", category: "" };
+            }
+            return theme;
+          });
+          
+          setThemes(processedThemes);
         }
 
         // Load packages from localStorage

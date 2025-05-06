@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
@@ -260,20 +259,28 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
+  React.ComponentProps<typeof Button> & {
+    asChild?: boolean
+  }
 >(({ className, onClick, asChild = false, children, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
   const Comp = asChild ? Slot : Button;
 
+  // Create a type-safe onClick handler that works with any HTMLElement
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+      onClick?.(event as unknown as React.MouseEvent<HTMLButtonElement, MouseEvent>);
+      toggleSidebar();
+    },
+    [onClick, toggleSidebar]
+  );
+
   return (
     <Comp
       ref={ref}
       data-sidebar="trigger"
-      onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
-      }}
+      onClick={handleClick}
       {...props}
       className={cn(asChild ? className : "h-7 w-7 variant-ghost size-icon", className)}
     >

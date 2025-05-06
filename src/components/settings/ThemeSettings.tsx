@@ -1,273 +1,331 @@
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash, Check, X, Image } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { ColorPicker } from "./ColorPicker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FontSettings } from "./FontSettings";
+import { SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Theme, Package } from "@/types/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function ThemeSettings() {
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [newTheme, setNewTheme] = useState("");
-  const [newThumbnail, setNewThumbnail] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  // State for theme settings
+  const [primaryColor, setPrimaryColor] = useState("#9c84ff");
+  const [accentColor, setAccentColor] = useState("#8371e0");
+  const [fontHeading, setFontHeading] = useState("Inter");
+  const [fontBody, setFontBody] = useState("Inter");
+  const [roundedCorners, setRoundedCorners] = useState("md");
+  const [isCustom, setIsCustom] = useState(false);
+  const [presetTheme, setPresetTheme] = useState("purple");
   
-  // Load themes and packages from localStorage on component mount
+  // Load settings from localStorage when component mounts
   useEffect(() => {
-    // Load themes
-    const savedThemes = localStorage.getItem("themes");
-    
-    if (savedThemes) {
+    const savedSettings = localStorage.getItem('themeSettings');
+    if (savedSettings) {
       try {
-        const parsedThemes = JSON.parse(savedThemes);
-        
-        // Ensure each theme has the correct structure
-        const updatedThemes = parsedThemes.map((theme: any) => {
-          if (typeof theme === 'string') {
-            return {
-              id: crypto.randomUUID(),
-              name: theme,
-              thumbnail: "",
-              category: ""
-            };
-          } else if (typeof theme === 'object' && theme !== null) {
-            return {
-              id: theme.id || crypto.randomUUID(),
-              name: theme.name || "",
-              thumbnail: theme.thumbnail || "",
-              category: theme.category || ""
-            };
-          }
-          return theme;
-        });
-        
-        setThemes(updatedThemes);
-        localStorage.setItem("themes", JSON.stringify(updatedThemes));
+        const settings = JSON.parse(savedSettings);
+        setPrimaryColor(settings.primaryColor || "#9c84ff");
+        setAccentColor(settings.accentColor || "#8371e0");
+        setFontHeading(settings.fontHeading || "Inter");
+        setFontBody(settings.fontBody || "Inter");
+        setRoundedCorners(settings.roundedCorners || "md");
+        setIsCustom(settings.isCustom || false);
+        setPresetTheme(settings.presetTheme || "purple");
       } catch (error) {
-        console.error("Error parsing themes:", error);
-        // Initialize with default themes if there's an error
-        const defaultThemes = [
-          { id: crypto.randomUUID(), name: "Rustic", thumbnail: "", category: "" },
-          { id: crypto.randomUUID(), name: "Minimalist", thumbnail: "", category: "" },
-          { id: crypto.randomUUID(), name: "Vintage", thumbnail: "", category: "" },
-          { id: crypto.randomUUID(), name: "Modern", thumbnail: "", category: "" },
-          { id: crypto.randomUUID(), name: "Floral", thumbnail: "", category: "" }
-        ];
-        setThemes(defaultThemes);
-        localStorage.setItem("themes", JSON.stringify(defaultThemes));
-      }
-    } else {
-      // Initialize with default themes if none exist
-      const defaultThemes = [
-        { id: crypto.randomUUID(), name: "Rustic", thumbnail: "", category: "" },
-        { id: crypto.randomUUID(), name: "Minimalist", thumbnail: "", category: "" },
-        { id: crypto.randomUUID(), name: "Vintage", thumbnail: "", category: "" },
-        { id: crypto.randomUUID(), name: "Modern", thumbnail: "", category: "" },
-        { id: crypto.randomUUID(), name: "Floral", thumbnail: "", category: "" }
-      ];
-      setThemes(defaultThemes);
-      localStorage.setItem("themes", JSON.stringify(defaultThemes));
-    }
-    
-    // Load packages
-    const savedPackages = localStorage.getItem("packages");
-    if (savedPackages) {
-      try {
-        const parsedPackages = JSON.parse(savedPackages);
-        setPackages(parsedPackages);
-      } catch (error) {
-        console.error("Error parsing packages:", error);
-        setPackages([]);
+        console.error("Failed to parse theme settings:", error);
       }
     }
   }, []);
 
-  // Save themes to localStorage whenever they change
+  // Save settings to localStorage when they change
   useEffect(() => {
-    localStorage.setItem("themes", JSON.stringify(themes));
-  }, [themes]);
+    // Only save if component has mounted
+    if (primaryColor) {
+      const settings = {
+        primaryColor,
+        accentColor,
+        fontHeading,
+        fontBody,
+        roundedCorners,
+        isCustom,
+        presetTheme
+      };
+      localStorage.setItem('themeSettings', JSON.stringify(settings));
+      
+      // Apply CSS variables
+      document.documentElement.style.setProperty('--wedding-primary', primaryColor);
+      document.documentElement.style.setProperty('--wedding-accent', accentColor);
+      document.documentElement.style.setProperty('--wedding-light', isCustom ? adjustBrightness(primaryColor, 80) : "#f4f1fe");
+      document.documentElement.style.setProperty('--wedding-muted', isCustom ? adjustBrightness(primaryColor, 40) : "#e9e4fd");
+    }
+  }, [primaryColor, accentColor, fontHeading, fontBody, roundedCorners, isCustom, presetTheme]);
 
-  // Add a new theme
-  const handleAddTheme = () => {
-    if (!newTheme.trim()) return;
+  // Handle preset theme changes
+  const handlePresetChange = (value: string) => {
+    setPresetTheme(value);
+    setIsCustom(false);
     
-    const newThemeItem: Theme = {
-      id: crypto.randomUUID(),
-      name: newTheme.trim(),
-      thumbnail: newThumbnail.trim(),
-      category: newCategory
-    };
-    
-    setThemes([...themes, newThemeItem]);
-    setNewTheme("");
-    setNewThumbnail("");
-    setNewCategory("");
-    toast.success("Tema undangan berhasil ditambahkan");
-  };
-
-  // Delete a theme
-  const handleDeleteTheme = (themeId: string) => {
-    setThemes(themes.filter(theme => theme.id !== themeId));
-    toast.success("Tema undangan berhasil dihapus");
-  };
-
-  // Start editing
-  const startEditing = (id: string) => {
-    setEditingId(id);
-  };
-
-  // Cancel editing
-  const cancelEditing = () => {
-    setEditingId(null);
-  };
-
-  // Handle theme field change
-  const handleThemeChange = (themeId: string, field: string, value: string) => {
-    setThemes(
-      themes.map(theme => 
-        theme.id === themeId ? { ...theme, [field]: value } : theme
-      )
-    );
-  };
-
-  // Save changes to a theme
-  const handleSaveTheme = (themeId: string) => {
-    const themeToSave = themes.find(theme => theme.id === themeId);
-    if (themeToSave && themeToSave.name.trim()) {
-      setEditingId(null);
-      toast.success(`Tema ${themeToSave.name} berhasil disimpan`);
+    // Set colors based on preset
+    switch (value) {
+      case "purple":
+        setPrimaryColor("#9c84ff");
+        setAccentColor("#8371e0");
+        break;
+      case "blue":
+        setPrimaryColor("#60a5fa");
+        setAccentColor("#3b82f6");
+        break;
+      case "green":
+        setPrimaryColor("#4ade80");
+        setAccentColor("#22c55e");
+        break;
+      case "rose":
+        setPrimaryColor("#fb7185");
+        setAccentColor("#e11d48");
+        break;
+      case "amber":
+        setPrimaryColor("#fbbf24");
+        setAccentColor("#d97706");
+        break;
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div className="space-y-2">
-          <Input
-            placeholder="Nama tema baru"
-            value={newTheme}
-            onChange={e => setNewTheme(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Input
-            placeholder="URL thumbnail"
-            value={newThumbnail}
-            onChange={e => setNewThumbnail(e.target.value)}
-          />
-        </div>
-      </div>
-      
-      <div className="flex gap-2">
-        <Select value={newCategory} onValueChange={setNewCategory} className="flex-1">
-          <SelectTrigger>
-            <SelectValue placeholder="Pilih kategori paket" />
-          </SelectTrigger>
-          <SelectContent>
-            {packages.map((pkg) => (
-              <SelectItem key={pkg.id} value={pkg.name}>
-                {pkg.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        
-        <Button onClick={handleAddTheme}>
-          <Plus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Tambah</span>
-        </Button>
-      </div>
+  // Handle save button click
+  const handleSave = () => {
+    // Save to localStorage
+    const settings = {
+      primaryColor,
+      accentColor,
+      fontHeading,
+      fontBody,
+      roundedCorners,
+      isCustom,
+      presetTheme
+    };
+    localStorage.setItem('themeSettings', JSON.stringify(settings));
+    
+    // Show success message
+    toast.success("Tema berhasil disimpan!", {
+      description: "Perubahan tema telah diterapkan ke aplikasi."
+    });
+  };
 
-      <div className="space-y-2 mt-4">
-        {themes.map((theme) => (
-          <div 
-            key={theme.id} 
-            className="border rounded-md p-2"
+  // Function to adjust color brightness
+  const adjustBrightness = (hex: string, percent: number) => {
+    hex = hex.replace(/^\s*#|\s*$/g, '');
+    
+    // Convert to RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Increase brightness
+    const adjustR = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
+    const adjustG = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
+    const adjustB = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
+    
+    // Convert back to hex
+    return "#" + ((1 << 24) + (adjustR << 16) + (adjustG << 8) + adjustB).toString(16).slice(1);
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Pengaturan Tema</CardTitle>
+        <CardDescription>
+          Kustomisasi tampilan aplikasi sesuai dengan preferensi Anda
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Preset Theme Selection */}
+        <div className="space-y-1.5">
+          <Label htmlFor="preset">Tema</Label>
+          <Select
+            value={presetTheme}
+            onValueChange={handlePresetChange}
           >
-            {editingId === theme.id ? (
-              <div className="grid grid-cols-1 gap-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <Input
-                    value={theme.name}
-                    placeholder="Nama tema"
-                    onChange={e => handleThemeChange(theme.id, 'name', e.target.value)}
-                    autoFocus
-                  />
-                  <Input
-                    value={theme.thumbnail || ""}
-                    placeholder="URL thumbnail"
-                    onChange={e => handleThemeChange(theme.id, 'thumbnail', e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Select 
-                    value={theme.category || ""} 
-                    onValueChange={(value) => handleThemeChange(theme.id, 'category', value)}
-                    className="flex-1"
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih kategori paket" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {packages.map((pkg) => (
-                        <SelectItem key={pkg.id} value={pkg.name}>
-                          {pkg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSaveTheme(theme.id)}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={cancelEditing}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+            <SelectTrigger id="preset" className="w-full">
+              <SelectValue placeholder="Pilih tema" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Tema</SelectLabel>
+                <SelectItem value="purple">Ungu (Default)</SelectItem>
+                <SelectItem value="blue">Biru</SelectItem>
+                <SelectItem value="green">Hijau</SelectItem>
+                <SelectItem value="rose">Merah Muda</SelectItem>
+                <SelectItem value="amber">Amber</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Custom Colors Toggle */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="custom-color"
+            checked={isCustom}
+            onCheckedChange={setIsCustom}
+          />
+          <Label htmlFor="custom-color">Gunakan warna kustom</Label>
+        </div>
+        
+        {/* Custom Color Pickers - Only show if custom is enabled */}
+        {isCustom && (
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="primary-color">Warna Utama</Label>
+              <div className="flex space-x-2">
+                <ColorPicker
+                  color={primaryColor}
+                  onChange={setPrimaryColor}
+                  id="primary-color"
+                />
+                <Input
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="flex-1"
+                />
               </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <div className="font-medium">{theme.name}</div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    {theme.category && <span>Kategori: {theme.category}</span>}
-                    {theme.thumbnail && <Image className="h-3 w-3" />}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => startEditing(theme.id)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => handleDeleteTheme(theme.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
+            </div>
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="accent-color">Warna Aksen</Label>
+              <div className="flex space-x-2">
+                <ColorPicker
+                  color={accentColor}
+                  onChange={setAccentColor}
+                  id="accent-color"
+                />
+                <Input
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="flex-1"
+                />
               </div>
-            )}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+        )}
+        
+        {/* Font Settings */}
+        <FontSettings
+          headingFont={fontHeading}
+          bodyFont={fontBody}
+          onHeadingFontChange={setFontHeading}
+          onBodyFontChange={setFontBody}
+        />
+        
+        {/* Border Radius Settings */}
+        <div className="space-y-1.5">
+          <Label htmlFor="rounded">Sudut Elemen</Label>
+          <Select
+            value={roundedCorners}
+            onValueChange={(value) => setRoundedCorners(value)}
+          >
+            <SelectTrigger id="rounded" className="w-full">
+              <SelectValue placeholder="Pilih jenis sudut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Persegi (Tanpa Sudut)</SelectItem>
+              <SelectItem value="sm">Kecil</SelectItem>
+              <SelectItem value="md">Sedang</SelectItem>
+              <SelectItem value="lg">Besar</SelectItem>
+              <SelectItem value="full">Penuh (Bulat)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Preview */}
+        <div className="border rounded-lg p-4 space-y-4">
+          <h3 className="text-lg font-semibold">Preview</h3>
+          <div className="flex flex-wrap gap-4">
+            <div 
+              className="w-20 h-20 rounded-lg flex items-center justify-center text-white"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Utama
+            </div>
+            <div 
+              className="w-20 h-20 rounded-lg flex items-center justify-center text-white"
+              style={{ backgroundColor: accentColor }}
+            >
+              Aksen
+            </div>
+            <div 
+              className="w-20 h-20 rounded-lg flex items-center justify-center text-gray-800"
+              style={{ backgroundColor: isCustom ? adjustBrightness(primaryColor, 80) : "#f4f1fe" }}
+            >
+              Terang
+            </div>
+            <div 
+              className="w-20 h-20 rounded-lg flex items-center justify-center text-gray-800"
+              style={{ backgroundColor: isCustom ? adjustBrightness(primaryColor, 40) : "#e9e4fd" }}
+            >
+              Muted
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 style={{ fontFamily: fontHeading }}>Heading Font: {fontHeading}</h4>
+            <p style={{ fontFamily: fontBody }}>Body Font: {fontBody}. This is how your body text will appear throughout the application.</p>
+          </div>
+          
+          <div className="flex gap-2">
+            <div 
+              className={`w-16 h-8 bg-gray-200 rounded-none flex items-center justify-center`}
+            >
+              None
+            </div>
+            <div 
+              className={`w-16 h-8 bg-gray-200 rounded-sm flex items-center justify-center`}
+            >
+              Small
+            </div>
+            <div 
+              className={`w-16 h-8 bg-gray-200 rounded-md flex items-center justify-center`}
+            >
+              Medium
+            </div>
+            <div 
+              className={`w-16 h-8 bg-gray-200 rounded-lg flex items-center justify-center`}
+            >
+              Large
+            </div>
+            <div 
+              className={`w-16 h-8 bg-gray-200 rounded-full flex items-center justify-center`}
+            >
+              Full
+            </div>
+          </div>
+          
+          <div>
+            <Button
+              style={{ 
+                backgroundColor: primaryColor,
+                borderRadius: roundedCorners === "none" ? "0" : 
+                             roundedCorners === "sm" ? "0.125rem" : 
+                             roundedCorners === "md" ? "0.375rem" : 
+                             roundedCorners === "lg" ? "0.5rem" : "9999px"
+              }}
+            >
+              Sample Button
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button onClick={handleSave}>Simpan Pengaturan</Button>
+      </CardFooter>
+    </Card>
   );
 }

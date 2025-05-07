@@ -8,7 +8,7 @@ interface User {
   name: string;
   email: string;
   profileImage?: string;
-  logo?: string; // Added logo property to User interface
+  logo?: string; // Property for the company logo
 }
 
 // Define the context type
@@ -17,8 +17,8 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => void; // Renamed from updateUserProfile
-  updateUserProfile?: (profileData: Partial<User>) => void; // Keep for backward compatibility
+  updateUser: (userData: Partial<User>) => void;
+  updateUserProfile?: (profileData: Partial<User>) => void; // For backward compatibility
 }
 
 // Create the Auth context
@@ -27,10 +27,10 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => false,
   logout: () => {},
-  updateUser: () => {}, // Add default implementation
+  updateUser: () => {},
 });
 
-// Dummy authentication function (replace with actual auth)
+// Dummy authentication function
 const authenticateUser = async (email: string, password: string): Promise<boolean> => {
   // In a real app, you would call an API here
   return new Promise((resolve) => {
@@ -66,14 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser({
               name: "Admin", // Default name
               email: profile.email || "admin@example.com",
-              profileImage: profile.profileImage || "/placeholder.svg"
+              profileImage: profile.profileImage || "/placeholder.svg",
+              logo: profile.logo || "" // Add logo property
             });
           } else {
             // Set default user if no profile found
             setUser({
               name: "Admin",
               email: "admin@example.com",
-              profileImage: "/placeholder.svg"
+              profileImage: "/placeholder.svg",
+              logo: "" // Add default logo
             });
           }
         } catch (error) {
@@ -82,7 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser({
             name: "Admin",
             email: "admin@example.com",
-            profileImage: "/placeholder.svg"
+            profileImage: "/placeholder.svg",
+            logo: "" // Add default logo
           });
         }
       }
@@ -103,7 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userProfile = {
           name: "Admin", // Default name
           email: email,
-          profileImage: "/placeholder.svg" // Default profile image
+          profileImage: "/placeholder.svg", // Default profile image
+          logo: "" // Default logo
         };
         
         setUser(userProfile);
@@ -112,26 +116,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!localStorage.getItem("userProfile")) {
           localStorage.setItem("userProfile", JSON.stringify({
             email: email,
-            profileImage: "/placeholder.svg"
+            profileImage: "/placeholder.svg",
+            logo: ""
           }));
         }
         
-        toast.success("Login berhasil", {
-          description: "Selamat datang kembali!"
-        });
-        
         return true;
       } else {
-        toast.error("Login gagal", {
-          description: "Email atau password tidak valid"
-        });
         return false;
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login gagal", {
-        description: "Terjadi kesalahan, silakan coba lagi"
-      });
       return false;
     }
   };

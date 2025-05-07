@@ -46,10 +46,31 @@ export function InvoiceSettings() {
 
   // Load settings from localStorage on component mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem("invoiceSettings");
-    if (savedSettings) {
+    // First, try to load general settings to sync business information
+    const savedGeneralSettings = localStorage.getItem("generalSettings");
+    if (savedGeneralSettings) {
       try {
-        setSettings(JSON.parse(savedSettings));
+        const generalSettings = JSON.parse(savedGeneralSettings);
+        setSettings(prev => ({
+          ...prev,
+          brandName: generalSettings.businessName || prev.brandName,
+          businessAddress: generalSettings.businessAddress || prev.businessAddress,
+          contactEmail: generalSettings.businessEmail || prev.contactEmail,
+          contactPhone: generalSettings.businessPhone || prev.contactPhone
+        }));
+      } catch (e) {
+        console.error("Error loading general settings:", e);
+      }
+    }
+    
+    // Then load invoice specific settings
+    const savedInvoiceSettings = localStorage.getItem("invoiceSettings");
+    if (savedInvoiceSettings) {
+      try {
+        setSettings(prev => ({
+          ...prev,
+          ...JSON.parse(savedInvoiceSettings)
+        }));
       } catch (e) {
         console.error("Error parsing invoice settings:", e);
       }

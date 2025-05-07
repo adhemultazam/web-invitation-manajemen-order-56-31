@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
@@ -152,7 +153,11 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
         </div>
         <div className="flex items-end justify-between">
           <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
-            <div className={`text-sm sm:text-md md:text-lg lg:text-xl font-bold overflow-hidden text-ellipsis whitespace-nowrap font-poppins ${getTextColorClass()}`}>
+            <div className={cn(
+              "text-sm sm:text-md md:text-lg lg:text-xl font-bold overflow-hidden text-ellipsis whitespace-nowrap",
+              getTextColorClass(),
+              "font-poppins"
+            )}>
               {formatValue()}
             </div>
             {description && (

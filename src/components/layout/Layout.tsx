@@ -10,6 +10,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
-      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900 font-inter">
         {!isMobile && <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />}
         <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", 
           !isMobile ? (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]") : "")}>
@@ -58,112 +59,48 @@ export function Layout({ children }: LayoutProps) {
       <Toaster />
       <Sonner />
 
-      {/* Global styles for compact table */}
+      {/* Global styles for tables */}
       <style>
         {`
+        /* Modern table styles with better spacing */
         .compact-table th {
           height: auto;
           padding-top: 0.5rem;
           padding-bottom: 0.5rem;
           font-size: 0.75rem;
+          font-family: 'Inter', sans-serif;
+          font-weight: 600;
+          letter-spacing: 0.01em;
         }
         
         .compact-table td {
-          padding-top: 0.375rem;
-          padding-bottom: 0.375rem;
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
+          vertical-align: middle;
         }
         
-        .compact-table .small-select {
+        /* Specific styles for order tables */
+        [data-component="Table"] td {
+          padding-top: 0.625rem !important;
+          padding-bottom: 0.625rem !important;
+          vertical-align: middle !important;
+        }
+        
+        [data-component="Table"] thead th {
+          font-family: 'Poppins', sans-serif;
+          font-weight: 600;
           font-size: 0.75rem;
-          height: 1.75rem;
-          min-height: 1.75rem;
+          letter-spacing: 0.02em;
         }
         
-        .compact-badge {
-          font-size: 0.6875rem;
-          padding: 0.125rem 0.375rem;
-          line-height: 1.2;
-          border-radius: 0.25rem;
-        }
-        
-        /* Animation for statistics */
-        @keyframes countUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes scaleIn {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        
-        .animate-count-up {
-          animation: countUp 0.8s ease-out forwards;
-        }
-        
-        .stat-card {
-          transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
-        
-        .stat-card:hover {
-          transform: scale(1.02);
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Mobile navbar styling */
-        .mobile-navbar {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          display: flex;
-          justify-content: space-around;
-          background-color: white;
-          border-top: 1px solid #e5e7eb;
-          padding: 0.5rem 0;
-          z-index: 50;
-        }
-        
-        .mobile-navbar-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 0.5rem;
-          flex: 1;
-        }
-        
-        .mobile-navbar-icon {
-          width: 1.25rem;
-          height: 1.25rem;
-          margin-bottom: 0.25rem;
-        }
-        
-        .mobile-navbar-label {
-          font-size: 0.625rem;
-        }
-
-        /* Responsive card grid for mobile */
-        @media (max-width: 640px) {
-          .stat-card {
-            padding: 0.75rem !important;
-          }
-        }
-        
-        /* Fixed mobile sidebar background */
-        [data-mobile="true"] .lov-sidebar {
-          background-color: ${isDarkMode ? '#1E1E2F' : '#fff'} !important;
-        }
-
-        .dark [data-mobile="true"] .lov-sidebar {
-          background-color: #1E1E2F !important;
+        [data-component="Table"] tbody td {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
         }
         `}
       </style>
     </SidebarProvider>
   );
 }
-
-// Helper function to conditionally join class names
-const cn = (...classes: (string | boolean | undefined)[]) => {
-  return classes.filter(Boolean).join(' ');
-};

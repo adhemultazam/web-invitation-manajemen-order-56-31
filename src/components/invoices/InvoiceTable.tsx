@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Eye, Check, Trash } from "lucide-react";
 import { InvoiceViewModal } from "./InvoiceViewModal";
+import { cn } from "@/lib/utils";
 
 interface InvoiceTableProps {
   invoices: Invoice[];
@@ -66,40 +67,49 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid, onDeleteInvoice 
   
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-hidden">
+        <Table className="w-full font-inter">
           <TableHeader>
-            <TableRow>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Invoice #</TableHead>
-              <TableHead>Jumlah Pesanan</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Aksi</TableHead>
+            <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+              <TableHead className="py-3 font-poppins text-xs tracking-wide">Vendor</TableHead>
+              <TableHead className="py-3 font-poppins text-xs tracking-wide">Invoice #</TableHead>
+              <TableHead className="py-3 font-poppins text-xs tracking-wide">Jumlah Pesanan</TableHead>
+              <TableHead className="text-right py-3 font-poppins text-xs tracking-wide">Total</TableHead>
+              <TableHead className="py-3 font-poppins text-xs tracking-wide">Status</TableHead>
+              <TableHead className="text-right py-3 font-poppins text-xs tracking-wide">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invoices.length > 0 ? (
               invoices.map((invoice) => {
                 return (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">
+                  <TableRow key={invoice.id} className="h-14">
+                    <TableCell className="py-3 font-medium">
                       {getVendorName(invoice.vendorId)}
                     </TableCell>
-                    <TableCell>{invoice.invoiceNumber}</TableCell>
-                    <TableCell>{invoice.orders.length} pesanan</TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="py-3 font-mono text-sm">
+                      {invoice.invoiceNumber}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      {invoice.orders.length} pesanan
+                    </TableCell>
+                    <TableCell className="text-right py-3 font-medium">
                       {formatCurrency(invoice.totalAmount)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3">
                       <Badge 
                         variant={invoice.status === "Paid" ? "outline" : "default"}
-                        className={invoice.status === "Paid" ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
+                        className={cn(
+                          "font-medium",
+                          invoice.status === "Paid" 
+                            ? "bg-green-100 text-green-800 hover:bg-green-100" 
+                            : ""
+                        )}
                       >
                         {invoice.status === "Paid" ? "Lunas" : "Belum Lunas"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right py-3">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="outline"
@@ -134,7 +144,7 @@ export function InvoiceTable({ invoices, vendors, onMarkAsPaid, onDeleteInvoice 
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center font-inter">
                   Tidak ada data invoice
                 </TableCell>
               </TableRow>

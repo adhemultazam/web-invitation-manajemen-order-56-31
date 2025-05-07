@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
 
-    // Check against the default or updated credentials
+    // Check against the stored credentials
     const storedAuth = localStorage.getItem("auth");
     let storedEmail = DEFAULT_EMAIL;
     let storedPassword = currentPassword;
@@ -109,9 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // If we get here, login is successful
     const demoUser = {
-      name: "Admin",
+      name: user?.name || "Admin",
       email: storedEmail,
-      profileImage: "",
+      profileImage: user?.profileImage || "",
     };
 
     setUser(demoUser);
@@ -137,12 +137,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedAuth = localStorage.getItem("auth");
     if (storedAuth) {
       try {
-        const { password } = JSON.parse(storedAuth);
+        const { password, user } = JSON.parse(storedAuth);
         localStorage.setItem(
           "auth",
           JSON.stringify({
             isAuthenticated: false,
-            user: null,
+            user,  // Keep the user data for when they log back in
             password
           })
         );

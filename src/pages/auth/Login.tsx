@@ -29,9 +29,24 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
-  // Set default credentials for demo purposes
+  // Try to get the stored email for better UX
   useEffect(() => {
-    setEmail("admin@example.com");
+    try {
+      const storedAuth = localStorage.getItem("auth");
+      if (storedAuth) {
+        const { user } = JSON.parse(storedAuth);
+        if (user && user.email) {
+          setEmail(user.email);
+        } else {
+          setEmail("admin@example.com"); // Default fallback
+        }
+      } else {
+        setEmail("admin@example.com"); // Default fallback
+      }
+    } catch (e) {
+      setEmail("admin@example.com"); // Default fallback
+      console.error("Error getting stored email", e);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

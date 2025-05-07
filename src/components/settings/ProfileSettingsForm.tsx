@@ -40,19 +40,20 @@ export function ProfileSettingsForm() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Update user profile
+      // Update user profile with all form fields
       updateUserProfile({
         name: formData.name,
         email: formData.email,
         profileImage: formData.profileImage
       });
       
-      toast.success("Profil berhasil diperbarui");
+      toast.success("Profil berhasil diperbarui", {
+        description: "Perubahan akan terlihat saat masuk kembali"
+      });
     } catch (error) {
-      toast.error("Gagal memperbarui profil");
+      toast.error("Gagal memperbarui profil", {
+        description: "Silakan coba lagi"
+      });
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -113,6 +114,7 @@ export function ProfileSettingsForm() {
                 onChange={handleChange}
                 required
               />
+              <p className="text-xs text-muted-foreground">Email ini akan digunakan untuk login</p>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/auth/BrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { InfoIcon } from "lucide-react";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +28,12 @@ export default function Login() {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
+
+  // Set default credentials for demo purposes
+  useEffect(() => {
+    setEmail("admin@example.com");
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -49,7 +58,9 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-  return <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md px-8">
         <div className="mx-auto mb-8 flex flex-col items-center">
           <BrandLogo logo={brandSettings.logo} name={brandSettings.name} />
@@ -76,6 +87,11 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Masuk..." : "Masuk"}
             </Button>
+            
+            <div className="mt-2 flex items-center gap-2 rounded-md bg-blue-50 p-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              <InfoIcon className="h-4 w-4" />
+              <p>Default password: password123</p>
+            </div>
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
@@ -83,5 +99,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }

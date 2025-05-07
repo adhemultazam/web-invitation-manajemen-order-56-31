@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 
 export function PasswordSettingsForm() {
-  const { user } = useAuth();
+  const { user, updatePassword } = useAuth();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -47,24 +46,9 @@ export function PasswordSettingsForm() {
     setIsLoading(true);
     
     try {
-      // Get current user profile
-      const savedProfile = localStorage.getItem("userProfile");
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        
-        // Check current password (default is "password" if not set before)
-        const currentPassword = profile.password || "password";
-        
-        if (formData.currentPassword !== currentPassword) {
-          toast.error("Password saat ini tidak sesuai");
-          setIsLoading(false);
-          return;
-        }
-        
-        // Update password in localStorage
-        profile.password = formData.newPassword;
-        localStorage.setItem("userProfile", JSON.stringify(profile));
-        
+      const success = await updatePassword(formData.currentPassword, formData.newPassword);
+      
+      if (success) {
         setFormData(prev => ({
           ...prev,
           currentPassword: "",
@@ -74,7 +58,7 @@ export function PasswordSettingsForm() {
         
         toast.success("Password berhasil diperbarui");
       } else {
-        toast.error("Profil pengguna tidak ditemukan");
+        toast.error("Password saat ini tidak sesuai");
       }
     } catch (error) {
       toast.error("Gagal memperbarui password");

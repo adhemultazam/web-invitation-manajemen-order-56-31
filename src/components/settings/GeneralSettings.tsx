@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Upload } from "lucide-react";
+import { Save, Upload, Link } from "lucide-react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,10 @@ export function GeneralSettings() {
     sidebarTitle: brandSettings.name || "Order Management"
   });
   
+  // URLs for direct input
+  const [logoUrl, setLogoUrl] = useState(settings.appLogo);
+  const [faviconUrl, setFaviconUrl] = useState(settings.appIcon);
+  
   // Sync settings with brandSettings on mount
   useEffect(() => {
     setSettings(prev => ({
@@ -36,11 +40,28 @@ export function GeneralSettings() {
       appLogo: brandSettings.logo || prev.appLogo,
       sidebarTitle: brandSettings.name || prev.sidebarTitle
     }));
-  }, [brandSettings, setSettings]);
+    setLogoUrl(brandSettings.logo || settings.appLogo);
+    setFaviconUrl(settings.appIcon);
+  }, [brandSettings, setSettings, settings.appLogo, settings.appIcon]);
   
   // Handle input changes for app settings
   const handleInputChange = (field: keyof GeneralSettingsData, value: string) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Apply URL inputs to settings
+  const applyLogoUrl = () => {
+    if (logoUrl) {
+      setSettings(prev => ({ ...prev, appLogo: logoUrl }));
+      toast.success("URL logo berhasil diterapkan");
+    }
+  };
+  
+  const applyFaviconUrl = () => {
+    if (faviconUrl) {
+      setSettings(prev => ({ ...prev, appIcon: faviconUrl }));
+      toast.success("URL favicon berhasil diterapkan");
+    }
   };
 
   // Handle file upload (placeholder - would need actual upload functionality)
@@ -115,10 +136,23 @@ export function GeneralSettings() {
                   <span className="text-gray-400">No Logo</span>
                 )}
               </div>
-              <Button variant="outline" onClick={() => handleFileUpload("appLogo")}>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Logo
-              </Button>
+              <div className="flex flex-col gap-2 flex-1">
+                <Button variant="outline" onClick={() => handleFileUpload("appLogo")}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Logo
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="URL logo aplikasi"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                  />
+                  <Button variant="outline" onClick={applyLogoUrl} className="shrink-0">
+                    <Link className="mr-2 h-4 w-4" />
+                    Terapkan
+                  </Button>
+                </div>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">
               Logo yang akan ditampilkan di sidebar (ukuran yang disarankan: 128x128 px)
@@ -139,10 +173,23 @@ export function GeneralSettings() {
                   <span className="text-gray-400">No Icon</span>
                 )}
               </div>
-              <Button variant="outline" onClick={() => handleFileUpload("appIcon")}>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Favicon
-              </Button>
+              <div className="flex flex-col gap-2 flex-1">
+                <Button variant="outline" onClick={() => handleFileUpload("appIcon")}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Favicon
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="URL favicon"
+                    value={faviconUrl}
+                    onChange={(e) => setFaviconUrl(e.target.value)}
+                  />
+                  <Button variant="outline" onClick={applyFaviconUrl} className="shrink-0">
+                    <Link className="mr-2 h-4 w-4" />
+                    Terapkan
+                  </Button>
+                </div>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">
               Icon yang akan ditampilkan pada tab browser (ukuran yang disarankan: 32x32 px)

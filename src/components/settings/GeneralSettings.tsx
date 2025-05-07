@@ -8,6 +8,7 @@ import { Save, Upload, Link } from "lucide-react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface GeneralSettingsData {
   businessName: string;
@@ -124,23 +125,12 @@ export function GeneralSettings() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Logo Aplikasi</Label>
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
-                {settings.appLogo ? (
-                  <img 
-                    src={settings.appLogo} 
-                    alt="App Logo" 
-                    className="max-h-full max-w-full object-contain"
-                  />
-                ) : (
-                  <span className="text-gray-400">No Logo</span>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <Button variant="outline" onClick={() => handleFileUpload("appLogo")}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Logo
-                </Button>
+            <Tabs defaultValue="url" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-2">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="upload">Upload</TabsTrigger>
+              </TabsList>
+              <TabsContent value="url" className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Input
                     placeholder="URL logo aplikasi"
@@ -152,32 +142,44 @@ export function GeneralSettings() {
                     Terapkan
                   </Button>
                 </div>
-              </div>
+                <p className="text-xs text-muted-foreground">
+                  Masukkan URL gambar logo yang ingin ditampilkan
+                </p>
+              </TabsContent>
+              <TabsContent value="upload" className="space-y-2">
+                <Button variant="outline" onClick={() => handleFileUpload("appLogo")} className="w-full">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Logo
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Upload file logo dari perangkat Anda (.png, .jpg, max 2MB)
+                </p>
+              </TabsContent>
+            </Tabs>
+            <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden mt-2">
+              {settings.appLogo ? (
+                <img 
+                  src={settings.appLogo} 
+                  alt="App Logo" 
+                  className="max-h-full max-w-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg"; 
+                  }}
+                />
+              ) : (
+                <span className="text-gray-400">No Logo</span>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Logo yang akan ditampilkan di sidebar (ukuran yang disarankan: 128x128 px)
-            </p>
           </div>
           
           <div className="space-y-2">
             <Label>Favicon</Label>
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
-                {settings.appIcon ? (
-                  <img 
-                    src={settings.appIcon} 
-                    alt="App Icon" 
-                    className="max-h-full max-w-full object-contain"
-                  />
-                ) : (
-                  <span className="text-gray-400">No Icon</span>
-                )}
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <Button variant="outline" onClick={() => handleFileUpload("appIcon")}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Favicon
-                </Button>
+            <Tabs defaultValue="url" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-2">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="upload">Upload</TabsTrigger>
+              </TabsList>
+              <TabsContent value="url" className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Input
                     placeholder="URL favicon"
@@ -189,11 +191,34 @@ export function GeneralSettings() {
                     Terapkan
                   </Button>
                 </div>
-              </div>
+                <p className="text-xs text-muted-foreground">
+                  Masukkan URL gambar favicon untuk tab browser
+                </p>
+              </TabsContent>
+              <TabsContent value="upload" className="space-y-2">
+                <Button variant="outline" onClick={() => handleFileUpload("appIcon")} className="w-full">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Favicon
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Upload file favicon dari perangkat Anda (.png, .jpg, max 1MB)
+                </p>
+              </TabsContent>
+            </Tabs>
+            <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden mt-2">
+              {settings.appIcon ? (
+                <img 
+                  src={settings.appIcon} 
+                  alt="App Icon" 
+                  className="max-h-full max-w-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/favicon.ico"; 
+                  }}
+                />
+              ) : (
+                <span className="text-gray-400">No Icon</span>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Icon yang akan ditampilkan pada tab browser (ukuran yang disarankan: 32x32 px)
-            </p>
           </div>
         </div>
         

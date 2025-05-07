@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { BrandLogo } from "@/components/auth/BrandLogo";
-import { Upload, Image } from "lucide-react";
+import { Upload, Image, Link } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export function AccountSettings() {
   const { toast } = useToast();
@@ -86,35 +87,73 @@ export function AccountSettings() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">URL Logo</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="logoUrl"
-                  placeholder="https://example.com/logo.png"
-                  type="url"
-                  value={logo}
-                  onChange={(e) => setLogo(e.target.value)}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Masukkan URL gambar logo yang ingin ditampilkan
-              </p>
+              <Label>Logo</Label>
+              <Tabs defaultValue="url" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-2">
+                  <TabsTrigger value="url">URL</TabsTrigger>
+                  <TabsTrigger value="upload">Upload</TabsTrigger>
+                </TabsList>
+                <TabsContent value="url" className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      id="logoUrl"
+                      placeholder="https://example.com/logo.png"
+                      type="url"
+                      value={logo}
+                      onChange={(e) => setLogo(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Masukkan URL gambar logo yang ingin ditampilkan
+                  </p>
+                </TabsContent>
+                <TabsContent value="upload" className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Button variant="outline" className="w-full">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Logo
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload file logo dari perangkat Anda (.png, .jpg, max 2MB)
+                  </p>
+                </TabsContent>
+              </Tabs>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="faviconUrl">URL Favicon</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="faviconUrl"
-                  placeholder="https://example.com/favicon.png"
-                  type="url"
-                  value={favicon}
-                  onChange={(e) => setFavicon(e.target.value)}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Masukkan URL gambar favicon untuk tab browser (disarankan format PNG)
-              </p>
+              <Label>Favicon</Label>
+              <Tabs defaultValue="url" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-2">
+                  <TabsTrigger value="url">URL</TabsTrigger>
+                  <TabsTrigger value="upload">Upload</TabsTrigger>
+                </TabsList>
+                <TabsContent value="url" className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      id="faviconUrl"
+                      placeholder="https://example.com/favicon.png"
+                      type="url" 
+                      value={favicon}
+                      onChange={(e) => setFavicon(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Masukkan URL gambar favicon untuk tab browser (disarankan format PNG)
+                  </p>
+                </TabsContent>
+                <TabsContent value="upload" className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Button variant="outline" className="w-full">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Favicon
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload file favicon dari perangkat Anda (.png, .jpg, max 1MB)
+                  </p>
+                </TabsContent>
+              </Tabs>
             </div>
             
             <div className="pt-2">

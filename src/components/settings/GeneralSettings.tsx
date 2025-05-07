@@ -25,25 +25,29 @@ export function GeneralSettings() {
   const [settings, setSettings] = useLocalStorage<GeneralSettingsData>("generalSettings", {
     businessName: "Undangan Digital",
     appName: "Order Management",
-    appLogo: brandSettings.logo || "/placeholder.svg",
+    appLogo: "/placeholder.svg",
     appIcon: "/favicon.ico",
-    sidebarTitle: brandSettings.name || "Order Management"
+    sidebarTitle: "Order Management"
   });
   
   // URLs for direct input
-  const [logoUrl, setLogoUrl] = useState(settings.appLogo);
-  const [faviconUrl, setFaviconUrl] = useState(settings.appIcon);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
   
-  // Sync settings with brandSettings on mount
+  // Sync settings with brandSettings on mount only
   useEffect(() => {
+    // Initialize with brandSettings values if available
     setSettings(prev => ({
       ...prev,
       appLogo: brandSettings.logo || prev.appLogo,
       sidebarTitle: brandSettings.name || prev.sidebarTitle
     }));
+    
+    // Set initial URL values
     setLogoUrl(brandSettings.logo || settings.appLogo);
     setFaviconUrl(settings.appIcon);
-  }, [brandSettings, setSettings, settings.appLogo, settings.appIcon]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to run only on mount
   
   // Handle input changes for app settings
   const handleInputChange = (field: keyof GeneralSettingsData, value: string) => {

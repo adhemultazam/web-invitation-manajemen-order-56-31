@@ -20,12 +20,15 @@ interface AuthContextType {
     logo: string;
   };
   updateBrandSettings: (settings: {name?: string, logo?: string}) => void;
+  updateUser: (userData: {name?: string, email?: string, logo?: string}) => void;
 }
 
 interface UserType {
   id: string;
   email: string;
   name: string;
+  profileImage?: string;
+  logo?: string;
 }
 
 // Create context with default values
@@ -35,7 +38,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   brandSettings: DEFAULT_BRAND,
-  updateBrandSettings: () => {}
+  updateBrandSettings: () => {},
+  updateUser: () => {}
 });
 
 // Hook to use the auth context
@@ -114,6 +118,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Error updating brand settings:", e);
     }
   };
+
+  // User profile update function
+  const updateUser = (userData: {name?: string, email?: string, logo?: string}) => {
+    if (!user) return;
+    
+    try {
+      const updatedUser = {
+        ...user,
+        name: userData.name || user.name,
+        email: userData.email || user.email,
+        logo: userData.logo || user.logo
+      };
+      
+      setUser(updatedUser);
+      
+      // Store updated user in localStorage
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+    } catch (e) {
+      console.error("Error updating user data:", e);
+      toast.error("Failed to update user profile");
+    }
+  };
   
   // Mock login function - normally would call an API
   const login = async (email: string, password: string, remember: boolean): Promise<boolean> => {
@@ -122,7 +149,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userData = {
         id: "user-1",
         email: email,
-        name: "Admin User"
+        name: "Admin User",
+        logo: brandSettings.logo // Set initial logo from brand settings
       };
       
       setUser(userData);
@@ -161,7 +189,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     brandSettings,
-    updateBrandSettings
+    updateBrandSettings,
+    updateUser
   };
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

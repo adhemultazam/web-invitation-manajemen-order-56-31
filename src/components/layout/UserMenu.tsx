@@ -39,7 +39,7 @@ export function UserMenu() {
           >
             <Avatar className="h-9 w-9 border">
               <AvatarImage 
-                src={user?.profileImage || "/placeholder.svg"} 
+                src={user?.logo || "/placeholder.svg"} 
                 alt={user?.name || "User"} 
               />
               <AvatarFallback className={isDarkMode ? "bg-indigo-600 text-white" : "bg-wedding-primary text-white"}>

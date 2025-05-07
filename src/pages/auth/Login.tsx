@@ -7,13 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
-import { Image } from "lucide-react";
+import { Image, Eye, EyeOff } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { isAuthenticated, login, brandSettings } = useAuth();
   const navigate = useNavigate();
 
@@ -31,6 +45,27 @@ export default function Login() {
     }
 
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail.trim() || !/\S+@\S+\.\S+/.test(forgotEmail)) {
+      toast.error("Masukkan alamat email yang valid");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Simulate API call to reset password
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setResetEmailSent(true);
+      toast.success("Link reset password telah dikirim");
+    } catch (error) {
+      toast.error("Gagal mengirim link reset password");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,14 +104,84 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="link" size="sm" className="px-0 text-sm font-normal h-auto">
+                        Lupa Password?
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Reset Password</DialogTitle>
+                        <DialogDescription>
+                          {resetEmailSent 
+                            ? "Email reset password telah dikirim. Silahkan cek inbox Anda."
+                            : "Masukkan email Anda untuk menerima tautan reset password."}
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      {!resetEmailSent ? (
+                        <>
+                          <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="reset-email">Email</Label>
+                              <Input
+                                id="reset-email"
+                                type="email"
+                                placeholder="contoh@email.com"
+                                value={forgotEmail}
+                                onChange={(e) => setForgotEmail(e.target.value)}
+                                disabled={loading}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Batal</Button>
+                            </DialogClose>
+                            <Button 
+                              disabled={loading} 
+                              onClick={handleForgotPassword}
+                            >
+                              {loading ? "Mengirim..." : "Kirim Link Reset"}
+                            </Button>
+                          </DialogFooter>
+                        </>
+                      ) : (
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button>Tutup</Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    </span>
+                  </Button>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox

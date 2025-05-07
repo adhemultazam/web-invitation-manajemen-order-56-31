@@ -1,114 +1,162 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-// Define types for our context
+// Define the user type
 interface User {
-  id: string;
   name: string;
   email: string;
-  role: string;
-  logo?: string; // Added logo property as optional
+  profileImage?: string;
 }
 
+// Define the context type
 interface AuthContextType {
-  user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, remember: boolean) => boolean;
+  user: User | null;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateUser: (updatedUser: User) => void;
+  updateUserProfile?: (profileData: Partial<User>) => void;
 }
 
-// Create the context with default values
+// Create the Auth context
 const AuthContext = createContext<AuthContextType>({
-  user: null,
   isAuthenticated: false,
-  login: () => false,
+  user: null,
+  login: async () => false,
   logout: () => {},
-  updateUser: () => {},
 });
 
-// Define the provider component
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  
-  // Check for saved authentication on component mount
-  useEffect(() => {
-    const savedAuth = localStorage.getItem("auth");
-    if (savedAuth) {
-      try {
-        const parsedAuth = JSON.parse(savedAuth);
-        setUser(parsedAuth.user);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Error parsing saved auth:", error);
-        localStorage.removeItem("auth");
+// Dummy authentication function (replace with actual auth)
+const authenticateUser = async (email: string, password: string): Promise<boolean> => {
+  // In a real app, you would call an API here
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // For demo purposes, we'll accept any email with a password of "password"
+      if (password === "password") {
+        resolve(true);
+      } else {
+        resolve(false);
       }
-    }
+    }, 500);
+  });
+};
+
+// Create the Auth provider component
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = () => {
+      const userAuth = localStorage.getItem("isAuthenticated");
+      if (userAuth === "true") {
+        setIsAuthenticated(true);
+        
+        // Load user data if available
+        try {
+          const savedProfile = localStorage.getItem("userProfile");
+          if (savedProfile) {
+            const profile = JSON.parse(savedProfile);
+            setUser({
+              name: "Admin", // Default name
+              email: profile.email || "admin@example.com",
+              profileImage: profile.profileImage || "/placeholder.svg"
+            });
+          } else {
+            // Set default user if no profile found
+            setUser({
+              name: "Admin",
+              email: "admin@example.com",
+              profileImage: "/placeholder.svg"
+            });
+          }
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+          // Fallback to default user
+          setUser({
+            name: "Admin",
+            email: "admin@example.com",
+            profileImage: "/placeholder.svg"
+          });
+        }
+      }
+    };
+    
+    checkAuth();
   }, []);
 
-  // Login function that accepts a remember parameter
-  const login = (email: string, password: string, remember: boolean): boolean => {
-    // This is a mock authentication - in a real app, this would call an API
-    if (email === "admin@example.com" && password === "password") {
-      const userData: User = {
-        id: "1",
-        name: "Admin",
-        email: "admin@example.com",
-        role: "admin",
-        logo: "", // Initialize with empty string
-      };
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const isValid = await authenticateUser(email, password);
       
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      // Save to localStorage if remember is true
-      if (remember) {
-        localStorage.setItem("auth", JSON.stringify({
-          user: userData,
-          timestamp: new Date().getTime(),
-        }));
+      if (isValid) {
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+        
+        // Save user profile data
+        const userProfile = {
+          name: "Admin", // Default name
+          email: email,
+          profileImage: "/placeholder.svg" // Default profile image
+        };
+        
+        setUser(userProfile);
+        
+        // Store profile in localStorage if it doesn't exist yet
+        if (!localStorage.getItem("userProfile")) {
+          localStorage.setItem("userProfile", JSON.stringify({
+            email: email,
+            profileImage: "/placeholder.svg"
+          }));
+        }
+        
+        toast.success("Login berhasil", {
+          description: "Selamat datang kembali!"
+        });
+        
+        return true;
+      } else {
+        toast.error("Login gagal", {
+          description: "Email atau password tidak valid"
+        });
+        return false;
       }
-      
-      return true;
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Login gagal", {
+        description: "Terjadi kesalahan, silakan coba lagi"
+      });
+      return false;
     }
-    return false;
   };
 
-  // Logout function
   const logout = () => {
-    setUser(null);
+    localStorage.removeItem("isAuthenticated");
     setIsAuthenticated(false);
-    localStorage.removeItem("auth");
+    setUser(null);
+    navigate("/login");
+    toast.info("Logout berhasil", {
+      description: "Anda telah keluar dari akun"
+    });
   };
-
-  // Update user function to modify user data
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    
-    // If user was remembered, update localStorage as well
-    const savedAuth = localStorage.getItem("auth");
-    if (savedAuth) {
-      try {
-        const parsedAuth = JSON.parse(savedAuth);
-        localStorage.setItem("auth", JSON.stringify({
-          ...parsedAuth,
-          user: updatedUser,
-        }));
-      } catch (error) {
-        console.error("Error updating saved user:", error);
-      }
+  
+  const updateUserProfile = (profileData: Partial<User>) => {
+    if (user) {
+      // Update user state
+      const updatedUser = { ...user, ...profileData };
+      setUser(updatedUser);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook for using the auth context
-export function useAuth() {
-  return useContext(AuthContext);
-}
+// Create a hook to use the auth context
+export const useAuth = () => useContext(AuthContext);

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -13,7 +12,7 @@ import MonthlyOrders from "./pages/orders/MonthlyOrders";
 import NotFound from "./pages/NotFound";
 import Invoices from "./pages/invoices/Invoices";
 import Login from "./pages/auth/Login";
-import { TooltipProvider } from "./components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -59,9 +58,9 @@ const App = () => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider defaultTheme="light" storageKey="nikah-theme-mode">
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="light" storageKey="nikah-theme-mode">
             <TooltipProvider>
               <Routes>
                 <Route path="/login" element={<Login />} />
@@ -120,9 +119,9 @@ const App = () => {
               <Toaster />
               <Sonner />
             </TooltipProvider>
-          </BrowserRouter>
-        </ThemeProvider>
-      </AuthProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

@@ -65,8 +65,7 @@ export function Layout({ children }: LayoutProps) {
         /* Modern table styles with better spacing */
         .compact-table th {
           height: auto;
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
+          padding: 0.75rem 1rem;
           font-size: 0.75rem;
           font-family: 'Inter', sans-serif;
           font-weight: 600;
@@ -74,8 +73,7 @@ export function Layout({ children }: LayoutProps) {
         }
         
         .compact-table td {
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
+          padding: 0.625rem 1rem;
           font-family: 'Inter', sans-serif;
           font-size: 0.875rem;
           vertical-align: middle;

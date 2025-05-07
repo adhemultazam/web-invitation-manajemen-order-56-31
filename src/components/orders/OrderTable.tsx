@@ -84,7 +84,7 @@ export function OrderTable({
 
   return (
     <div className="rounded-md border shadow-sm overflow-hidden">
-      <Table className="w-full">
+      <Table className="w-full font-sans">
         <OrderTableHeader />
         <TableBody>
           {orders.length > 0 ? (

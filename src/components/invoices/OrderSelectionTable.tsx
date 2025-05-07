@@ -43,12 +43,12 @@ export function OrderSelectionTable({
       <Table className="w-full font-inter">
         <TableHeader>
           <TableRow className="bg-gray-50 dark:bg-gray-800/50">
-            <TableHead className="w-12 py-3"></TableHead>
-            <TableHead className="py-3">ID</TableHead>
-            <TableHead className="py-3">Client</TableHead>
-            <TableHead className="py-3">Tgl Pesanan</TableHead>
-            <TableHead className="py-3">Status</TableHead>
-            <TableHead className="text-right py-3">Jumlah</TableHead>
+            <TableHead className="w-12 py-3 px-4"></TableHead>
+            <TableHead className="py-3 px-4">ID</TableHead>
+            <TableHead className="py-3 px-4">Client</TableHead>
+            <TableHead className="py-3 px-4">Tgl Pesanan</TableHead>
+            <TableHead className="py-3 px-4">Status</TableHead>
+            <TableHead className="text-right py-3 px-4">Jumlah</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -64,19 +64,19 @@ export function OrderSelectionTable({
                     className="h-4 w-4"
                   />
                 </TableCell>
-                <TableCell className={cn("font-mono text-xs py-2.5", "font-inter")}>
+                <TableCell className={cn("font-mono text-xs py-2.5 px-4", "font-inter")}>
                   {order.id.substring(0, 8)}
                 </TableCell>
-                <TableCell className="py-2.5 text-sm">{order.clientName}</TableCell>
-                <TableCell className="py-2.5 text-xs">
+                <TableCell className="py-2.5 px-4 text-sm">{order.clientName}</TableCell>
+                <TableCell className="py-2.5 px-4 text-xs">
                   {format(new Date(order.orderDate), "dd MMM yyyy")}
                 </TableCell>
-                <TableCell className="py-2.5">
+                <TableCell className="py-2.5 px-4">
                   <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 text-[11px] py-0.5 px-2 font-medium">
                     {order.paymentStatus}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium py-2.5 text-xs">
+                <TableCell className="text-right font-medium py-2.5 px-4 text-xs">
                   <InvoiceCurrency amount={getNumericAmount(order.paymentAmount)} />
                 </TableCell>
               </TableRow>

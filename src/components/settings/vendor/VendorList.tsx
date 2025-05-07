@@ -20,12 +20,12 @@ export function VendorList({ vendors, onEdit, onDelete }: VendorListProps) {
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead>Nama Vendor</TableHead>
-          <TableHead>Kode</TableHead>
-          <TableHead>Warna</TableHead>
-          <TableHead>Komisi (%)</TableHead>
-          <TableHead className="w-[100px]">Aksi</TableHead>
+        <TableRow className="bg-muted/50">
+          <TableHead className="px-4 py-3 text-xs font-medium">Nama Vendor</TableHead>
+          <TableHead className="px-4 py-3 text-xs font-medium">Kode</TableHead>
+          <TableHead className="px-4 py-3 text-xs font-medium">Warna</TableHead>
+          <TableHead className="px-4 py-3 text-xs font-medium">Komisi (%)</TableHead>
+          <TableHead className="w-[100px] px-4 py-3 text-xs font-medium">Aksi</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

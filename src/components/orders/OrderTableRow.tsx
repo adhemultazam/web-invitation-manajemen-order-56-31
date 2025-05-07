@@ -84,14 +84,14 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
   };
 
   return (
-    <TableRow className="h-12 hover:bg-gray-50/80">
+    <TableRow className="h-12 hover:bg-gray-50/80 font-inter">
       {/* No */}
-      <TableCell className="font-mono text-xs py-2 px-2">
+      <TableCell className="font-mono text-xs py-2.5 px-4">
         {index + 1}
       </TableCell>
       
       {/* Combined Dates - Tgl Pesan & Tgl Acara */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1 text-[10px] font-mono text-gray-600 dark:text-gray-400">
             <Calendar className="h-3 w-3" /> {formatDate(order.orderDate)}
@@ -103,14 +103,14 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Countdown */}
-      <TableCell className="font-mono text-[9px] py-2 px-2">
+      <TableCell className="font-mono text-[9px] py-2.5 px-4">
         <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
           {order.countdownDays} hari
         </span>
       </TableCell>
       
       {/* Client & Nama combined - SWAPPED ORDER */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <div className="flex flex-col gap-0.5">
           <div className="text-xs font-medium leading-tight">
             {hasClientUrl() ? (
@@ -131,7 +131,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Vendor */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <VendorDropdown 
           vendor={order.vendor} 
           vendors={vendors}
@@ -142,7 +142,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Paket & Tema combined */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <div className="flex flex-col gap-1">
           <PackageSelect
             value={order.package}
@@ -165,7 +165,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Addons */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <OrderAddons 
           addons={order.addons} 
           addonStyles={addonStyles}
@@ -174,7 +174,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Pembayaran */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <PaymentStatusBadge 
           status={order.paymentStatus}
           amount={typeof order.paymentAmount === 'number' ? order.paymentAmount : parseFloat(order.paymentAmount.toString()) || 0}
@@ -186,7 +186,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Status */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4">
         <WorkStatusSelect
           value={order.workStatus}
           isDisabled={updatingOrders.has(order.id)}
@@ -197,7 +197,7 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
       </TableCell>
       
       {/* Aksi */}
-      <TableCell className="py-2 px-2">
+      <TableCell className="py-2.5 px-4 text-right">
         <OrderActions
           order={order}
           onView={handleViewOrderDetail}

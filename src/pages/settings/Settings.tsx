@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
 import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSettings";
-import { GeneralSettings } from "@/pages/settings/GeneralSettings";
+import { GeneralSettings } from "@/components/settings/GeneralSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("account");

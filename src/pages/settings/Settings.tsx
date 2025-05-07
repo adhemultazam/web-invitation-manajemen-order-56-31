@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
 import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSettings";
+import { GeneralSettings } from "@/pages/settings/GeneralSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("account");
@@ -34,11 +35,15 @@ export default function Settings() {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="account">Akun</TabsTrigger>
+          <TabsTrigger value="general">Umum</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
           <TabsTrigger value="resources">Data Master</TabsTrigger>
         </TabsList>
         <TabsContent value="account" className="space-y-4">
           <AccountSettings />
+        </TabsContent>
+        <TabsContent value="general" className="space-y-4">
+          <GeneralSettings />
         </TabsContent>
         <TabsContent value="invoice" className="space-y-4">
           <InvoiceSettings />

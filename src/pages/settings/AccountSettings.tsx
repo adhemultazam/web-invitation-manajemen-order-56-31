@@ -87,7 +87,7 @@ export function AccountSettings() {
             </div>
             
             <div className="space-y-2">
-              <Label>Logo</Label>
+              <Label>Logo Brand</Label>
               <Tabs defaultValue="url" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-2">
                   <TabsTrigger value="url">URL</TabsTrigger>

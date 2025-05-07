@@ -1,3 +1,4 @@
+
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -117,6 +118,4 @@ export type User = {
   name: string;
   email?: string;
   profileImage?: string;
-  logo?: string; // For backwards compatibility
-  companyName?: string;
 };

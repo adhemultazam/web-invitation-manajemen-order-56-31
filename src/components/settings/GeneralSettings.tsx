@@ -22,13 +22,13 @@ interface GeneralSettingsData {
 }
 
 export function GeneralSettings() {
-  const { updateBrandSettings, brandSettings, user, updateUserProfile } = useAuth();
+  const { updateBrandSettings, brandSettings } = useAuth();
   
   // Use our useLocalStorage hook instead of manual localStorage handling
   const [settings, setSettings] = useLocalStorage<GeneralSettingsData>("generalSettings", {
     businessName: "Undangan Digital",
     appName: "Order Management",
-    appLogo: user?.profileImage || "/placeholder.svg",
+    appLogo: brandSettings.logo || "/placeholder.svg",
     appIcon: "/favicon.ico",
     sidebarTitle: "Order Management"
   });
@@ -42,12 +42,12 @@ export function GeneralSettings() {
     // Initialize with brandSettings values if available
     setSettings(prev => ({
       ...prev,
-      appLogo: brandSettings.logo || user?.profileImage || prev.appLogo,
+      appLogo: brandSettings.logo || prev.appLogo,
       sidebarTitle: brandSettings.name || prev.sidebarTitle
     }));
     
     // Set initial URL values
-    setLogoUrl(brandSettings.logo || user?.profileImage || settings.appLogo);
+    setLogoUrl(brandSettings.logo || settings.appLogo);
     setFaviconUrl(settings.appIcon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only on mount
@@ -61,12 +61,6 @@ export function GeneralSettings() {
   const applyLogoUrl = () => {
     if (logoUrl) {
       setSettings(prev => ({ ...prev, appLogo: logoUrl }));
-      
-      // Update user profile image as well for synchronization
-      if (user) {
-        updateUserProfile({ profileImage: logoUrl });
-      }
-      
       toast.success("URL logo berhasil diterapkan");
     }
   };

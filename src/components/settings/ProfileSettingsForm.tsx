@@ -11,19 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export function ProfileSettingsForm() {
-  const { user, updateUserProfile, updateBrandSettings } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
     profileImage: user?.profileImage || "",
-  });
-  
-  // Get generalSettings to sync logo
-  const [generalSettings] = useLocalStorage("generalSettings", {
-    appLogo: user?.profileImage || "",
-    sidebarTitle: "",
-    appName: "",
-    appIcon: ""
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -57,11 +49,6 @@ export function ProfileSettingsForm() {
         name: formData.name,
         email: formData.email,
         profileImage: formData.profileImage
-      });
-      
-      // Synchronize logo with brandSettings
-      updateBrandSettings({
-        logo: formData.profileImage
       });
       
       toast.success("Profil berhasil diperbarui");

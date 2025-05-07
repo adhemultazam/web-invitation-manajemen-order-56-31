@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,24 @@ export function GeneralSettings() {
     toast.info("File upload would be implemented here");
   };
 
+  // Apply saved settings on initial load to make sure the UI is in sync with stored settings
+  useEffect(() => {
+    // Update document title based on stored settings
+    document.title = settings.appName;
+    
+    // Update sidebar title if element exists
+    const sidebarTitleElement = document.querySelector('.sidebar-title');
+    if (sidebarTitleElement) {
+      sidebarTitleElement.textContent = settings.sidebarTitle;
+    }
+    
+    // Update sidebar logo if element exists
+    const sidebarLogoElement = document.querySelector('.sidebar-logo') as HTMLImageElement;
+    if (sidebarLogoElement && settings.appLogo) {
+      sidebarLogoElement.src = settings.appLogo;
+    }
+  }, [settings]);
+
   // Save settings and update invoice settings
   const handleSaveSettings = () => {
     // Update invoice settings with the business information to keep them in sync
@@ -64,17 +83,19 @@ export function GeneralSettings() {
       }
     }
     
-    // Get the sidebar title element and update it
-    try {
-      const sidebarTitleElement = document.querySelector('.sidebar-title');
-      if (sidebarTitleElement) {
-        sidebarTitleElement.textContent = settings.sidebarTitle;
-      }
-
-      // Update document title
-      document.title = settings.appName;
-    } catch (e) {
-      console.error("Error updating DOM elements:", e);
+    // Update document title
+    document.title = settings.appName;
+    
+    // Update sidebar title
+    const sidebarTitleElement = document.querySelector('.sidebar-title');
+    if (sidebarTitleElement) {
+      sidebarTitleElement.textContent = settings.sidebarTitle;
+    }
+    
+    // Update sidebar logo
+    const sidebarLogoElement = document.querySelector('.sidebar-logo') as HTMLImageElement;
+    if (sidebarLogoElement && settings.appLogo) {
+      sidebarLogoElement.src = settings.appLogo;
     }
     
     toast.success("Pengaturan umum berhasil disimpan");

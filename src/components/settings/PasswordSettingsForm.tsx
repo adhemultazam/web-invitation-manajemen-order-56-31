@@ -47,17 +47,35 @@ export function PasswordSettingsForm() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      }));
-      
-      toast.success("Password berhasil diperbarui");
+      // Get current user profile
+      const savedProfile = localStorage.getItem("userProfile");
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        
+        // Check current password (default is "password" if not set before)
+        const currentPassword = profile.password || "password";
+        
+        if (formData.currentPassword !== currentPassword) {
+          toast.error("Password saat ini tidak sesuai");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Update password in localStorage
+        profile.password = formData.newPassword;
+        localStorage.setItem("userProfile", JSON.stringify(profile));
+        
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        }));
+        
+        toast.success("Password berhasil diperbarui");
+      } else {
+        toast.error("Profil pengguna tidak ditemukan");
+      }
     } catch (error) {
       toast.error("Gagal memperbarui password");
       console.error(error);

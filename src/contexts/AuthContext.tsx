@@ -30,21 +30,6 @@ const AuthContext = createContext<AuthContextType>({
   updateUser: () => {},
 });
 
-// Dummy authentication function
-const authenticateUser = async (email: string, password: string): Promise<boolean> => {
-  // In a real app, you would call an API here
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // For demo purposes, we'll accept any email with a password of "password"
-      if (password === "password") {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    }, 500);
-  });
-};
-
 // Create the Auth provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -64,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (savedProfile) {
             const profile = JSON.parse(savedProfile);
             setUser({
-              name: "Admin", // Default name
+              name: profile.name || "Admin", // Use saved name if available
               email: profile.email || "admin@example.com",
               profileImage: profile.profileImage || "/placeholder.svg",
               logo: profile.logo || "" // Add logo property
@@ -96,31 +81,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const isValid = await authenticateUser(email, password);
+      // Check if user exists in localStorage
+      const savedProfile = localStorage.getItem("userProfile");
+      let isValid = false;
+      
+      if (savedProfile) {
+        // If we have a saved profile, check if email and password match
+        const profile = JSON.parse(savedProfile);
+        
+        // Check if email matches the saved profile
+        if (profile.email === email) {
+          // For demo purposes, we'll accept "password" or the stored password if it exists
+          const savedPassword = profile.password || "password";
+          isValid = password === savedPassword;
+        }
+      } else {
+        // Default login for the demo
+        isValid = password === "password";
+      }
       
       if (isValid) {
         localStorage.setItem("isAuthenticated", "true");
         setIsAuthenticated(true);
         
-        // Save user profile data
-        const userProfile = {
-          name: "Admin", // Default name
-          email: email,
-          profileImage: "/placeholder.svg", // Default profile image
-          logo: "" // Default logo
-        };
-        
-        setUser(userProfile);
-        
-        // Store profile in localStorage if it doesn't exist yet
-        if (!localStorage.getItem("userProfile")) {
-          localStorage.setItem("userProfile", JSON.stringify({
+        // Get profile or create default
+        let userProfile;
+        if (savedProfile) {
+          userProfile = JSON.parse(savedProfile);
+        } else {
+          userProfile = {
+            name: "Admin", // Default name
             email: email,
-            profileImage: "/placeholder.svg",
-            logo: ""
-          }));
+            profileImage: "/placeholder.svg", // Default profile image
+            logo: "" // Default logo
+          };
+          
+          // Store default profile
+          localStorage.setItem("userProfile", JSON.stringify(userProfile));
         }
         
+        setUser(userProfile);
         return true;
       } else {
         return false;

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Save, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GeneralSettingsData {
   businessName: string;
@@ -17,14 +18,25 @@ interface GeneralSettingsData {
 }
 
 export function GeneralSettings() {
+  const { updateBrandSettings, brandSettings } = useAuth();
+  
   // Use our useLocalStorage hook instead of manual localStorage handling
   const [settings, setSettings] = useLocalStorage<GeneralSettingsData>("generalSettings", {
     businessName: "Undangan Digital",
     appName: "Order Management",
-    appLogo: "/placeholder.svg",
+    appLogo: brandSettings.logo || "/placeholder.svg",
     appIcon: "/favicon.ico",
-    sidebarTitle: "Order Management"
+    sidebarTitle: brandSettings.name || "Order Management"
   });
+  
+  // Sync settings with brandSettings on mount
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      appLogo: brandSettings.logo || prev.appLogo,
+      sidebarTitle: brandSettings.name || prev.sidebarTitle
+    }));
+  }, [brandSettings, setSettings]);
   
   // Handle input changes for app settings
   const handleInputChange = (field: keyof GeneralSettingsData, value: string) => {
@@ -42,17 +54,11 @@ export function GeneralSettings() {
     // Update document title
     document.title = settings.appName;
     
-    // Update sidebar title
-    const sidebarTitleElement = document.querySelector('.sidebar-title');
-    if (sidebarTitleElement) {
-      sidebarTitleElement.textContent = settings.sidebarTitle;
-    }
-    
-    // Update sidebar logo
-    const sidebarLogoElement = document.querySelector('.sidebar-logo') as HTMLImageElement;
-    if (sidebarLogoElement && settings.appLogo) {
-      sidebarLogoElement.src = settings.appLogo;
-    }
+    // Update brandSettings context
+    updateBrandSettings({
+      name: settings.sidebarTitle,
+      logo: settings.appLogo
+    });
     
     toast.success("Pengaturan umum berhasil disimpan");
   };

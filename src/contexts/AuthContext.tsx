@@ -145,12 +145,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Mock login function - normally would call an API
   const login = async (email: string, password: string, remember: boolean): Promise<boolean> => {
     if (email === "admin@example.com" && password === "password") {
-      // Store user info
+      // Get brand settings from localStorage before creating user
+      let userLogo = "/placeholder.svg";
+      
+      try {
+        const generalSettings = localStorage.getItem("generalSettings");
+        if (generalSettings) {
+          const settings = JSON.parse(generalSettings);
+          if (settings.appLogo) {
+            userLogo = settings.appLogo;
+          }
+        }
+      } catch (e) {
+        console.error("Error loading logo for user:", e);
+      }
+      
+      // Store user info with the current brand logo
       const userData = {
         id: "user-1",
         email: email,
         name: "Admin User",
-        logo: brandSettings.logo // Set initial logo from brand settings
+        logo: userLogo // Get logo from localStorage if available
       };
       
       setUser(userData);

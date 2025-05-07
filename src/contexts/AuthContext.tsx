@@ -1,163 +1,144 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-type User = {
-  id: string;
+interface User {
   name: string;
   email: string;
-  logo?: string;  // Added logo property to User type
-};
-
-type BrandSettings = {
-  name: string;
-  logo?: string;
-  favicon?: string;
-};
-
-interface AuthContextType {
-  user: User | null;
-  brandSettings: BrandSettings;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  updateBrandSettings: (settings: Partial<BrandSettings>) => Promise<void>;
-  updateUser: (userData: Partial<User>) => Promise<void>; // Added updateUser function
+  profileImage?: string;
 }
 
-// Create context with a default value
+interface BrandSettings {
+  name: string;
+  logo?: string;
+}
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: User | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  updateUserProfile: (profile: Partial<User>) => void;
+  brandSettings: BrandSettings;
+  updateBrandSettings: (settings: Partial<BrandSettings>) => void;
+}
+
 const AuthContext = createContext<AuthContextType>({
-  user: null,
-  brandSettings: { name: "Nikah Digital" },
   isAuthenticated: false,
+  user: null,
   login: async () => false,
   logout: () => {},
-  updateBrandSettings: async () => {},
-  updateUser: async () => {}, // Added default implementation
+  updateUserProfile: () => {},
+  brandSettings: { name: "" },
+  updateBrandSettings: () => {},
 });
 
-// Initial user data for demo purposes
-const demoUser = {
-  id: "1",
-  name: "Admin",
-  email: "admin@example.com",
-  logo: "", // Added logo property to demoUser
-};
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [brandSettings, setBrandSettings] = useState<BrandSettings>({ name: "Nikah Digital" });
-  const navigate = useNavigate();
-  
-  // Check for saved user and brand settings in localStorage on mount
+  const [brandSettings, setBrandSettings] = useState<BrandSettings>({ name: "Undangan Digital" });
+
+  // Load auth state from localStorage on init
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedBrandSettings = localStorage.getItem("brandSettings");
-    
-    if (savedUser) {
+    const storedAuth = localStorage.getItem("auth");
+    if (storedAuth) {
       try {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        
-        // If brand settings don't have a logo but user does, sync it
-        if (!brandSettings.logo && parsedUser.logo) {
-          updateBrandSettings({ logo: parsedUser.logo });
-        }
+        const { isAuthenticated: stored, user } = JSON.parse(storedAuth);
+        setIsAuthenticated(stored);
+        setUser(user || null);
       } catch (e) {
-        console.error("Failed to parse saved user:", e);
+        console.error("Failed to parse auth data", e);
+        localStorage.removeItem("auth");
       }
     }
-    
-    if (savedBrandSettings) {
+
+    // Load brand settings
+    const storedSettings = localStorage.getItem("brandSettings");
+    if (storedSettings) {
       try {
-        const parsedSettings = JSON.parse(savedBrandSettings) as BrandSettings;
-        setBrandSettings(parsedSettings);
-        
-        // Apply favicon if it exists
-        if (parsedSettings.favicon) {
-          const existingFavicon = document.querySelector("link[rel*='icon']");
-          if (existingFavicon) {
-            existingFavicon.setAttribute("href", parsedSettings.favicon);
-          } else {
-            const newFavicon = document.createElement("link");
-            newFavicon.rel = "icon";
-            newFavicon.href = parsedSettings.favicon;
-            document.head.appendChild(newFavicon);
-          }
-        }
-        
-        // Sync logo between user and brand settings if needed
-        if (user && !user.logo && parsedSettings.logo) {
-          updateUser({ ...user, logo: parsedSettings.logo });
-        }
+        const settings = JSON.parse(storedSettings);
+        setBrandSettings(settings);
       } catch (e) {
-        console.error("Failed to parse saved brand settings:", e);
+        console.error("Failed to parse brand settings", e);
       }
     }
   }, []);
-  
-  // Login function (simulated)
+
+  // For demonstration, use a mock login that always succeeds
   const login = async (email: string, password: string): Promise<boolean> => {
-    // For demo, we'll accept any email with "admin" and password "password"
-    if (email.includes("admin") && password === "password") {
-      setUser(demoUser);
-      localStorage.setItem("user", JSON.stringify(demoUser));
-      return true;
+    if (!email || !password) return false;
+
+    // Simple validation to ensure some input is provided
+    if (email.trim() === "" || password.trim() === "") {
+      return false;
     }
-    return false;
+
+    // Demo user setup
+    const demoUser = {
+      name: "Admin",
+      email: email,
+      profileImage: "",
+    };
+
+    setUser(demoUser);
+    setIsAuthenticated(true);
+
+    // Store auth state in localStorage
+    localStorage.setItem(
+      "auth",
+      JSON.stringify({
+        isAuthenticated: true,
+        user: demoUser,
+      })
+    );
+
+    return true;
   };
-  
-  // Logout function
+
   const logout = () => {
+    setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem("user");
-    navigate("/login");
-    toast.success("Berhasil keluar dari sistem");
+    localStorage.removeItem("auth");
   };
-  
-  // Update brand settings
-  const updateBrandSettings = async (settings: Partial<BrandSettings>): Promise<void> => {
-    // Update brand settings with new values
-    const newSettings = { ...brandSettings, ...settings };
-    setBrandSettings(newSettings);
-    localStorage.setItem("brandSettings", JSON.stringify(newSettings));
-    
-    // Sync logo with user if needed
-    if (user && settings.logo && user.logo !== settings.logo) {
-      updateUser({ ...user, logo: settings.logo });
-    }
-  };
-  
-  // Update user function
-  const updateUser = async (userData: Partial<User>): Promise<void> => {
+
+  const updateUserProfile = (profile: Partial<User>) => {
     if (!user) return;
-    
-    // Update user with new values
-    const updatedUser = { ...user, ...userData };
+
+    const updatedUser = { ...user, ...profile };
     setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    
-    // Sync logo with brandSettings if needed
-    if (userData.logo && brandSettings.logo !== userData.logo) {
-      updateBrandSettings({ ...brandSettings, logo: userData.logo });
-    }
+
+    // Update localStorage
+    localStorage.setItem(
+      "auth",
+      JSON.stringify({
+        isAuthenticated,
+        user: updatedUser,
+      })
+    );
   };
-  
+
+  const updateBrandSettings = (settings: Partial<BrandSettings>) => {
+    const updatedSettings = { ...brandSettings, ...settings };
+    setBrandSettings(updatedSettings);
+
+    // Save to localStorage
+    localStorage.setItem("brandSettings", JSON.stringify(updatedSettings));
+  };
+
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      brandSettings, 
-      isAuthenticated: !!user, 
-      login, 
-      logout,
-      updateBrandSettings,
-      updateUser, // Added updateUser to the context
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        updateUserProfile,
+        brandSettings,
+        updateBrandSettings,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
-
-// Hook for easy context use
-export const useAuth = () => useContext(AuthContext);
+};

@@ -1,4 +1,3 @@
-
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -116,7 +115,8 @@ export type InvoiceFilter = {
 // User type
 export type User = {
   name: string;
-  logo?: string;
-  companyName?: string;
   email?: string;
+  profileImage?: string;
+  logo?: string; // For backwards compatibility
+  companyName?: string;
 };

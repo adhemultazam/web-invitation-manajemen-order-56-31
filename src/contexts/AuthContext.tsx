@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
@@ -10,6 +9,7 @@ interface User {
 interface BrandSettings {
   name: string;
   logo?: string;
+  favicon?: string; // Added favicon property
 }
 
 interface AuthContextType {

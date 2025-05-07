@@ -23,7 +23,7 @@ export function LogoSettings({
 }: LogoSettingsProps) {
   return (
     <div className="space-y-2">
-      <Label>Logo Aplikasi</Label>
+      <Label>Logo Brand</Label>
       <Tabs defaultValue="url" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-2">
           <TabsTrigger value="url">URL</TabsTrigger>
@@ -32,7 +32,7 @@ export function LogoSettings({
         <TabsContent value="url" className="space-y-2">
           <div className="flex items-center gap-2">
             <Input
-              placeholder="URL logo aplikasi"
+              placeholder="URL logo brand"
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
             />
@@ -59,7 +59,7 @@ export function LogoSettings({
         {appLogo ? (
           <img 
             src={appLogo} 
-            alt="App Logo" 
+            alt="Logo Brand" 
             className="max-h-full max-w-full object-contain"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/placeholder.svg"; 

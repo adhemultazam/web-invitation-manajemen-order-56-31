@@ -22,13 +22,13 @@ interface GeneralSettingsData {
 }
 
 export function GeneralSettings() {
-  const { updateBrandSettings, brandSettings, user, updateUser } = useAuth();
+  const { updateBrandSettings, brandSettings, user, updateUserProfile } = useAuth();
   
   // Use our useLocalStorage hook instead of manual localStorage handling
   const [settings, setSettings] = useLocalStorage<GeneralSettingsData>("generalSettings", {
     businessName: "Undangan Digital",
     appName: "Order Management",
-    appLogo: user?.logo || "/placeholder.svg",
+    appLogo: user?.profileImage || "/placeholder.svg",
     appIcon: "/favicon.ico",
     sidebarTitle: "Order Management"
   });
@@ -42,12 +42,12 @@ export function GeneralSettings() {
     // Initialize with brandSettings values if available
     setSettings(prev => ({
       ...prev,
-      appLogo: brandSettings.logo || user?.logo || prev.appLogo,
+      appLogo: brandSettings.logo || user?.profileImage || prev.appLogo,
       sidebarTitle: brandSettings.name || prev.sidebarTitle
     }));
     
     // Set initial URL values
-    setLogoUrl(brandSettings.logo || user?.logo || settings.appLogo);
+    setLogoUrl(brandSettings.logo || user?.profileImage || settings.appLogo);
     setFaviconUrl(settings.appIcon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only on mount
@@ -62,9 +62,9 @@ export function GeneralSettings() {
     if (logoUrl) {
       setSettings(prev => ({ ...prev, appLogo: logoUrl }));
       
-      // Update user logo as well for synchronization
+      // Update user profile image as well for synchronization
       if (user) {
-        updateUser({ ...user, logo: logoUrl });
+        updateUserProfile({ profileImage: logoUrl });
       }
       
       toast.success("URL logo berhasil diterapkan");
@@ -86,7 +86,8 @@ export function GeneralSettings() {
     // Update brandSettings context
     updateBrandSettings({
       name: settings.sidebarTitle,
-      logo: settings.appLogo
+      logo: settings.appLogo,
+      favicon: settings.appIcon
     });
     
     toast.success("Pengaturan umum berhasil disimpan");

@@ -11,16 +11,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export function ProfileSettingsForm() {
-  const { user, updateUser, updateBrandSettings } = useAuth();
+  const { user, updateUserProfile, updateBrandSettings } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    logo: user?.logo || "",
+    profileImage: user?.profileImage || "",
   });
   
   // Get generalSettings to sync logo
   const [generalSettings] = useLocalStorage("generalSettings", {
-    appLogo: user?.logo || "",
+    appLogo: user?.profileImage || "",
     sidebarTitle: "",
     appName: "",
     appIcon: ""
@@ -34,7 +34,7 @@ export function ProfileSettingsForm() {
       setFormData({
         name: user.name || "",
         email: user.email || "",
-        logo: user.logo || "",
+        profileImage: user.profileImage || "",
       });
     }
   }, [user]);
@@ -53,15 +53,15 @@ export function ProfileSettingsForm() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Update user profile
-      updateUser({
+      updateUserProfile({
         name: formData.name,
         email: formData.email,
-        logo: formData.logo
+        profileImage: formData.profileImage
       });
       
       // Synchronize logo with brandSettings
       updateBrandSettings({
-        logo: formData.logo
+        logo: formData.profileImage
       });
       
       toast.success("Profil berhasil diperbarui");
@@ -84,23 +84,23 @@ export function ProfileSettingsForm() {
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="flex flex-col items-center gap-3">
           <Avatar className="h-24 w-24 bg-gray-100">
-            <AvatarImage src={formData.logo} />
+            <AvatarImage src={formData.profileImage} />
             <AvatarFallback className="bg-wedding-primary text-white">
               <Image className="h-8 w-8" />
             </AvatarFallback>
           </Avatar>
           
           <div className="space-y-2 w-full">
-            <Label htmlFor="logo">Logo Perusahaan</Label>
+            <Label htmlFor="profileImage">Gambar Profile</Label>
             <Input
-              id="logo"
-              name="logo"
-              value={formData.logo}
+              id="profileImage"
+              name="profileImage"
+              value={formData.profileImage}
               onChange={handleChange}
-              placeholder="URL Logo (https://...)"
+              placeholder="URL Gambar (https://...)"
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground">Masukkan URL gambar logo Anda</p>
+            <p className="text-xs text-muted-foreground">Masukkan URL gambar profile Anda</p>
           </div>
         </div>
 

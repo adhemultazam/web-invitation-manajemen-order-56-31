@@ -9,9 +9,9 @@ const OrderTableHeader: React.FC = () => {
         <TableHead className="w-[30px] py-3 px-4 text-xs font-medium">No</TableHead>
         <TableHead className="w-[150px] py-3 px-4 text-xs font-medium">Tanggal</TableHead>
         <TableHead className="w-[80px] py-3 px-4 text-xs font-medium">Countdown</TableHead>
-        <TableHead className="py-3 px-4 text-xs font-medium">Nama</TableHead>
+        <TableHead className="w-[180px] py-3 px-4 text-xs font-medium">Nama</TableHead>
         <TableHead className="w-[110px] py-3 px-4 text-xs font-medium">Vendor</TableHead>
-        <TableHead className="w-[145px] py-3 px-4 text-xs font-medium">Paket/Tema</TableHead>
+        <TableHead className="w-[250px] py-3 px-4 text-xs font-medium">Paket/Tema</TableHead>
         <TableHead className="w-[145px] py-3 px-4 text-xs font-medium">Fitur</TableHead>
         <TableHead className="w-[120px] py-3 px-4 text-xs font-medium">Pembayaran</TableHead>
         <TableHead className="w-[110px] py-3 px-4 text-xs font-medium">Status</TableHead>

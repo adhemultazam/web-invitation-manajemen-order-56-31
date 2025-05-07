@@ -141,25 +141,29 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         />
       </TableCell>
       
-      {/* Paket & Tema combined */}
+      {/* Paket & Tema side by side */}
       <TableCell className="py-2.5 px-4">
-        <div className="flex flex-col gap-1">
-          <PackageSelect
-            value={order.package}
-            packages={availablePackages}
-            isDisabled={updatingOrders.has(order.id)}
-            onChange={(value) => handlePackageChange(order.id, value)}
-            compact={true}
-          />
-          {packageCategory !== undefined && (
-            <ThemeSelect
-              value={order.theme || ""}
-              themes={themes}
+        <div className="flex flex-row items-center gap-2">
+          <div className="w-1/2">
+            <PackageSelect
+              value={order.package}
+              packages={availablePackages}
               isDisabled={updatingOrders.has(order.id)}
-              onChange={(value) => handleThemeChange(order.id, value)}
-              packageCategory={packageCategory}
+              onChange={(value) => handlePackageChange(order.id, value)}
               compact={true}
             />
+          </div>
+          {packageCategory !== undefined && (
+            <div className="w-1/2">
+              <ThemeSelect
+                value={order.theme || ""}
+                themes={themes}
+                isDisabled={updatingOrders.has(order.id)}
+                onChange={(value) => handleThemeChange(order.id, value)}
+                packageCategory={packageCategory}
+                compact={true}
+              />
+            </div>
           )}
         </div>
       </TableCell>

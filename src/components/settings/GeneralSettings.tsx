@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Save, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 interface GeneralSettingsData {
   businessName: string;
   businessEmail: string;
   businessPhone: string;
   businessAddress: string;
-  currency: string;
-  language: string;
   appName: string;
   appLogo: string;
   appIcon: string;
@@ -22,30 +20,17 @@ interface GeneralSettingsData {
 }
 
 export function GeneralSettings() {
-  const [settings, setSettings] = useState<GeneralSettingsData>({
+  // Use our useLocalStorage hook instead of manual localStorage handling
+  const [settings, setSettings] = useLocalStorage<GeneralSettingsData>("generalSettings", {
     businessName: "Undangan Digital",
     businessEmail: "contact@undangandigital.com",
     businessPhone: "+62 812 3456 7890",
     businessAddress: "Jl. Pemuda No. 123, Surabaya",
-    currency: "IDR",
-    language: "id-ID",
     appName: "Order Management",
     appLogo: "/placeholder.svg",
     appIcon: "/favicon.ico",
     sidebarTitle: "Order Management"
   });
-
-  // Load settings from localStorage on component mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem("generalSettings");
-    if (savedSettings) {
-      try {
-        setSettings(JSON.parse(savedSettings));
-      } catch (e) {
-        console.error("Error parsing general settings:", e);
-      }
-    }
-  }, []);
 
   // Handle input changes
   const handleInputChange = (field: keyof GeneralSettingsData, value: string) => {
@@ -59,11 +44,9 @@ export function GeneralSettings() {
     toast.info("File upload would be implemented here");
   };
 
-  // Save settings to localStorage
+  // Save settings and update invoice settings
   const handleSaveSettings = () => {
-    localStorage.setItem("generalSettings", JSON.stringify(settings));
-    
-    // Also update invoice settings with the business information to keep them in sync
+    // Update invoice settings with the business information to keep them in sync
     const savedInvoiceSettings = localStorage.getItem("invoiceSettings");
     if (savedInvoiceSettings) {
       try {
@@ -81,10 +64,20 @@ export function GeneralSettings() {
       }
     }
     
-    toast.success("Pengaturan umum berhasil disimpan");
+    // Get the sidebar title element and update it
+    try {
+      const sidebarTitleElement = document.querySelector('.sidebar-title');
+      if (sidebarTitleElement) {
+        sidebarTitleElement.textContent = settings.sidebarTitle;
+      }
+
+      // Update document title
+      document.title = settings.appName;
+    } catch (e) {
+      console.error("Error updating DOM elements:", e);
+    }
     
-    // In a real application, we would need to update the sidebar and other app components
-    // This would typically happen through a context or state management system
+    toast.success("Pengaturan umum berhasil disimpan");
   };
 
   return (
@@ -223,42 +216,6 @@ export function GeneralSettings() {
               value={settings.businessAddress}
               onChange={(e) => handleInputChange("businessAddress", e.target.value)}
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferensi Regional</CardTitle>
-          <CardDescription>
-            Pengaturan mata uang dan bahasa untuk aplikasi
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="currency">Mata Uang</Label>
-              <Input
-                id="currency"
-                value={settings.currency}
-                onChange={(e) => handleInputChange("currency", e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Kode mata uang seperti IDR, USD, dll.
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="language">Bahasa</Label>
-              <Input
-                id="language"
-                value={settings.language}
-                onChange={(e) => handleInputChange("language", e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Format locale seperti id-ID, en-US, dll.
-              </p>
-            </div>
           </div>
         </CardContent>
       </Card>

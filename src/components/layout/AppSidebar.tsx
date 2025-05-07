@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface AppSidebarProps {
   collapsed?: boolean;
@@ -37,51 +37,13 @@ interface AppSidebarProps {
 
 export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarProps) {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, brandSettings } = useAuth(); 
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const isMobile = useIsMobile();
   
   // Get current month name in lowercase for the initial pesanan link
   const currentMonth = new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
-  
-  // State for sidebar title and logo from settings
-  const [sidebarTitle, setSidebarTitle] = useState("Order Management");
-  const [sidebarLogo, setSidebarLogo] = useState("/placeholder.svg");
-  
-  // Load sidebar settings from localStorage
-  useEffect(() => {
-    const loadSidebarSettings = () => {
-      try {
-        const savedSettings = localStorage.getItem("generalSettings");
-        if (savedSettings) {
-          const settings = JSON.parse(savedSettings);
-          if (settings.sidebarTitle) {
-            setSidebarTitle(settings.sidebarTitle);
-          }
-          if (settings.appLogo) {
-            setSidebarLogo(settings.appLogo);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading sidebar settings:", error);
-      }
-    };
-    
-    loadSidebarSettings();
-    
-    // Listen for storage changes to update in real-time across tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "generalSettings" && e.newValue) {
-        loadSidebarSettings();
-      }
-    };
-    
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
   
   if (isMobile) {
     // For mobile, we use the Sidebar component directly
@@ -92,7 +54,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
             <div className="rounded-xl p-4 shadow-sm mb-4 bg-gray-50 dark:bg-gray-800/50">
               <div className="flex items-center">
                 <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={sidebarLogo} alt="Logo" className="sidebar-logo" />
+                  <AvatarImage src={brandSettings.logo} alt="Logo" className="sidebar-logo" />
                   <AvatarFallback className={cn(
                     "text-white",
                     isDarkMode ? "bg-indigo-600" : "bg-wedding-accent"
@@ -105,7 +67,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                     "text-base font-bold sidebar-title", 
                     isDarkMode ? "text-gray-100" : "text-gray-800"
                   )}>
-                    {sidebarTitle}
+                    {brandSettings.name}
                   </h1>
                   <p className={cn(
                     "text-xs",
@@ -271,7 +233,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
           )}>
             <div className={cn("flex items-center", collapsed && "justify-center")}>
               <Avatar className={cn("h-10 w-10", collapsed ? "mr-0" : "mr-3")}>
-                <AvatarImage src={sidebarLogo} alt="Logo" className="sidebar-logo" />
+                <AvatarImage src={brandSettings.logo} alt="Logo" className="sidebar-logo" />
                 <AvatarFallback className={cn(
                   "text-white",
                   isDarkMode ? "bg-indigo-600" : "bg-wedding-accent"
@@ -285,7 +247,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                     "text-base font-bold sidebar-title", 
                     isDarkMode ? "text-gray-100" : "text-gray-800"
                   )}>
-                    {sidebarTitle}
+                    {brandSettings.name}
                   </h1>
                   <p className={cn(
                     "text-xs",

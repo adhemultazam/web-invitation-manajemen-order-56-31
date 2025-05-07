@@ -1,110 +1,106 @@
 
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/contexts/AuthContext";
+import { Image } from "lucide-react";
 
 export default function Login() {
-  const { isAuthenticated, login } = useAuth();
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, login, brandSettings } = useAuth();
+  const navigate = useNavigate();
 
-  // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
-    setTimeout(() => {
-      login(email, password)
-        .then(success => {
-          setIsLoading(false);
-          if (!success) {
-            toast.error("Login gagal", {
-              description: "Email atau password tidak valid.",
-            });
-          } else {
-            toast.success("Login berhasil", {
-              description: "Selamat datang kembali!",
-            });
-          }
-        })
-        .catch(() => {
-          setIsLoading(false);
-          toast.error("Login gagal", {
-            description: "Terjadi kesalahan. Silakan coba lagi.",
-          });
-        });
-    }, 1000); // Simulate API call delay
+    const success = await login(email, password, rememberMe);
+    if (success) {
+      navigate("/");
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-wedding-primary mb-2">
-            Undangan Digital
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Login ke Sistem Manajemen Pesanan
-          </p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Masukkan email Anda"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Masukkan password Anda"
-            />
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="remember" 
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked === true)} 
-            />
-            <Label htmlFor="remember" className="cursor-pointer">
-              Ingat Saya
-            </Label>
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Memproses..." : "Login"}
-          </Button>
-          
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-            <p>
-              Demo: admin@example.com / password
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-md">
+        <Card className="border shadow-xl">
+          <CardHeader className="space-y-1 items-center text-center">
+            <div className="flex justify-center mb-2">
+              <div className="h-16 w-16 rounded-full overflow-hidden border shadow-sm bg-white dark:bg-gray-800 flex items-center justify-center">
+                {brandSettings.logo ? (
+                  <img src={brandSettings.logo} alt="Logo" className="h-12 w-12 object-contain" />
+                ) : (
+                  <Image className="h-8 w-8 text-wedding-primary" />
+                )}
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-wedding-primary">
+              {brandSettings.name}
+            </CardTitle>
+            <CardDescription>Silahkan masuk untuk mengakses dashboard</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="contoh@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember-me"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label htmlFor="remember-me" className="text-sm">Ingat saya</Label>
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-wedding-primary hover:bg-wedding-accent"
+                disabled={loading}
+              >
+                {loading ? "Memproses..." : "Masuk"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="text-center text-sm text-gray-500">
+            <p className="w-full">
+              Demo akses: admin@example.com / password
             </p>
-          </div>
-        </form>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );

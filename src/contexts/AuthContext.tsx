@@ -3,179 +3,166 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-// Define the user type
-interface User {
-  name: string;
-  email: string;
-  profileImage?: string;
-  logo?: string; // Property for the company logo
-}
+// Define initial brand settings - these can be overridden from localStorage
+const DEFAULT_BRAND = {
+  name: "Order Management",
+  logo: "/placeholder.svg"
+};
 
-// Define the context type
+// Define types for context
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  user: UserType | null;
+  login: (email: string, password: string, remember: boolean) => Promise<boolean>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => void;
-  updateUserProfile?: (profileData: Partial<User>) => void; // For backward compatibility
+  brandSettings: {
+    name: string;
+    logo: string;
+  };
+  updateBrandSettings: (settings: {name?: string, logo?: string}) => void;
 }
 
-// Create the Auth context
+interface UserType {
+  id: string;
+  email: string;
+  name: string;
+}
+
+// Create context with default values
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   user: null,
   login: async () => false,
   logout: () => {},
-  updateUser: () => {},
+  brandSettings: DEFAULT_BRAND,
+  updateBrandSettings: () => {}
 });
 
-// Create the Auth provider component
+// Hook to use the auth context
+export const useAuth = () => useContext(AuthContext);
+
+// Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
+  const [brandSettings, setBrandSettings] = useState(DEFAULT_BRAND);
+  
   const navigate = useNavigate();
-
-  // Check if user is already logged in
+  
+  // Load auth state from localStorage on mount
   useEffect(() => {
     const checkAuth = () => {
-      const userAuth = localStorage.getItem("isAuthenticated");
-      if (userAuth === "true") {
+      const storedAuth = localStorage.getItem("isAuthenticated");
+      if (storedAuth === "true") {
         setIsAuthenticated(true);
         
-        // Load user data if available
-        try {
-          const savedProfile = localStorage.getItem("userProfile");
-          if (savedProfile) {
-            const profile = JSON.parse(savedProfile);
-            setUser({
-              name: profile.name || "Admin", // Use saved name if available
-              email: profile.email || "admin@example.com",
-              profileImage: profile.profileImage || "/placeholder.svg",
-              logo: profile.logo || "" // Add logo property
-            });
-          } else {
-            // Set default user if no profile found
-            setUser({
-              name: "Admin",
-              email: "admin@example.com",
-              profileImage: "/placeholder.svg",
-              logo: "" // Add default logo
-            });
+        // Load user info if available
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch (e) {
+            console.error("Error parsing stored user:", e);
           }
-        } catch (error) {
-          console.error("Error loading user profile:", error);
-          // Fallback to default user
-          setUser({
-            name: "Admin",
-            email: "admin@example.com",
-            profileImage: "/placeholder.svg",
-            logo: "" // Add default logo
-          });
         }
       }
     };
     
-    checkAuth();
-  }, []);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // Check if user exists in localStorage
-      const savedProfile = localStorage.getItem("userProfile");
-      let isValid = false;
-      
-      if (savedProfile) {
-        // If we have a saved profile, check if email and password match
-        const profile = JSON.parse(savedProfile);
-        
-        // Check if email matches the saved profile
-        if (profile.email === email) {
-          // For demo purposes, we'll accept "password" or the stored password if it exists
-          const savedPassword = profile.password || "password";
-          isValid = password === savedPassword;
-        }
-      } else {
-        // Default login for the demo
-        isValid = password === "password";
-      }
-      
-      if (isValid) {
-        localStorage.setItem("isAuthenticated", "true");
-        setIsAuthenticated(true);
-        
-        // Get profile or create default
-        let userProfile;
-        if (savedProfile) {
-          userProfile = JSON.parse(savedProfile);
-        } else {
-          userProfile = {
-            name: "Admin", // Default name
-            email: email,
-            profileImage: "/placeholder.svg", // Default profile image
-            logo: "" // Default logo
+    const loadBrandSettings = () => {
+      try {
+        // First try to load from generalSettings
+        const generalSettings = localStorage.getItem("generalSettings");
+        if (generalSettings) {
+          const settings = JSON.parse(generalSettings);
+          const brandData = {
+            name: settings.sidebarTitle || DEFAULT_BRAND.name,
+            logo: settings.appLogo || DEFAULT_BRAND.logo
           };
-          
-          // Store default profile
-          localStorage.setItem("userProfile", JSON.stringify(userProfile));
+          setBrandSettings(brandData);
         }
-        
-        setUser(userProfile);
-        return true;
-      } else {
-        return false;
+      } catch (e) {
+        console.error("Error loading brand settings:", e);
       }
-    } catch (error) {
-      console.error("Login error:", error);
+    };
+    
+    checkAuth();
+    loadBrandSettings();
+  }, []);
+  
+  // Update brand settings in context and localStorage
+  const updateBrandSettings = (settings: {name?: string, logo?: string}) => {
+    try {
+      const newSettings = {
+        ...brandSettings,
+        ...settings
+      };
+      
+      setBrandSettings(newSettings);
+      
+      // Update in localStorage
+      const generalSettings = localStorage.getItem("generalSettings");
+      const parsedSettings = generalSettings ? JSON.parse(generalSettings) : {};
+      
+      const updatedSettings = {
+        ...parsedSettings,
+        sidebarTitle: newSettings.name,
+        appLogo: newSettings.logo
+      };
+      
+      localStorage.setItem("generalSettings", JSON.stringify(updatedSettings));
+    } catch (e) {
+      console.error("Error updating brand settings:", e);
+    }
+  };
+  
+  // Mock login function - normally would call an API
+  const login = async (email: string, password: string, remember: boolean): Promise<boolean> => {
+    if (email === "admin@example.com" && password === "password") {
+      // Store user info
+      const userData = {
+        id: "user-1",
+        email: email,
+        name: "Admin User"
+      };
+      
+      setUser(userData);
+      setIsAuthenticated(true);
+      
+      // Store in localStorage for persistence
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      toast.success("Login berhasil", {
+        description: "Selamat datang di Aplikasi Manajemen Pesanan"
+      });
+      
+      return true;
+    } else {
+      toast.error("Login gagal", {
+        description: "Email atau password salah"
+      });
       return false;
     }
   };
-
+  
+  // Logout function
   const logout = () => {
-    localStorage.removeItem("isAuthenticated");
     setIsAuthenticated(false);
     setUser(null);
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("user");
     navigate("/login");
-    toast.info("Logout berhasil", {
-      description: "Anda telah keluar dari akun"
-    });
   };
   
-  // Update user profile function
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      // Update user state
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      
-      // Update localStorage
-      try {
-        const savedProfile = localStorage.getItem("userProfile");
-        const profileData = savedProfile ? JSON.parse(savedProfile) : {};
-        const updatedProfile = { ...profileData, ...userData };
-        localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
-      } catch (error) {
-        console.error("Error saving profile to localStorage:", error);
-      }
-    }
+  // Provide context values
+  const value = {
+    isAuthenticated,
+    user,
+    login,
+    logout,
+    brandSettings,
+    updateBrandSettings
   };
   
-  // For backward compatibility
-  const updateUserProfile = updateUser;
-
-  return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user, 
-      login, 
-      logout, 
-      updateUser,
-      updateUserProfile 
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-// Create a hook to use the auth context
-export const useAuth = () => useContext(AuthContext);

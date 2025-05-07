@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Image } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export function ProfileSettingsForm() {
   const { user, updateUserProfile } = useAuth();

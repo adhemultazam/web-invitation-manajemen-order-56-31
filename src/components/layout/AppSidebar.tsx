@@ -1,4 +1,3 @@
-
 import { 
   Sidebar, 
   SidebarContent, 
@@ -37,7 +36,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarProps) {
   const location = useLocation();
-  const { user, brandSettings } = useAuth(); 
+  const { brandSettings } = useAuth(); 
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const isMobile = useIsMobile();

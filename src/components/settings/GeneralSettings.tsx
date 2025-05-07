@@ -29,7 +29,7 @@ export function GeneralSettings() {
     businessName: "Undangan Digital",
     appName: "Order Management",
     appLogo: brandSettings.logo || "/placeholder.svg",
-    appIcon: "/favicon.ico",
+    appIcon: brandSettings.favicon || "/favicon.ico",
     sidebarTitle: "Order Management"
   });
   
@@ -43,12 +43,13 @@ export function GeneralSettings() {
     setSettings(prev => ({
       ...prev,
       appLogo: brandSettings.logo || prev.appLogo,
+      appIcon: brandSettings.favicon || prev.appIcon,
       sidebarTitle: brandSettings.name || prev.sidebarTitle
     }));
     
     // Set initial URL values
     setLogoUrl(brandSettings.logo || settings.appLogo);
-    setFaviconUrl(settings.appIcon);
+    setFaviconUrl(brandSettings.favicon || settings.appIcon);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only on mount
   
@@ -83,6 +84,19 @@ export function GeneralSettings() {
       logo: settings.appLogo,
       favicon: settings.appIcon
     });
+    
+    // Apply favicon to document if provided
+    if (settings.appIcon) {
+      const existingFavicon = document.querySelector("link[rel*='icon']");
+      if (existingFavicon) {
+        existingFavicon.setAttribute("href", settings.appIcon);
+      } else {
+        const newFavicon = document.createElement("link");
+        newFavicon.rel = "icon";
+        newFavicon.href = settings.appIcon;
+        document.head.appendChild(newFavicon);
+      }
+    }
     
     toast.success("Pengaturan umum berhasil disimpan");
   };

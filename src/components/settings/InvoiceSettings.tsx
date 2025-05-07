@@ -1,392 +1,268 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { BankAccount } from "@/types/types";
-import { Plus, Trash2 } from "lucide-react";
+import { InvoiceSettingsPreview } from "./InvoiceSettingsPreview";
+
+interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+}
+
+interface InvoiceSettings {
+  logoUrl: string;
+  brandName: string;
+  businessAddress: string;
+  contactEmail: string;
+  contactPhone: string;
+  bankAccounts: BankAccount[];
+  invoiceFooter: string;
+}
 
 export function InvoiceSettings() {
-  const [formData, setFormData] = useState({
-    businessName: "Undangan Digital",
-    address: "Jl. Contoh No. 123, Jakarta",
-    city: "Jakarta",
-    zipCode: "12345",
-    phone: "0812-3456-7890",
-    email: "info@undangandigital.com",
-    website: "www.undangandigital.com",
-    bankAccounts: [] as BankAccount[],
-    invoiceFooter: "Terima kasih atas pesanan Anda.",
-    logo: ""
+  const [settings, setSettings] = useState<InvoiceSettings>({
+    logoUrl: "",
+    brandName: "Undangan Digital",
+    businessAddress: "Jl. Pemuda No. 123, Surabaya",
+    contactEmail: "contact@undangandigital.com",
+    contactPhone: "+62 812 3456 7890",
+    bankAccounts: [
+      {
+        id: "1",
+        bankName: "BCA",
+        accountNumber: "1234567890",
+        accountHolderName: "PT Undangan Digital Indonesia",
+      }
+    ],
+    invoiceFooter: "Terima kasih atas pesanan Anda."
   });
 
-  const [previewImage, setPreviewImage] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
-
-  // Load saved settings when component mounts
+  // Load settings from localStorage on component mount
   useEffect(() => {
     const savedSettings = localStorage.getItem("invoiceSettings");
     if (savedSettings) {
       try {
-        const parsed = JSON.parse(savedSettings);
-        
-        // Ensure all required fields are present
-        const defaultedSettings = {
-          ...formData,
-          ...parsed
-        };
-        
-        setFormData(defaultedSettings);
-        
-        if (parsed.logo) {
-          setPreviewImage(parsed.logo);
-        }
-      } catch (error) {
-        console.error("Error parsing saved invoice settings:", error);
-        toast.error("Error loading saved settings");
+        setSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error("Error parsing invoice settings:", e);
       }
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Save settings to localStorage whenever they change
+  const handleSaveSettings = () => {
+    localStorage.setItem("invoiceSettings", JSON.stringify(settings));
+    toast.success("Pengaturan invoice berhasil disimpan");
   };
 
+  // Update settings object when inputs change
+  const handleInputChange = (field: keyof InvoiceSettings, value: string) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle bank account updates
   const handleBankAccountChange = (index: number, field: keyof BankAccount, value: string) => {
-    const updatedAccounts = [...formData.bankAccounts];
+    const updatedAccounts = [...settings.bankAccounts];
     updatedAccounts[index] = {
       ...updatedAccounts[index],
       [field]: value
     };
-    
-    setFormData(prev => ({
-      ...prev,
-      bankAccounts: updatedAccounts
-    }));
+    setSettings(prev => ({ ...prev, bankAccounts: updatedAccounts }));
   };
 
-  const handleAddBankAccount = () => {
+  // Add new bank account
+  const addBankAccount = () => {
     const newAccount: BankAccount = {
       id: Date.now().toString(),
       bankName: "",
       accountNumber: "",
       accountHolderName: ""
     };
-    
-    setFormData(prev => ({
+    setSettings(prev => ({
       ...prev,
       bankAccounts: [...prev.bankAccounts, newAccount]
     }));
   };
 
-  const handleRemoveBankAccount = (index: number) => {
-    const updatedAccounts = [...formData.bankAccounts];
+  // Remove bank account
+  const removeBankAccount = (index: number) => {
+    const updatedAccounts = [...settings.bankAccounts];
     updatedAccounts.splice(index, 1);
-    
-    setFormData(prev => ({
-      ...prev,
-      bankAccounts: updatedAccounts
-    }));
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    // Only allow images
-    if (!file.type.match('image.*')) {
-      toast.error('Hanya file gambar yang diperbolehkan');
-      return;
-    }
-    
-    // Size check - limit to 500KB
-    if (file.size > 500 * 1024) {
-      toast.error('Ukuran maksimal logo adalah 500KB');
-      return;
-    }
-    
-    setIsUploading(true);
-    
-    // Create a preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        setPreviewImage(reader.result);
-        // Ensure logo is always a string
-        setFormData(prev => ({
-          ...prev,
-          logo: reader.result as string
-        }));
-      }
-      setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    // Save to localStorage
-    localStorage.setItem("invoiceSettings", JSON.stringify(formData));
-    toast.success('Pengaturan invoice berhasil disimpan');
-  };
-  
-  const handleDeleteLogo = () => {
-    setPreviewImage('');
-    setFormData(prev => ({
-      ...prev,
-      logo: ''
-    }));
-    toast.success('Logo berhasil dihapus');
+    setSettings(prev => ({ ...prev, bankAccounts: updatedAccounts }));
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Pengaturan Invoice</CardTitle>
-          <CardDescription>
-            Atur informasi yang akan ditampilkan pada invoice
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Informasi Bisnis</h3>
-            
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Bisnis</CardTitle>
+            <CardDescription>
+              Informasi bisnis yang akan ditampilkan pada invoice
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="logo">Logo</Label>
-              <div className="flex items-start space-x-4">
-                <div>
-                  <div className="border rounded-md h-32 w-32 flex items-center justify-center overflow-hidden bg-secondary">
-                    {previewImage ? (
-                      <img 
-                        src={previewImage}
-                        alt="Logo preview"
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Tidak ada logo</span>
-                    )}
-                  </div>
-                  <div className="mt-2 flex space-x-2">
-                    <div className="relative">
-                      <Button size="sm" variant="outline" className="w-full" type="button" disabled={isUploading}>
-                        {isUploading ? "Uploading..." : "Upload Logo"}
-                      </Button>
-                      <Input
-                        type="file"
-                        id="logo"
-                        accept="image/*"
-                        className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                        onChange={handleImageUpload}
-                        disabled={isUploading}
-                      />
-                    </div>
-                    {previewImage && (
-                      <Button size="sm" variant="outline" type="button" onClick={handleDeleteLogo}>
-                        Hapus
-                      </Button>
-                    )}
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    Rekomendasi: 200x200px, maks 500KB
-                  </div>
+              <Label htmlFor="logoUrl">Logo URL</Label>
+              <Input
+                id="logoUrl"
+                value={settings.logoUrl}
+                onChange={(e) => handleInputChange("logoUrl", e.target.value)}
+                placeholder="https://example.com/logo.png"
+              />
+              <p className="text-xs text-muted-foreground">
+                Masukkan URL logo Anda (disarankan ukuran 200x200 pixel)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brandName">Nama Bisnis</Label>
+              <Input
+                id="brandName"
+                value={settings.brandName}
+                onChange={(e) => handleInputChange("brandName", e.target.value)}
+                placeholder="Undangan Digital"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="businessAddress">Alamat Bisnis</Label>
+              <Textarea
+                id="businessAddress"
+                value={settings.businessAddress}
+                onChange={(e) => handleInputChange("businessAddress", e.target.value)}
+                placeholder="Jl. Pemuda No. 123, Surabaya"
+                rows={2}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contactEmail">Email</Label>
+                <Input
+                  id="contactEmail"
+                  type="email"
+                  value={settings.contactEmail}
+                  onChange={(e) => handleInputChange("contactEmail", e.target.value)}
+                  placeholder="contact@undangandigital.com"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Telepon</Label>
+                <Input
+                  id="contactPhone"
+                  value={settings.contactPhone}
+                  onChange={(e) => handleInputChange("contactPhone", e.target.value)}
+                  placeholder="+62 812 3456 7890"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>Akun Bank</span>
+              <Button variant="outline" size="sm" onClick={addBankAccount}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Tambah Akun
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              Akun bank yang akan ditampilkan pada invoice
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {settings.bankAccounts.map((account, index) => (
+              <div key={account.id} className="border p-4 rounded-md space-y-3 relative">
+                {settings.bankAccounts.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 text-destructive h-8 w-8 p-0"
+                    onClick={() => removeBankAccount(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor={`bankName-${index}`}>Nama Bank</Label>
+                  <Input
+                    id={`bankName-${index}`}
+                    value={account.bankName}
+                    onChange={(e) => handleBankAccountChange(index, "bankName", e.target.value)}
+                    placeholder="BCA, Mandiri, BNI, dll"
+                  />
                 </div>
                 
-                <div className="space-y-2 flex-1">
-                  <Label htmlFor="businessName">Nama Bisnis</Label>
-                  <Input
-                    id="businessName"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleChange}
-                    placeholder="Nama bisnis Anda"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="address">Alamat</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  rows={2}
-                  placeholder="Alamat lengkap"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="city">Kota</Label>
+                  <Label htmlFor={`accountNumber-${index}`}>Nomor Rekening</Label>
                   <Input
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="Kota"
+                    id={`accountNumber-${index}`}
+                    value={account.accountNumber}
+                    onChange={(e) => handleBankAccountChange(index, "accountNumber", e.target.value)}
+                    placeholder="1234567890"
                   />
                 </div>
-
+                
                 <div className="space-y-2">
-                  <Label htmlFor="zipCode">Kode Pos</Label>
+                  <Label htmlFor={`accountHolderName-${index}`}>Nama Pemilik Rekening</Label>
                   <Input
-                    id="zipCode"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleChange}
-                    placeholder="Kode pos"
+                    id={`accountHolderName-${index}`}
+                    value={account.accountHolderName}
+                    onChange={(e) => handleBankAccountChange(index, "accountHolderName", e.target.value)}
+                    placeholder="PT Undangan Digital Indonesia"
                   />
                 </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telepon</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Nomor telepon"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                name="website"
-                value={formData.website}
-                onChange={handleChange}
-                placeholder="Website URL"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Informasi Rekening Bank</h3>
-              <Button 
-                type="button" 
-                onClick={handleAddBankAccount} 
-                variant="outline" 
-                size="sm"
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Tambah Rekening
-              </Button>
-            </div>
-
-            {formData.bankAccounts.length > 0 ? (
-              <div className="space-y-4">
-                {formData.bankAccounts.map((account, index) => (
-                  <div key={account.id} className="p-4 border rounded-md space-y-3">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-medium">Rekening #{index + 1}</h4>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleRemoveBankAccount(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <div className="space-y-2">
-                        <Label htmlFor={`bankName-${index}`}>Nama Bank</Label>
-                        <Input
-                          id={`bankName-${index}`}
-                          value={account.bankName}
-                          onChange={(e) => handleBankAccountChange(index, 'bankName', e.target.value)}
-                          placeholder="BCA, Mandiri, dll."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`accountNumber-${index}`}>Nomor Rekening</Label>
-                        <Input
-                          id={`accountNumber-${index}`}
-                          value={account.accountNumber}
-                          onChange={(e) => handleBankAccountChange(index, 'accountNumber', e.target.value)}
-                          placeholder="1234567890"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`accountHolderName-${index}`}>Atas Nama</Label>
-                        <Input
-                          id={`accountHolderName-${index}`}
-                          value={account.accountHolderName}
-                          onChange={(e) => handleBankAccountChange(index, 'accountHolderName', e.target.value)}
-                          placeholder="Nama pemilik rekening"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="border border-dashed rounded-md p-8 text-center">
-                <p className="text-muted-foreground mb-2">Belum ada rekening bank</p>
-                <Button 
-                  type="button" 
-                  onClick={handleAddBankAccount} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Tambah Rekening
-                </Button>
+            ))}
+            
+            {settings.bankAccounts.length === 0 && (
+              <div className="text-center py-4 text-muted-foreground">
+                Belum ada akun bank. Klik tombol "Tambah Akun" untuk menambahkan.
               </div>
             )}
+          </CardContent>
+        </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="invoiceFooter">Catatan Kaki Invoice</Label>
-              <Textarea
-                id="invoiceFooter"
-                name="invoiceFooter"
-                value={formData.invoiceFooter}
-                onChange={handleChange}
-                rows={2}
-                placeholder="Catatan kaki yang akan ditampilkan di bagian bawah invoice"
-              />
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-end">
-          <Button type="submit">Simpan Perubahan</Button>
-        </CardFooter>
-      </Card>
-    </form>
+        <Card>
+          <CardHeader>
+            <CardTitle>Catatan Footer Invoice</CardTitle>
+            <CardDescription>
+              Catatan yang akan ditampilkan di bagian bawah invoice
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={settings.invoiceFooter}
+              onChange={(e) => handleInputChange("invoiceFooter", e.target.value)}
+              placeholder="Terima kasih atas pesanan Anda."
+              rows={3}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button onClick={handleSaveSettings}>
+            <Save className="mr-2 h-4 w-4" />
+            Simpan Pengaturan
+          </Button>
+        </div>
+      </div>
+
+      <div className="md:order-last">
+        <InvoiceSettingsPreview settings={settings} />
+      </div>
+    </div>
   );
 }

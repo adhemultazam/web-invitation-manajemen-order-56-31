@@ -1,212 +1,127 @@
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-// Define initial brand settings - these can be overridden from localStorage
-const DEFAULT_BRAND = {
-  name: "Order Management",
-  logo: "/placeholder.svg"
+type User = {
+  id: string;
+  name: string;
+  email: string;
 };
 
-// Define types for context
-interface AuthContextType {
-  isAuthenticated: boolean;
-  user: UserType | null;
-  login: (email: string, password: string, remember: boolean) => Promise<boolean>;
-  logout: () => void;
-  brandSettings: {
-    name: string;
-    logo: string;
-  };
-  updateBrandSettings: (settings: {name?: string, logo?: string}) => void;
-  updateUser: (userData: {name?: string, email?: string, logo?: string}) => void;
-}
-
-interface UserType {
-  id: string;
-  email: string;
+type BrandSettings = {
   name: string;
-  profileImage?: string;
   logo?: string;
+  favicon?: string;
+};
+
+interface AuthContextType {
+  user: User | null;
+  brandSettings: BrandSettings;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  updateBrandSettings: (settings: Partial<BrandSettings>) => Promise<void>;
 }
 
-// Create context with default values
+// Create context with a default value
 const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
   user: null,
+  brandSettings: { name: "Nikah Digital" },
+  isAuthenticated: false,
   login: async () => false,
   logout: () => {},
-  brandSettings: DEFAULT_BRAND,
-  updateBrandSettings: () => {},
-  updateUser: () => {}
+  updateBrandSettings: async () => {},
 });
 
-// Hook to use the auth context
-export const useAuth = () => useContext(AuthContext);
+// Initial user data for demo purposes
+const demoUser = {
+  id: "1",
+  name: "Admin",
+  email: "admin@example.com",
+};
 
-// Provider component
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<UserType | null>(null);
-  const [brandSettings, setBrandSettings] = useState(DEFAULT_BRAND);
-  
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [brandSettings, setBrandSettings] = useState<BrandSettings>({ name: "Nikah Digital" });
   const navigate = useNavigate();
   
-  // Load auth state from localStorage on mount
+  // Check for saved user and brand settings in localStorage on mount
   useEffect(() => {
-    const checkAuth = () => {
-      const storedAuth = localStorage.getItem("isAuthenticated");
-      if (storedAuth === "true") {
-        setIsAuthenticated(true);
+    const savedUser = localStorage.getItem("user");
+    const savedBrandSettings = localStorage.getItem("brandSettings");
+    
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse saved user:", e);
+      }
+    }
+    
+    if (savedBrandSettings) {
+      try {
+        setBrandSettings(JSON.parse(savedBrandSettings));
         
-        // Load user info if available
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          try {
-            setUser(JSON.parse(storedUser));
-          } catch (e) {
-            console.error("Error parsing stored user:", e);
+        // Apply favicon if it exists
+        const settings = JSON.parse(savedBrandSettings) as BrandSettings;
+        if (settings.favicon) {
+          const existingFavicon = document.querySelector("link[rel*='icon']");
+          if (existingFavicon) {
+            existingFavicon.setAttribute("href", settings.favicon);
+          } else {
+            const newFavicon = document.createElement("link");
+            newFavicon.rel = "icon";
+            newFavicon.href = settings.favicon;
+            document.head.appendChild(newFavicon);
           }
         }
-      }
-    };
-    
-    const loadBrandSettings = () => {
-      try {
-        // First try to load from generalSettings
-        const generalSettings = localStorage.getItem("generalSettings");
-        if (generalSettings) {
-          const settings = JSON.parse(generalSettings);
-          const brandData = {
-            name: settings.sidebarTitle || DEFAULT_BRAND.name,
-            logo: settings.appLogo || DEFAULT_BRAND.logo
-          };
-          setBrandSettings(brandData);
-        }
       } catch (e) {
-        console.error("Error loading brand settings:", e);
+        console.error("Failed to parse saved brand settings:", e);
       }
-    };
-    
-    checkAuth();
-    loadBrandSettings();
+    }
   }, []);
   
-  // Update brand settings in context and localStorage
-  const updateBrandSettings = (settings: {name?: string, logo?: string}) => {
-    try {
-      const newSettings = {
-        ...brandSettings,
-        ...settings
-      };
-      
-      setBrandSettings(newSettings);
-      
-      // Update in localStorage
-      const generalSettings = localStorage.getItem("generalSettings");
-      const parsedSettings = generalSettings ? JSON.parse(generalSettings) : {};
-      
-      const updatedSettings = {
-        ...parsedSettings,
-        sidebarTitle: newSettings.name,
-        appLogo: newSettings.logo
-      };
-      
-      localStorage.setItem("generalSettings", JSON.stringify(updatedSettings));
-    } catch (e) {
-      console.error("Error updating brand settings:", e);
-    }
-  };
-
-  // User profile update function
-  const updateUser = (userData: {name?: string, email?: string, logo?: string}) => {
-    if (!user) return;
-    
-    try {
-      const updatedUser = {
-        ...user,
-        name: userData.name || user.name,
-        email: userData.email || user.email,
-        logo: userData.logo || user.logo
-      };
-      
-      setUser(updatedUser);
-      
-      // Store updated user in localStorage
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-    } catch (e) {
-      console.error("Error updating user data:", e);
-      toast.error("Failed to update user profile");
-    }
-  };
-  
-  // Mock login function - normally would call an API
-  const login = async (email: string, password: string, remember: boolean): Promise<boolean> => {
-    if (email === "admin@example.com" && password === "password") {
-      // Get brand settings from localStorage before creating user
-      let userLogo = "/placeholder.svg";
-      
-      try {
-        const generalSettings = localStorage.getItem("generalSettings");
-        if (generalSettings) {
-          const settings = JSON.parse(generalSettings);
-          if (settings.appLogo) {
-            userLogo = settings.appLogo;
-          }
-        }
-      } catch (e) {
-        console.error("Error loading logo for user:", e);
-      }
-      
-      // Store user info with the current brand logo
-      const userData = {
-        id: "user-1",
-        email: email,
-        name: "Admin User",
-        logo: userLogo // Get logo from localStorage if available
-      };
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
-      // Store in localStorage for persistence
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(userData));
-      
-      toast.success("Login berhasil", {
-        description: "Selamat datang di Aplikasi Manajemen Pesanan"
-      });
-      
+  // Login function (simulated)
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // For demo, we'll accept any email with "admin" and password "password"
+    if (email.includes("admin") && password === "password") {
+      setUser(demoUser);
+      localStorage.setItem("user", JSON.stringify(demoUser));
       return true;
-    } else {
-      toast.error("Login gagal", {
-        description: "Email atau password salah"
-      });
-      return false;
     }
+    return false;
   };
   
   // Logout function
   const logout = () => {
-    setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("user");
     navigate("/login");
+    toast.success("Berhasil keluar dari sistem");
   };
   
-  // Provide context values
-  const value = {
-    isAuthenticated,
-    user,
-    login,
-    logout,
-    brandSettings,
-    updateBrandSettings,
-    updateUser
+  // Update brand settings
+  const updateBrandSettings = async (settings: Partial<BrandSettings>): Promise<void> => {
+    // Update brand settings with new values
+    const newSettings = { ...brandSettings, ...settings };
+    setBrandSettings(newSettings);
+    localStorage.setItem("brandSettings", JSON.stringify(newSettings));
   };
   
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return (
+    <AuthContext.Provider value={{ 
+      user, 
+      brandSettings, 
+      isAuthenticated: !!user, 
+      login, 
+      logout,
+      updateBrandSettings
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Hook for easy context use
+export const useAuth = () => useContext(AuthContext);

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,15 +8,36 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Image } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export function ProfileSettingsForm() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, updateBrandSettings } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
     logo: user?.logo || "",
   });
+  
+  // Get generalSettings to sync logo
+  const [generalSettings] = useLocalStorage("generalSettings", {
+    appLogo: user?.logo || "",
+    sidebarTitle: "",
+    appName: "",
+    appIcon: ""
+  });
+  
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync with user data when it changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        logo: user.logo || "",
+      });
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,9 +51,16 @@ export function ProfileSettingsForm() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update user profile
       updateUser({
         name: formData.name,
         email: formData.email,
+        logo: formData.logo
+      });
+      
+      // Synchronize logo with brandSettings
+      updateBrandSettings({
         logo: formData.logo
       });
       

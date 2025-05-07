@@ -57,7 +57,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        
+        // If brand settings don't have a logo but user does, sync it
+        if (!brandSettings.logo && parsedUser.logo) {
+          updateBrandSettings({ logo: parsedUser.logo });
+        }
       } catch (e) {
         console.error("Failed to parse saved user:", e);
       }
@@ -65,20 +71,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (savedBrandSettings) {
       try {
-        setBrandSettings(JSON.parse(savedBrandSettings));
+        const parsedSettings = JSON.parse(savedBrandSettings) as BrandSettings;
+        setBrandSettings(parsedSettings);
         
         // Apply favicon if it exists
-        const settings = JSON.parse(savedBrandSettings) as BrandSettings;
-        if (settings.favicon) {
+        if (parsedSettings.favicon) {
           const existingFavicon = document.querySelector("link[rel*='icon']");
           if (existingFavicon) {
-            existingFavicon.setAttribute("href", settings.favicon);
+            existingFavicon.setAttribute("href", parsedSettings.favicon);
           } else {
             const newFavicon = document.createElement("link");
             newFavicon.rel = "icon";
-            newFavicon.href = settings.favicon;
+            newFavicon.href = parsedSettings.favicon;
             document.head.appendChild(newFavicon);
           }
+        }
+        
+        // Sync logo between user and brand settings if needed
+        if (user && !user.logo && parsedSettings.logo) {
+          updateUser({ ...user, logo: parsedSettings.logo });
         }
       } catch (e) {
         console.error("Failed to parse saved brand settings:", e);
@@ -111,6 +122,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const newSettings = { ...brandSettings, ...settings };
     setBrandSettings(newSettings);
     localStorage.setItem("brandSettings", JSON.stringify(newSettings));
+    
+    // Sync logo with user if needed
+    if (user && settings.logo && user.logo !== settings.logo) {
+      updateUser({ ...user, logo: settings.logo });
+    }
   };
   
   // Update user function
@@ -121,6 +137,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+    // Sync logo with brandSettings if needed
+    if (userData.logo && brandSettings.logo !== userData.logo) {
+      updateBrandSettings({ ...brandSettings, logo: userData.logo });
+    }
   };
   
   return (

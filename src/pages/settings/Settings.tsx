@@ -7,7 +7,7 @@ import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSett
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("account");
+  const [activeTab, setActiveTab] = useState("general");
 
   // Load active tab from localStorage
   useEffect(() => {
@@ -34,14 +34,10 @@ export default function Settings() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="account">Akun</TabsTrigger>
           <TabsTrigger value="general">Umum</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
           <TabsTrigger value="resources">Data Master</TabsTrigger>
         </TabsList>
-        <TabsContent value="account" className="space-y-4">
-          <AccountSettings />
-        </TabsContent>
         <TabsContent value="general" className="space-y-4">
           <GeneralSettings />
         </TabsContent>

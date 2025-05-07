@@ -19,9 +19,12 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 export function UserMenu() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, brandSettings } = useAuth();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+  
+  // Use either user logo or brandSettings logo
+  const logoUrl = user?.logo || brandSettings?.logo || "/placeholder.svg";
 
   const handleLogout = () => {
     logout();
@@ -39,7 +42,7 @@ export function UserMenu() {
           >
             <Avatar className="h-9 w-9 border">
               <AvatarImage 
-                src={user?.logo || "/placeholder.svg"} 
+                src={logoUrl} 
                 alt={user?.name || "User"} 
               />
               <AvatarFallback className={isDarkMode ? "bg-indigo-600 text-white" : "bg-wedding-primary text-white"}>

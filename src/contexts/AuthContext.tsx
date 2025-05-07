@@ -7,6 +7,7 @@ type User = {
   id: string;
   name: string;
   email: string;
+  logo?: string;  // Added logo property to User type
 };
 
 type BrandSettings = {
@@ -22,6 +23,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateBrandSettings: (settings: Partial<BrandSettings>) => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>; // Added updateUser function
 }
 
 // Create context with a default value
@@ -32,6 +34,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   updateBrandSettings: async () => {},
+  updateUser: async () => {}, // Added default implementation
 });
 
 // Initial user data for demo purposes
@@ -39,6 +42,7 @@ const demoUser = {
   id: "1",
   name: "Admin",
   email: "admin@example.com",
+  logo: "", // Added logo property to demoUser
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -109,6 +113,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("brandSettings", JSON.stringify(newSettings));
   };
   
+  // Update user function
+  const updateUser = async (userData: Partial<User>): Promise<void> => {
+    if (!user) return;
+    
+    // Update user with new values
+    const updatedUser = { ...user, ...userData };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+  
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -116,7 +130,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: !!user, 
       login, 
       logout,
-      updateBrandSettings
+      updateBrandSettings,
+      updateUser, // Added updateUser to the context
     }}>
       {children}
     </AuthContext.Provider>

@@ -27,7 +27,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    const success = await login(email, password, rememberMe);
+    const success = await login(email, password);
     if (success) {
       navigate("/");
     }

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,18 +24,25 @@ export default function Login() {
     setIsLoading(true);
 
     setTimeout(() => {
-      const success = login(email, password, rememberMe);
-      setIsLoading(false);
-
-      if (!success) {
-        toast.error("Login gagal", {
-          description: "Email atau password tidak valid.",
+      login(email, password)
+        .then(success => {
+          setIsLoading(false);
+          if (!success) {
+            toast.error("Login gagal", {
+              description: "Email atau password tidak valid.",
+            });
+          } else {
+            toast.success("Login berhasil", {
+              description: "Selamat datang kembali!",
+            });
+          }
+        })
+        .catch(() => {
+          setIsLoading(false);
+          toast.error("Login gagal", {
+            description: "Terjadi kesalahan. Silakan coba lagi.",
+          });
         });
-      } else {
-        toast.success("Login berhasil", {
-          description: "Selamat datang kembali!",
-        });
-      }
     }, 1000); // Simulate API call delay
   };
 

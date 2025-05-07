@@ -8,6 +8,7 @@ interface User {
   name: string;
   email: string;
   profileImage?: string;
+  logo?: string; // Added logo property to User interface
 }
 
 // Define the context type
@@ -16,7 +17,8 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateUserProfile?: (profileData: Partial<User>) => void;
+  updateUser: (userData: Partial<User>) => void; // Renamed from updateUserProfile
+  updateUserProfile?: (profileData: Partial<User>) => void; // Keep for backward compatibility
 }
 
 // Create the Auth context
@@ -25,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => false,
   logout: () => {},
+  updateUser: () => {}, // Add default implementation
 });
 
 // Dummy authentication function (replace with actual auth)
@@ -143,16 +146,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
   
-  const updateUserProfile = (profileData: Partial<User>) => {
+  // Update user profile function
+  const updateUser = (userData: Partial<User>) => {
     if (user) {
       // Update user state
-      const updatedUser = { ...user, ...profileData };
+      const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
+      
+      // Update localStorage
+      try {
+        const savedProfile = localStorage.getItem("userProfile");
+        const profileData = savedProfile ? JSON.parse(savedProfile) : {};
+        const updatedProfile = { ...profileData, ...userData };
+        localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+      } catch (error) {
+        console.error("Error saving profile to localStorage:", error);
+      }
     }
   };
+  
+  // For backward compatibility
+  const updateUserProfile = updateUser;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUserProfile }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      login, 
+      logout, 
+      updateUser,
+      updateUserProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );

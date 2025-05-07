@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,6 @@ export function ProfileSettingsForm() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       updateUser({
-        ...user, 
         name: formData.name,
         email: formData.email,
         logo: formData.logo

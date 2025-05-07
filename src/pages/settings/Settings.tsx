@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
-import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSettings";
 
 export default function Settings() {
@@ -36,7 +35,6 @@ export default function Settings() {
         <TabsList>
           <TabsTrigger value="general">Umum</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
-          <TabsTrigger value="theme">Tampilan</TabsTrigger>
           <TabsTrigger value="resources">Data Master</TabsTrigger>
         </TabsList>
         <TabsContent value="general" className="space-y-4">
@@ -44,9 +42,6 @@ export default function Settings() {
         </TabsContent>
         <TabsContent value="invoice" className="space-y-4">
           <InvoiceSettings />
-        </TabsContent>
-        <TabsContent value="theme" className="space-y-4">
-          <ThemeSettings />
         </TabsContent>
         <TabsContent value="resources" className="space-y-4">
           <OrderResourcesSettings />

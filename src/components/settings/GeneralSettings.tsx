@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Save } from "lucide-react";
+import { Save, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 interface GeneralSettingsData {
@@ -14,6 +15,10 @@ interface GeneralSettingsData {
   businessAddress: string;
   currency: string;
   language: string;
+  appName: string;
+  appLogo: string;
+  appIcon: string;
+  sidebarTitle: string;
 }
 
 export function GeneralSettings() {
@@ -23,7 +28,11 @@ export function GeneralSettings() {
     businessPhone: "+62 812 3456 7890",
     businessAddress: "Jl. Pemuda No. 123, Surabaya",
     currency: "IDR",
-    language: "id-ID"
+    language: "id-ID",
+    appName: "Order Management",
+    appLogo: "/placeholder.svg",
+    appIcon: "/favicon.ico",
+    sidebarTitle: "Order Management"
   });
 
   // Load settings from localStorage on component mount
@@ -41,6 +50,13 @@ export function GeneralSettings() {
   // Handle input changes
   const handleInputChange = (field: keyof GeneralSettingsData, value: string) => {
     setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle file upload (placeholder - would need actual upload functionality)
+  const handleFileUpload = (field: keyof GeneralSettingsData) => {
+    // This is a placeholder for file upload
+    // In a real implementation, this would trigger a file picker and upload the file
+    toast.info("File upload would be implemented here");
   };
 
   // Save settings to localStorage
@@ -66,10 +82,101 @@ export function GeneralSettings() {
     }
     
     toast.success("Pengaturan umum berhasil disimpan");
+    
+    // In a real application, we would need to update the sidebar and other app components
+    // This would typically happen through a context or state management system
   };
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Pengaturan Aplikasi</CardTitle>
+          <CardDescription>
+            Konfigurasi tampilan dan nama aplikasi di sidebar dan browser
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="appName">Nama Aplikasi</Label>
+              <Input
+                id="appName"
+                value={settings.appName}
+                onChange={(e) => handleInputChange("appName", e.target.value)}
+                placeholder="Order Management"
+              />
+              <p className="text-xs text-muted-foreground">
+                Nama yang akan ditampilkan pada tab browser
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="sidebarTitle">Judul Sidebar</Label>
+              <Input
+                id="sidebarTitle"
+                value={settings.sidebarTitle}
+                onChange={(e) => handleInputChange("sidebarTitle", e.target.value)}
+                placeholder="Order Management"
+              />
+              <p className="text-xs text-muted-foreground">
+                Teks yang akan ditampilkan di bagian atas sidebar
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Logo Aplikasi</Label>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                  {settings.appLogo ? (
+                    <img 
+                      src={settings.appLogo} 
+                      alt="App Logo" 
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-gray-400">No Logo</span>
+                  )}
+                </div>
+                <Button variant="outline" onClick={() => handleFileUpload("appLogo")}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Logo
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Logo yang akan ditampilkan di sidebar (ukuran yang disarankan: 128x128 px)
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Favicon</Label>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
+                  {settings.appIcon ? (
+                    <img 
+                      src={settings.appIcon} 
+                      alt="App Icon" 
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-gray-400">No Icon</span>
+                  )}
+                </div>
+                <Button variant="outline" onClick={() => handleFileUpload("appIcon")}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Favicon
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Icon yang akan ditampilkan pada tab browser (ukuran yang disarankan: 32x32 px)
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Informasi Bisnis</CardTitle>

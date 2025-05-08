@@ -1,24 +1,31 @@
 
 import React from "react";
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ClockIcon } from "lucide-react";
 
-const OrderTableHeader: React.FC = () => {
+export function OrderTableHeader() {
   return (
     <TableHeader>
-      <TableRow className="bg-gray-50 dark:bg-gray-800/50">
-        <TableHead className="w-[30px] py-3 px-4 text-xs font-medium">No</TableHead>
-        <TableHead className="w-[150px] py-3 px-4 text-xs font-medium">Tanggal</TableHead>
-        <TableHead className="w-[80px] py-3 px-4 text-xs font-medium">Countdown</TableHead>
-        <TableHead className="w-[180px] py-3 px-4 text-xs font-medium">Nama</TableHead>
-        <TableHead className="w-[110px] py-3 px-4 text-xs font-medium">Vendor</TableHead>
-        <TableHead className="w-[250px] py-3 px-4 text-xs font-medium">Paket/Tema</TableHead>
-        <TableHead className="w-[145px] py-3 px-4 text-xs font-medium">Fitur</TableHead>
-        <TableHead className="w-[120px] py-3 px-4 text-xs font-medium">Pembayaran</TableHead>
-        <TableHead className="w-[110px] py-3 px-4 text-xs font-medium">Status</TableHead>
-        <TableHead className="w-[100px] text-right py-3 px-4 text-xs font-medium">Aksi</TableHead>
+      <TableRow className="bg-muted">
+        <TableHead className="w-[80px]">ID</TableHead>
+        <TableHead>Tanggal</TableHead>
+        <TableHead>Client</TableHead>
+        <TableHead>Tema</TableHead>
+        <TableHead>Vendor</TableHead>
+        <TableHead>Status</TableHead>
+        <TableHead>
+          <div className="flex items-center">
+            <ClockIcon className="h-3 w-3 mr-1" />
+            <span>Acara</span>
+          </div>
+        </TableHead>
+        <TableHead className="text-right">Pembayaran</TableHead>
+        <TableHead className="w-[80px]"></TableHead>
       </TableRow>
     </TableHeader>
   );
-};
-
-export default OrderTableHeader;
+}

@@ -1,3 +1,4 @@
+
 import { useRef } from "react";
 import { Invoice, Vendor } from "@/types/types";
 import { format } from "date-fns";
@@ -88,12 +89,15 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                 
                 // Check if addons exists and then determine its type
                 if (order.addons) {
-                  if (Array.isArray(order.addons)) {
+                  // First, cast to unknown, then to the expected types to avoid the 'never' type error
+                  const addonsValue = order.addons as unknown;
+                  
+                  if (Array.isArray(addonsValue)) {
                     // If it's already an array, use it directly
-                    addonsArray = order.addons;
-                  } else if (typeof order.addons === 'string') {
+                    addonsArray = addonsValue as string[];
+                  } else if (typeof addonsValue === 'string') {
                     // If it's a string (which might come from older data), split it
-                    addonsArray = order.addons.split(',').map(a => a.trim());
+                    addonsArray = (addonsValue as string).split(',').map(a => a.trim());
                   } else {
                     // For any other unexpected type, keep addonsArray as empty
                     console.warn(`Unexpected addons type for order ${order.orderId}:`, order.addons);

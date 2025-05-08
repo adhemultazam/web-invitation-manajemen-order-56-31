@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Topbar() {
   const { theme } = useTheme();
@@ -23,6 +24,7 @@ export function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isDarkMode = theme === "dark";
+  const isMobile = useIsMobile();
   
   // Format current date in Indonesian manually instead of using locale
   const today = new Date();
@@ -42,11 +44,11 @@ export function Topbar() {
   
   return (
     <div className={cn(
-      "flex justify-between items-center py-4 px-6",
+      "flex justify-between items-center py-4 px-4 md:px-6 w-full max-w-full overflow-hidden",
       "border-b",
       isDarkMode ? "border-gray-700/30" : "border-gray-200"
     )}>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
         {!isRootPath && (
           <Button 
             variant="ghost" 
@@ -58,19 +60,19 @@ export function Topbar() {
           </Button>
         )}
         <p className={cn(
-          "text-sm font-medium",
+          "text-xs md:text-sm font-medium truncate max-w-[150px] md:max-w-none",
           isDarkMode ? "text-gray-300" : "text-gray-600"
         )}>
           {capitalizedDate}
         </p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
         <ThemeToggle />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full p-0 overflow-hidden">
-              <Avatar className="h-9 w-9 bg-wedding-primary/10">
+            <Button variant="ghost" size="icon" className="relative h-8 w-8 md:h-9 md:w-9 rounded-full p-0 overflow-hidden">
+              <Avatar className="h-8 w-8 md:h-9 md:w-9 bg-wedding-primary/10">
                 {user?.profileImage ? (
                   <AvatarImage 
                     src={user.profileImage} 

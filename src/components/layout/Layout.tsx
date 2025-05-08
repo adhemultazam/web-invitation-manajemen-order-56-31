@@ -29,7 +29,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-x-hidden">
         {!isMobile && (
           <AppSidebar 
             collapsed={sidebarCollapsed}
@@ -38,13 +38,13 @@ export function Layout({ children }: LayoutProps) {
         )}
 
         <div className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-in-out",
+          "flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full overflow-hidden",
           !isMobile && (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]"),
           isDarkMode ? "bg-[#121222]" : "bg-gray-50"
         )}>
           <Topbar />
 
-          <div className="flex-1 p-4 md:p-6">
+          <div className="flex-1 p-4 md:p-6 overflow-x-hidden">
             {children}
           </div>
         </div>
@@ -54,7 +54,7 @@ export function Layout({ children }: LayoutProps) {
             <Button
               variant="outline"
               size="icon"
-              className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+              className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-30"
             >
               <Menu />
             </Button>

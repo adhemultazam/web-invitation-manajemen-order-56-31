@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, CalendarDays, Settings, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function MobileNavbar() {
   const location = useLocation();
@@ -18,53 +19,61 @@ export function MobileNavbar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50 flex items-center justify-around h-14 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50 flex items-center justify-around h-14 w-full md:hidden">
       <Link 
         to="/" 
-        className={`flex flex-col items-center justify-center w-full h-full ${
+        className={cn(
+          "flex flex-col items-center justify-center w-full h-full",
           isActive("/") 
             ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
-            : "text-muted-foreground"
-        } relative`}
+            : "text-muted-foreground",
+          "relative"
+        )}
       >
-        <LayoutDashboard className="h-5 w-5" />
-        <span className="text-xs mt-1">Dashboard</span>
+        <LayoutDashboard className="h-4 w-4" />
+        <span className="text-[10px] mt-1">Dashboard</span>
       </Link>
       
       <Link 
         to={`/pesanan/${currentMonth}`}
-        className={`flex flex-col items-center justify-center w-full h-full ${
+        className={cn(
+          "flex flex-col items-center justify-center w-full h-full",
           isActive("/pesanan") 
             ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
-            : "text-muted-foreground"
-        } relative`}
+            : "text-muted-foreground",
+          "relative"
+        )}
       >
-        <CalendarDays className="h-5 w-5" />
-        <span className="text-xs mt-1">Pesanan</span>
+        <CalendarDays className="h-4 w-4" />
+        <span className="text-[10px] mt-1">Pesanan</span>
       </Link>
       
       <Link 
         to="/invoices" 
-        className={`flex flex-col items-center justify-center w-full h-full ${
+        className={cn(
+          "flex flex-col items-center justify-center w-full h-full",
           isActive("/invoices") 
             ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
-            : "text-muted-foreground"
-        } relative`}
+            : "text-muted-foreground",
+          "relative"
+        )}
       >
-        <FileText className="h-5 w-5" />
-        <span className="text-xs mt-1">Invoice</span>
+        <FileText className="h-4 w-4" />
+        <span className="text-[10px] mt-1">Invoice</span>
       </Link>
       
       <Link 
         to="/pengaturan" 
-        className={`flex flex-col items-center justify-center w-full h-full ${
+        className={cn(
+          "flex flex-col items-center justify-center w-full h-full",
           isActive("/pengaturan") 
             ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
-            : "text-muted-foreground"
-        } relative`}
+            : "text-muted-foreground",
+          "relative"
+        )}
       >
-        <Settings className="h-5 w-5" />
-        <span className="text-xs mt-1">Setting</span>
+        <Settings className="h-4 w-4" />
+        <span className="text-[10px] mt-1">Setting</span>
       </Link>
     </div>
   );

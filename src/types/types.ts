@@ -95,7 +95,7 @@ export type Invoice = {
     orderDate: string;
     amount: number;
     package?: string;
-    addons?: string[];
+    addons?: string[] | string; // Updated to allow both string and string[] types
   }[];
 };
 

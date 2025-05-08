@@ -84,26 +84,17 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
             </thead>
             <tbody>
               {invoice.orders.map((order, index) => {
-                // Safely handle addons with proper type checking
-                let addonsArray: string[] = [];
+                // Process addons with proper type handling
+                let addonsList = "-";
                 
-                // Check if addons exists and then determine its type
                 if (order.addons) {
-                  // First, cast to unknown, then to the expected types to avoid the 'never' type error
-                  const addonsValue = order.addons as unknown;
-                  
-                  if (Array.isArray(addonsValue)) {
-                    // If it's already an array, use it directly
-                    addonsArray = addonsValue as string[];
-                  } else if (typeof addonsValue === 'string') {
-                    // If it's a string (which might come from older data), split it
-                    addonsArray = (addonsValue as string).split(',').map(a => a.trim());
-                  } else {
-                    // For any other unexpected type, keep addonsArray as empty
-                    console.warn(`Unexpected addons type for order ${order.orderId}:`, order.addons);
+                  if (Array.isArray(order.addons) && order.addons.length > 0) {
+                    addonsList = order.addons.join(", ");
+                  } else if (typeof order.addons === 'string' && order.addons.trim() !== '') {
+                    addonsList = order.addons;
                   }
                 }
-                
+
                 return (
                   <tr key={order.orderId} className="border-t">
                     <td className="py-1.5 px-2">{index + 1}</td>
@@ -112,9 +103,7 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                     </td>
                     <td className="py-1.5 px-2">{order.clientName}</td>
                     <td className="py-1.5 px-2">{order.package || "-"}</td>
-                    <td className="py-1.5 px-2">
-                      {addonsArray.length > 0 ? addonsArray.join(", ") : "-"}
-                    </td>
+                    <td className="py-1.5 px-2">{addonsList}</td>
                     <td className="py-1.5 px-2 text-right font-medium">
                       {formatCurrency(order.amount)}
                     </td>

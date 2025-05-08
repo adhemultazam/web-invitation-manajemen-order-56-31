@@ -1,6 +1,7 @@
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { Topbar } from "./Topbar";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,31 +23,49 @@ export function Layout({ children }: LayoutProps) {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
-    <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
-      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900 font-inter">
-        {!isMobile && <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />}
-        <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", 
-          !isMobile ? (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]") : "")}>
-          <div className="p-4 md:p-6 w-full">
-            {isMobile && (
-              <div className="flex items-center justify-between mb-4">
-                <SidebarTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-9 w-9">
-                    <Menu className="h-5 w-5" />
-                    <span className="sr-only">Toggle Menu</span>
-                  </Button>
-                </SidebarTrigger>
-                <UserMenu />
-              </div>
-            )}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        {!isMobile && (
+          <AppSidebar 
+            collapsed={sidebarCollapsed}
+            onCollapseToggle={toggleSidebar}
+          />
+        )}
+
+        <div className={cn(
+          "flex-1 flex flex-col transition-all duration-300 ease-in-out",
+          !isMobile && (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]"),
+          isDarkMode ? "bg-[#121222]" : "bg-gray-50"
+        )}>
+          <Topbar />
+
+          <div className="flex-1 p-4 md:p-6">
             {children}
           </div>
-          {isMobile && <MobileNavbar />}
-        </main>
-        <Toaster />
-        <Sonner />
+        </div>
+
+        {isMobile && (
+          <SidebarTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg"
+            >
+              <Menu />
+            </Button>
+          </SidebarTrigger>
+        )}
+
+        {isMobile && <MobileNavbar />}
       </div>
+      
+      <Toaster />
+      <Sonner />
     </SidebarProvider>
   );
 }

@@ -12,7 +12,7 @@ import {
   InvoiceFilter as InvoiceFilterType 
 } from "@/types/types";
 import { toast } from "sonner";
-import { monthsInIndonesian } from "@/lib/utils";
+import { monthsInIndonesian } from "@/lib/utils"; // Using correct import from lib/utils
 import { markInvoiceAsPaid } from "@/lib/invoiceUtils";
 
 export default function Invoices() {

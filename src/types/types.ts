@@ -119,5 +119,6 @@ export type InvoiceFilter = {
 export type User = {
   name: string;
   email?: string;
-  profileImage?: string;
+  profileImage?: string; // Added missing property
 };
+

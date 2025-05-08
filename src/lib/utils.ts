@@ -15,3 +15,9 @@ export function formatCurrency(value: number): string {
     minimumFractionDigits: 0,
   }).format(value);
 }
+
+// Indonesian months for various uses throughout the app
+export const monthsInIndonesian = [
+  "januari", "februari", "maret", "april", "mei", "juni",
+  "juli", "agustus", "september", "oktober", "november", "desember"
+];

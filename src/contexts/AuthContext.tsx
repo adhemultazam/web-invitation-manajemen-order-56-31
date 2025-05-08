@@ -6,11 +6,13 @@ interface User {
   name: string;
   email: string;
   avatar?: string;
+  profileImage?: string; // Added missing property
 }
 
 interface BrandSettings {
   name: string;
   logo?: string;
+  favicon?: string; // Added missing property
 }
 
 interface AuthContextType {
@@ -19,6 +21,9 @@ interface AuthContextType {
   brandSettings: BrandSettings;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateBrandSettings: (settings: Partial<BrandSettings>) => void; // Added missing method
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>; // Added missing method
+  updateUserProfile: (profile: Partial<User>) => void; // Added missing method
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -30,6 +35,9 @@ const AuthContext = createContext<AuthContextType>({
   },
   login: async () => false,
   logout: () => {},
+  updateBrandSettings: () => {}, // Added default implementation
+  updatePassword: async () => false, // Added default implementation
+  updateUserProfile: () => {}, // Added default implementation
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -40,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [brandSettings, setBrandSettings] = useState<BrandSettings>({
     name: "Undangan Digital",
     logo: "",
+    favicon: "", // Initialize with empty string
   });
 
   useEffect(() => {
@@ -112,6 +121,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success("Logout berhasil");
   };
 
+  // Implement the missing methods
+  const updateBrandSettings = (settings: Partial<BrandSettings>) => {
+    const updatedSettings = { ...brandSettings, ...settings };
+    setBrandSettings(updatedSettings);
+    localStorage.setItem("brandSettings", JSON.stringify(updatedSettings));
+  };
+
+  const updateUserProfile = (profile: Partial<User>) => {
+    if (!user) return;
+    
+    const updatedUser = { ...user, ...profile };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
+  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    // In a real app, we would verify the current password on the server
+    // For this mock implementation, we'll simulate success if the current password meets our criterion
+    if (currentPassword.length >= 6) {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      toast.success("Password berhasil diperbarui");
+      return true;
+    }
+    
+    toast.error("Password saat ini tidak valid");
+    return false;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -120,6 +159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         brandSettings,
         login,
         logout,
+        updateBrandSettings,
+        updateUserProfile,
+        updatePassword,
       }}
     >
       {children}

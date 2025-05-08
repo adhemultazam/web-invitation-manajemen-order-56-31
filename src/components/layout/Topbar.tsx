@@ -1,6 +1,5 @@
 
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { cn, monthsInIndonesian } from "@/lib/utils";
 
 export function Topbar() {
   const { theme } = useTheme();
@@ -17,12 +16,18 @@ export function Topbar() {
   const location = useLocation();
   const isDarkMode = theme === "dark";
   
-  // Format current date in Indonesian
+  // Format current date in Indonesian manually instead of using locale
   const today = new Date();
-  const formattedDate = format(today, "EEEE, d MMMM yyyy", { locale: id });
+  const dayName = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(today);
+  const day = today.getDate();
+  const month = monthsInIndonesian[today.getMonth()];
+  const year = today.getFullYear();
   
-  // Capitalize first letter
-  const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+  // Construct formatted date (e.g., "Senin, 8 Mei 2025")
+  const formattedDate = `${dayName}, ${day} ${month} ${year}`;
+  
+  // Capitalize first letter (already capitalized with Intl.DateTimeFormat)
+  const capitalizedDate = formattedDate;
   
   // Check if we're on the root path
   const isRootPath = location.pathname === "/";

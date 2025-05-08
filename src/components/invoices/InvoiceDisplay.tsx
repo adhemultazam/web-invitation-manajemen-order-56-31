@@ -83,24 +83,33 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
               </tr>
             </thead>
             <tbody>
-              {invoice.orders.map((order, index) => (
-                <tr key={order.orderId} className="border-t">
-                  <td className="py-1.5 px-2">{index + 1}</td>
-                  <td className="py-1.5 px-2">
-                    {format(new Date(order.orderDate), "dd/MM/yy")}
-                  </td>
-                  <td className="py-1.5 px-2">{order.clientName}</td>
-                  <td className="py-1.5 px-2">{order.package || "-"}</td>
-                  <td className="py-1.5 px-2">
-                    {order.addons && order.addons.length > 0
-                      ? order.addons.join(", ")
-                      : "-"}
-                  </td>
-                  <td className="py-1.5 px-2 text-right font-medium">
-                    {formatCurrency(order.amount)}
-                  </td>
-                </tr>
-              ))}
+              {invoice.orders.map((order, index) => {
+                // Parse addons from order properly
+                const addonsArray = Array.isArray(order.addons) 
+                  ? order.addons 
+                  : typeof order.addons === 'string' && order.addons
+                    ? order.addons.split(',').map(a => a.trim())
+                    : [];
+                
+                return (
+                  <tr key={order.orderId} className="border-t">
+                    <td className="py-1.5 px-2">{index + 1}</td>
+                    <td className="py-1.5 px-2">
+                      {format(new Date(order.orderDate), "dd/MM/yy")}
+                    </td>
+                    <td className="py-1.5 px-2">{order.clientName}</td>
+                    <td className="py-1.5 px-2">{order.package || "-"}</td>
+                    <td className="py-1.5 px-2">
+                      {addonsArray && addonsArray.length > 0
+                        ? addonsArray.join(", ")
+                        : "-"}
+                    </td>
+                    <td className="py-1.5 px-2 text-right font-medium">
+                      {formatCurrency(order.amount)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -84,6 +84,9 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
             </thead>
             <tbody>
               {invoice.orders.map((order, index) => {
+                // Handle package display
+                const packageDisplay = order.package || "-";
+                
                 // Process addons with proper type handling
                 let addonsList = "-";
                 
@@ -102,7 +105,7 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                       {format(new Date(order.orderDate), "dd/MM/yy")}
                     </td>
                     <td className="py-1.5 px-2">{order.clientName}</td>
-                    <td className="py-1.5 px-2">{order.package || "-"}</td>
+                    <td className="py-1.5 px-2">{packageDisplay}</td>
                     <td className="py-1.5 px-2">{addonsList}</td>
                     <td className="py-1.5 px-2 text-right font-medium">
                       {formatCurrency(order.amount)}

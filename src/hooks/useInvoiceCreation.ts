@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Order, Vendor } from "@/types/types";
 import { toast } from "sonner";
@@ -96,16 +97,15 @@ export function useInvoiceCreation(
           orderId: order.id,
           clientName: order.clientName,
           orderDate: order.orderDate,
-          amount: order.paymentAmount,
+          amount: typeof order.paymentAmount === 'number' ? 
+            order.paymentAmount : 
+            parseFloat(order.paymentAmount.toString()) || 0,
+          package: order.package, // Include package name
+          addons: order.addons // Include addons
         }));
 
       // Calculate total amount
-      const totalAmount = orderDetails.reduce((sum, order) => {
-        const amount = typeof order.amount === 'number' ? 
-          order.amount : 
-          parseFloat(order.amount.toString()) || 0;
-        return sum + amount;
-      }, 0);
+      const totalAmount = orderDetails.reduce((sum, order) => sum + order.amount, 0);
 
       // Create invoice
       const vendor = vendors.find((v) => v.id === selectedVendor);

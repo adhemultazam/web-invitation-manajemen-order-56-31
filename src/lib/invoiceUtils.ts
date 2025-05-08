@@ -104,8 +104,8 @@ export const generateInvoice = (
       clientName: order.clientName,
       orderDate: order.orderDate,
       amount: numericAmount,
-      package: order.package, // Include package information
-      addons: order.addons // Include addons information
+      package: order.package, // Explicitly include package information
+      addons: order.addons // Explicitly include addons information
     };
   });
   

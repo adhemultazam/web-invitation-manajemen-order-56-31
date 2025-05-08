@@ -10,8 +10,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { Download } from "lucide-react";
+import { Download, Copy } from "lucide-react";
 import html2canvas from "html2canvas";
+import { toast } from "sonner";
 
 interface InvoiceViewModalProps {
   invoice: Invoice;
@@ -78,6 +79,36 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
         document.body.removeChild(downloadLink);
       } catch (error) {
         console.error("Error generating invoice image:", error);
+      }
+    }
+  };
+
+  const copyInvoiceToClipboard = async () => {
+    if (invoiceRef.current) {
+      try {
+        const canvas = await html2canvas(invoiceRef.current, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+        });
+        
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            try {
+              // Create a ClipboardItem and write it to clipboard
+              const item = new ClipboardItem({ "image/png": blob });
+              await navigator.clipboard.write([item]);
+              toast.success("Invoice berhasil disalin ke clipboard");
+            } catch (error) {
+              console.error("Error copying to clipboard:", error);
+              toast.error("Gagal menyalin ke clipboard", { 
+                description: "Browser Anda mungkin tidak mendukung fitur ini"
+              });
+            }
+          }
+        }, "image/png");
+      } catch (error) {
+        console.error("Error generating invoice image for clipboard:", error);
+        toast.error("Gagal menyalin invoice");
       }
     }
   };
@@ -193,6 +224,10 @@ export function InvoiceViewModal({ invoice, vendor, onClose }: InvoiceViewModalP
         
         <DialogFooter className="mt-3">
           <Button variant="outline" onClick={onClose} size="sm">Tutup</Button>
+          <Button onClick={copyInvoiceToClipboard} size="sm" variant="secondary" className="ml-2">
+            <Copy className="mr-1.5 h-3.5 w-3.5" />
+            Salin ke Clipboard
+          </Button>
           <Button onClick={downloadInvoiceImage} size="sm">
             <Download className="mr-1.5 h-3.5 w-3.5" />
             Download Invoice

@@ -1,4 +1,3 @@
-
 import { useRef } from "react";
 import { Invoice, Vendor } from "@/types/types";
 import { format } from "date-fns";
@@ -87,11 +86,17 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                 // Safely handle addons with proper type checking
                 let addonsArray: string[] = [];
                 
+                // Check if addons exists and then determine its type
                 if (order.addons) {
                   if (Array.isArray(order.addons)) {
+                    // If it's already an array, use it directly
                     addonsArray = order.addons;
                   } else if (typeof order.addons === 'string') {
+                    // If it's a string (which might come from older data), split it
                     addonsArray = order.addons.split(',').map(a => a.trim());
+                  } else {
+                    // For any other unexpected type, keep addonsArray as empty
+                    console.warn(`Unexpected addons type for order ${order.orderId}:`, order.addons);
                   }
                 }
                 

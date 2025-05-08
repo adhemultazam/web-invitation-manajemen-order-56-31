@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { TopBar } from "./TopBar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,10 +26,9 @@ export function Layout({ children }: LayoutProps) {
     <SidebarProvider defaultOpen={!sidebarCollapsed} open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
       <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900 font-inter">
         {!isMobile && <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />}
-        <main className={cn("flex-1 flex flex-col overflow-auto pb-16 md:pb-0", 
+        <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", 
           !isMobile ? (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]") : "")}>
-          <TopBar />
-          <div className="p-4 md:p-6 w-full flex-1">
+          <div className="p-4 md:p-6 w-full">
             {isMobile && (
               <div className="flex items-center justify-between mb-4">
                 <SidebarTrigger asChild>

@@ -74,20 +74,28 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
           <table className="w-full text-xs">
             <thead className="bg-muted">
               <tr>
-                <th className="py-2 px-2 text-left">Order ID</th>
+                <th className="py-2 px-2 text-left">No</th>
                 <th className="py-2 px-2 text-left">Tanggal</th>
                 <th className="py-2 px-2 text-left">Client</th>
+                <th className="py-2 px-2 text-left">Paket</th>
+                <th className="py-2 px-2 text-left">Addons</th>
                 <th className="py-2 px-2 text-right">Jumlah</th>
               </tr>
             </thead>
             <tbody>
-              {invoice.orders.map((order) => (
+              {invoice.orders.map((order, index) => (
                 <tr key={order.orderId} className="border-t">
-                  <td className="py-1.5 px-2">#{order.orderId}</td>
+                  <td className="py-1.5 px-2">{index + 1}</td>
                   <td className="py-1.5 px-2">
                     {format(new Date(order.orderDate), "dd/MM/yy")}
                   </td>
                   <td className="py-1.5 px-2">{order.clientName}</td>
+                  <td className="py-1.5 px-2">{order.package || "-"}</td>
+                  <td className="py-1.5 px-2">
+                    {order.addons && order.addons.length > 0
+                      ? order.addons.join(", ")
+                      : "-"}
+                  </td>
                   <td className="py-1.5 px-2 text-right font-medium">
                     {formatCurrency(order.amount)}
                   </td>

@@ -94,6 +94,8 @@ export type Invoice = {
     clientName: string;
     orderDate: string;
     amount: number;
+    package?: string;
+    addons?: string[];
   }[];
 };
 

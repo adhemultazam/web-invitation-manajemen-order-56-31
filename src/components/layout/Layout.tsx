@@ -44,7 +44,10 @@ export function Layout({ children }: LayoutProps) {
         )}>
           <Topbar />
 
-          <div className="flex-1 p-4 md:p-6 overflow-x-hidden">
+          <div className={cn(
+            "flex-1 p-4 md:p-6 overflow-x-hidden",
+            isMobile && "pb-24" // Add extra padding at the bottom on mobile to prevent content being hidden by navbar
+          )}>
             {children}
           </div>
         </div>

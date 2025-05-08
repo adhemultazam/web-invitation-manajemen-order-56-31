@@ -1,100 +1,217 @@
 
-import React from "react";
-import { Order } from "@/types/types";
-import { format } from "date-fns";
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Trash2, Edit } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Order, Vendor, Theme } from "@/types/types";
+import OrderAddons from "./OrderAddons";
+import PaymentStatusBadge from "./PaymentStatusBadge";
+import WorkStatusSelect from "./WorkStatusSelect";
+import ThemeSelect from "./ThemeSelect";
+import VendorDropdown from "./VendorDropdown";
+import PackageSelect from "./PackageSelect";
+import OrderActions from "./OrderActions";
+import { WorkStatus, Package } from "@/types/types";
+import { Calendar, Clock } from "lucide-react";
 
 interface OrderTableRowProps {
   order: Order;
-  orderStatus: string;
-  countdownClass: string;
-  openEditModal: (order: Order) => void;
-  openDeleteModal: (id: string) => void;
+  index: number; // Add index for numbering
+  updatingOrders: Set<string>;
+  vendorColors: Record<string, string>;
+  addonStyles: Record<string, { color: string }>;
+  availableWorkStatuses: WorkStatus[];
+  availablePackages: Package[];
+  vendors: Vendor[];
+  themes: Theme[];
+  formatDate: (date: string) => string;
+  isPastDate: (date: string) => boolean;
+  formatCurrency: (amount: number) => string;
+  togglePaymentStatus: (order: Order) => void;
+  handleWorkStatusChange: (orderId: string, status: string) => void;
+  handleVendorChange: (orderId: string, vendor: string) => void;
+  handleThemeChange: (orderId: string, theme: string) => void;
+  handlePackageChange: (orderId: string, pkg: string) => void;
+  handleViewOrderDetail: (order: Order) => void;
+  handleOpenEditDialog: (order: Order) => void;
+  handleDeleteOrder: (order: Order) => void;
 }
 
-export function OrderTableRow({
+const OrderTableRow: React.FC<OrderTableRowProps> = ({
   order,
-  orderStatus,
-  countdownClass,
-  openEditModal,
-  openDeleteModal
-}: OrderTableRowProps) {
+  index,
+  updatingOrders,
+  vendorColors,
+  addonStyles,
+  availableWorkStatuses,
+  availablePackages,
+  vendors,
+  themes,
+  formatDate,
+  isPastDate,
+  formatCurrency,
+  togglePaymentStatus,
+  handleWorkStatusChange,
+  handleVendorChange,
+  handleThemeChange,
+  handlePackageChange,
+  handleViewOrderDetail,
+  handleOpenEditDialog,
+  handleDeleteOrder,
+}) => {
+  // Find the current package's category
+  const [packageCategory, setPackageCategory] = useState<string | undefined>(undefined);
+  const isMounted = useRef(true);
+  
+  // Update package category when the order's package changes
+  useEffect(() => {
+    const currentPackage = availablePackages.find(pkg => pkg.name === order.package);
+    if (currentPackage && isMounted.current) {
+      setPackageCategory(currentPackage.name);
+    }
+    
+    return () => {
+      isMounted.current = false;
+    };
+  }, [order.package, availablePackages]);
+
+  // Check if an order has any addons
+  const hasAddons = (): boolean => {
+    return Array.isArray(order.addons) && order.addons.length > 0;
+  };
+
+  // Check if client URL exists
+  const hasClientUrl = (): boolean => {
+    return !!order.clientUrl && order.clientUrl.trim() !== '';
+  };
+
   return (
-    <TableRow>
-      <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}</TableCell>
-      <TableCell>
-        {order.orderDate ? format(new Date(order.orderDate), "dd/MM/yyyy") : "-"}
+    <TableRow className="h-12 hover:bg-gray-50/80 font-inter">
+      {/* No */}
+      <TableCell className="font-mono text-xs py-2.5 px-4">
+        {index + 1}
       </TableCell>
-      <TableCell className="font-medium">{order.clientName}</TableCell>
-      <TableCell>{order.theme || "-"}</TableCell>
-      <TableCell>{order.vendor || "-"}</TableCell>
-      <TableCell>
-        {order.workStatus && (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200">
-            {order.workStatus}
-          </Badge>
-        )}
+      
+      {/* Combined Dates - Tgl Pesan & Tgl Acara */}
+      <TableCell className="py-2.5 px-4">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1 text-[10px] font-mono text-gray-600 dark:text-gray-400">
+            <Calendar className="h-3 w-3" /> {formatDate(order.orderDate)}
+          </div>
+          <div className={`flex items-center gap-1 text-[10px] font-mono ${isPastDate(order.eventDate) ? "text-red-500" : "text-gray-600 dark:text-gray-400"}`}>
+            <Clock className="h-3 w-3" /> {formatDate(order.eventDate)}
+          </div>
+        </div>
       </TableCell>
-      <TableCell>
-        <Badge variant="outline" className={`${countdownClass} text-xs`}>
-          {order.eventDate ? (
-            <div className="flex items-center">
-              <span className="text-[9px] md:text-xs">{orderStatus || "..."}</span>
+      
+      {/* Countdown */}
+      <TableCell className="font-mono text-[9px] py-2.5 px-4">
+        <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+          {order.countdownDays} hari
+        </span>
+      </TableCell>
+      
+      {/* Client & Nama combined - SWAPPED ORDER */}
+      <TableCell className="py-2.5 px-4">
+        <div className="flex flex-col gap-0.5">
+          <div className="text-xs font-medium leading-tight">
+            {hasClientUrl() ? (
+              <a 
+                href={order.clientUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline cursor-pointer"
+              >
+                {order.clientName}
+              </a>
+            ) : (
+              order.clientName
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground leading-tight">{order.customerName}</div>
+        </div>
+      </TableCell>
+      
+      {/* Vendor */}
+      <TableCell className="py-2.5 px-4">
+        <VendorDropdown 
+          vendor={order.vendor} 
+          vendors={vendors}
+          isDisabled={updatingOrders.has(order.id)}
+          onChange={(value) => handleVendorChange(order.id, value)}
+          compact={true}
+        />
+      </TableCell>
+      
+      {/* Paket & Tema side by side */}
+      <TableCell className="py-2.5 px-4">
+        <div className="flex flex-row items-center gap-2">
+          <div className="w-1/2">
+            <PackageSelect
+              value={order.package}
+              packages={availablePackages}
+              isDisabled={updatingOrders.has(order.id)}
+              onChange={(value) => handlePackageChange(order.id, value)}
+              compact={true}
+            />
+          </div>
+          {packageCategory !== undefined && (
+            <div className="w-1/2">
+              <ThemeSelect
+                value={order.theme || ""}
+                themes={themes}
+                isDisabled={updatingOrders.has(order.id)}
+                onChange={(value) => handleThemeChange(order.id, value)}
+                packageCategory={packageCategory}
+                compact={true}
+              />
             </div>
-          ) : (
-            "-"
           )}
-        </Badge>
+        </div>
       </TableCell>
-      <TableCell className="text-right">
-        <Badge variant="outline" className={
-          order.paymentStatus === "Lunas" 
-            ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-200" 
-            : "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200"
-        }>
-          {order.paymentStatus}
-        </Badge>
+      
+      {/* Addons */}
+      <TableCell className="py-2.5 px-4">
+        <OrderAddons 
+          addons={order.addons} 
+          addonStyles={addonStyles}
+          compact={true}
+        />
       </TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem 
-              onClick={() => openEditModal(order)}
-              className="flex items-center cursor-pointer"
-            >
-              <Edit className="mr-2 h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => openDeleteModal(order.id)}
-              className="flex items-center text-red-600 cursor-pointer"
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      
+      {/* Pembayaran */}
+      <TableCell className="py-2.5 px-4">
+        <PaymentStatusBadge 
+          status={order.paymentStatus}
+          amount={typeof order.paymentAmount === 'number' ? order.paymentAmount : parseFloat(order.paymentAmount.toString()) || 0}
+          isUpdating={updatingOrders.has(order.id)}
+          onToggle={() => togglePaymentStatus(order)}
+          formatCurrency={formatCurrency}
+          compact={true}
+        />
+      </TableCell>
+      
+      {/* Status */}
+      <TableCell className="py-2.5 px-4">
+        <WorkStatusSelect
+          value={order.workStatus}
+          isDisabled={updatingOrders.has(order.id)}
+          workStatuses={availableWorkStatuses}
+          onChange={(value) => handleWorkStatusChange(order.id, value)}
+          compact={true}
+        />
+      </TableCell>
+      
+      {/* Aksi */}
+      <TableCell className="py-2.5 px-4 text-right">
+        <OrderActions
+          order={order}
+          onView={handleViewOrderDetail}
+          onEdit={handleOpenEditDialog}
+          onDelete={handleDeleteOrder}
+          compact={true}
+        />
       </TableCell>
     </TableRow>
   );
-}
+};
+
+export default OrderTableRow;

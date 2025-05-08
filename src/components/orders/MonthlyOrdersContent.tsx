@@ -9,7 +9,7 @@ import { OrdersFilter } from "@/components/orders/OrdersFilter";
 import { OrderTable } from "@/components/orders/OrderTable";
 import OrderStats from "@/components/orders/OrderStats";
 import { OrderDetailModal } from "@/components/orders/OrderDetailModal";
-import { Order } from "@/types/types";
+import { Order, Vendor, WorkStatus, Theme, Package, Addon } from "@/types/types";
 import { toast } from "sonner";
 import { useOrderUpdates } from "@/hooks/useOrderUpdates";
 import { useOrderFilters } from "@/hooks/useOrderFilters";
@@ -18,11 +18,11 @@ import { differenceInDays } from "date-fns";
 
 interface MonthlyOrdersContentProps {
   orders: Order[];
-  workStatuses: { id: string; name: string }[];
-  vendors: { id: string; color?: string }[];
-  themes: { name: string }[];
-  packages: { name: string }[];
-  addons: { name: string; color: string }[];
+  workStatuses: WorkStatus[];
+  vendors: Vendor[];
+  themes: Theme[];
+  packages: Package[];
+  addons: Addon[];
   isLoading: boolean;
   addOrder: (order: Omit<Order, "id">) => void;
   editOrder: (orderId: string, data: Partial<Order>) => void;

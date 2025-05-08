@@ -463,10 +463,7 @@ export default function MonthlyOrders() {
       </div>
       
       {/* Order Stats */}
-      <OrderStats 
-        orders={filteredOrders} 
-        formatCurrency={formatCurrency} 
-      />
+      <OrderStats orders={filteredOrders} />
       
       <OrdersFilter 
         vendors={vendors}

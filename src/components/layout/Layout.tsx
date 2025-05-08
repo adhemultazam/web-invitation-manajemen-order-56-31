@@ -29,76 +29,24 @@ export function Layout({ children }: LayoutProps) {
         <main className={cn("flex-1 overflow-auto pb-16 md:pb-0", 
           !isMobile ? (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]") : "")}>
           <div className="p-4 md:p-6 w-full">
-            <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-              {isMobile && (
+            {isMobile && (
+              <div className="flex items-center justify-between mb-4">
                 <SidebarTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-1 h-9 w-9">
+                  <Button variant="outline" size="icon" className="h-9 w-9">
                     <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle Menu</span>
                   </Button>
                 </SidebarTrigger>
-              )}
-              <div className={isMobile ? "" : "ml-2"}>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </p>
-              </div>
-              <div>
                 <UserMenu />
               </div>
-            </div>
-            <div className="flex flex-col">
-              {children}
-            </div>
+            )}
+            {children}
           </div>
           {isMobile && <MobileNavbar />}
         </main>
-        
-        {/* For mobile sidebar */}
-        {isMobile && <AppSidebar collapsed={false} onCollapseToggle={() => {}} />}
+        <Toaster />
+        <Sonner />
       </div>
-      <Toaster />
-      <Sonner />
-
-      {/* Global styles for tables */}
-      <style>
-        {`
-        /* Modern table styles with better spacing */
-        .compact-table th {
-          height: auto;
-          padding: 0.75rem 1rem;
-          font-size: 0.75rem;
-          font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-        }
-        
-        .compact-table td {
-          padding: 0.625rem 1rem;
-          font-family: 'Inter', sans-serif;
-          font-size: 0.875rem;
-          vertical-align: middle;
-        }
-        
-        /* Specific styles for order tables */
-        [data-component="Table"] td {
-          padding-top: 0.625rem !important;
-          padding-bottom: 0.625rem !important;
-          vertical-align: middle !important;
-        }
-        
-        [data-component="Table"] thead th {
-          font-family: 'Poppins', sans-serif;
-          font-weight: 600;
-          font-size: 0.75rem;
-          letter-spacing: 0.02em;
-        }
-        
-        [data-component="Table"] tbody td {
-          font-family: 'Inter', sans-serif;
-          font-size: 0.875rem;
-        }
-        `}
-      </style>
     </SidebarProvider>
   );
 }

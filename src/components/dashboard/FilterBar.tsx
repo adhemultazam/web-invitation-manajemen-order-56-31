@@ -42,18 +42,18 @@ export function FilterBar({
   
   // Set default year and month on initial render if not already set
   useEffect(() => {
-    if (!selectedYear) {
+    if (!selectedYear && onYearChange) {
       const currentYear = new Date().getFullYear().toString();
       if (years.includes(currentYear)) {
         onYearChange(currentYear);
       }
     }
     
-    if (!selectedMonth) {
+    if (!selectedMonth && onMonthChange) {
       const currentMonthIndex = new Date().getMonth();
       onMonthChange(months[currentMonthIndex + 1]); // +1 because index 0 is "Semua Data"
     }
-  }, []);
+  }, [selectedYear, selectedMonth, onYearChange, onMonthChange, years]);
 
   return (
     <div className={`flex flex-wrap gap-3 ${className}`}>

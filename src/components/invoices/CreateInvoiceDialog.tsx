@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -44,20 +44,6 @@ export function CreateInvoiceDialog({
     handleCreateInvoice,
     totalSelectedAmount
   } = useInvoiceCreation(vendors, orders, open, onInvoiceCreated, onClose);
-
-  // Debug log to check if we have orders data
-  useEffect(() => {
-    if (open) {
-      console.log("CreateInvoiceDialog orders:", orders.length);
-      console.log("CreateInvoiceDialog vendors:", vendors.length);
-    }
-  }, [open, orders, vendors]);
-
-  // Debug log to check vendor orders
-  useEffect(() => {
-    console.log("Selected vendor:", selectedVendor);
-    console.log("Vendor orders count:", vendorOrders.length);
-  }, [selectedVendor, vendorOrders]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

@@ -18,9 +18,6 @@ export function VendorSelectionDropdown({
   vendorOrderCounts,
   onVendorChange
 }: VendorSelectionDropdownProps) {
-  // Log for debugging
-  console.log("Vendor order counts:", vendorOrderCounts);
-  
   return (
     <div className="space-y-2">
       <Label htmlFor="vendor">Vendor</Label>

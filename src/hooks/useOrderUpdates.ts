@@ -1,7 +1,6 @@
 
 import { useState } from "react";
-import { Order } from "@/types/types";
-import { Package } from "@/types/types";
+import { Order, Package } from "@/types/types";
 
 export function useOrderUpdates(
   editOrderFn: (orderId: string, data: Partial<Order>) => void,
@@ -52,17 +51,30 @@ export function useOrderUpdates(
     }, 500);
   };
   
-  const handlePackageChange = (orderId: string, pkg: string, packages: Package[]) => {
+  // Modified handlePackageChange to not require packages as a parameter
+  const handlePackageChange = (orderId: string, pkg: string) => {
     setUpdatingOrders(prev => new Set(prev).add(orderId));
     
-    // Find package price
-    const packageObj = packages.find(p => p.name === pkg);
-    if (packageObj) {
-      editOrderFn(orderId, { 
-        package: pkg,
-        paymentAmount: typeof packageObj.price === 'number' ? packageObj.price : 0
-      });
-    } else {
+    // Try to find package price from localStorage
+    try {
+      const packagesStr = localStorage.getItem('packages');
+      if (packagesStr) {
+        const packages = JSON.parse(packagesStr);
+        const packageObj = packages.find((p: Package) => p.name === pkg);
+        
+        if (packageObj) {
+          editOrderFn(orderId, { 
+            package: pkg,
+            paymentAmount: typeof packageObj.price === 'number' ? packageObj.price : 0
+          });
+        } else {
+          editOrderFn(orderId, { package: pkg });
+        }
+      } else {
+        editOrderFn(orderId, { package: pkg });
+      }
+    } catch (error) {
+      console.error("Error parsing packages from localStorage:", error);
       editOrderFn(orderId, { package: pkg });
     }
     

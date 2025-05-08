@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ChartCard } from "@/components/dashboard/ChartCard";
@@ -11,14 +10,15 @@ import { useVendorsData } from "@/hooks/useVendorsData";
 import { useOrderResources } from "@/hooks/useOrderResources";
 import { Button } from "@/components/ui/button";
 import { AddOrderModal } from "@/components/orders/AddOrderModal";
+import { formatCurrency } from "@/lib/utils";
 
 export function Dashboard() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState<string>("Semua Data");
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
   
-  // Ambil data pesanan berdasarkan filter
-  const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(selectedYear, selectedMonth);
+  // Get order data based on filters
+  const { orders, isLoading, addOrder } = useOrdersData(selectedYear, selectedMonth);
   const { vendors } = useVendorsData();
   const { workStatuses, addons, themes, packages } = useOrderResources();
   
@@ -34,43 +34,41 @@ export function Dashboard() {
     return 0;
   };
   
-  // Hitung statistik dari data pesanan
+  // Calculate statistics from order data
   const stats = useMemo(() => {
     // Map vendor ID to vendor name
     const vendorMap = new Map(vendors.map(vendor => [vendor.id, vendor.name]));
     
-    // Total Pesanan
+    // Total Orders
     const totalOrders = orders.length;
     
-    // Reset accumulated values
+    // Calculate total revenue correctly
     let totalRevenue = 0;
-    
-    // Calculate total revenue correctly - Perbaikan perhitungan totalRevenue
     orders.forEach(order => {
       totalRevenue += getNumericAmount(order.paymentAmount);
     });
     
-    // Pesanan yang dibayar
+    // Paid orders
     const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
     const paidOrdersCount = paidOrders.length;
     
-    // Calculate paid revenue correctly - Perbaikan perhitungan paidRevenue
+    // Calculate paid revenue correctly
     let paidRevenue = 0;
     paidOrders.forEach(order => {
       paidRevenue += getNumericAmount(order.paymentAmount);
     });
     
-    // Pesanan yang belum dibayar
+    // Pending orders
     const pendingOrders = orders.filter(order => order.paymentStatus === "Pending");
     const pendingOrdersCount = pendingOrders.length;
     
-    // Calculate pending revenue correctly - Perbaikan perhitungan pendingRevenue
+    // Calculate pending revenue correctly
     let pendingRevenue = 0;
     pendingOrders.forEach(order => {
       pendingRevenue += getNumericAmount(order.paymentAmount);
     });
     
-    // Pesanan yang perlu diselesaikan (dengan event date dalam 14 hari)
+    // Orders that need to be completed (with event date within 14 days)
     const urgentOrdersCount = orders.filter(order => {
       if (!order.eventDate) return false;
       
@@ -81,13 +79,13 @@ export function Dashboard() {
       return differenceInDays >= 0 && differenceInDays <= 14;
     }).length;
     
-    // Data untuk chart status pembayaran
+    // Data for payment status chart
     const paymentStatusData: ChartData[] = [
       { name: "Lunas", value: paidOrdersCount },
       { name: "Pending", value: pendingOrdersCount },
     ];
     
-    // Data untuk chart status pengerjaan
+    // Data for work status chart
     const workStatusMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -100,7 +98,7 @@ export function Dashboard() {
     const workStatusData: ChartData[] = Array.from(workStatusMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart distribusi vendor
+    // Data for vendor distribution chart
     const vendorOrdersMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -114,7 +112,7 @@ export function Dashboard() {
     const vendorData: ChartData[] = Array.from(vendorOrdersMap.entries())
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pembayaran per vendor dengan status pembayaran
+    // Data for vendor payment chart with payment status
     const vendorPaymentMap = new Map<string, { paid: number; pending: number }>();
     
     orders.forEach(order => {
@@ -129,7 +127,7 @@ export function Dashboard() {
         
         const vendorStats = vendorPaymentMap.get(vendorName)!;
         
-        // Add amount to appropriate payment status - Perbaikan perhitungan vendorPayment
+        // Add amount to appropriate payment status
         const numericAmount = getNumericAmount(order.paymentAmount);
         
         if (order.paymentStatus === "Lunas") {
@@ -147,7 +145,7 @@ export function Dashboard() {
         pending: stats.pending 
       }));
     
-    // Data untuk chart tema terlaris
+    // Data for best selling themes
     const themeMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -156,15 +154,15 @@ export function Dashboard() {
       }
     });
     
-    // Sortir tema berdasarkan jumlah pesanan (descending)
+    // Sort themes by order count (descending)
     const sortedThemeEntries = Array.from(themeMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5); // Ambil 5 tema teratas
+      .slice(0, 5); // Get top 5 themes
     
     const topThemesData: ChartData[] = sortedThemeEntries
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart paket terlaris
+    // Data for best selling packages
     const packageMap = new Map<string, number>();
     
     orders.forEach(order => {
@@ -173,15 +171,15 @@ export function Dashboard() {
       }
     });
     
-    // Sortir paket berdasarkan jumlah pesanan (descending)
+    // Sort packages by order count (descending)
     const sortedPackageEntries = Array.from(packageMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5); // Ambil 5 paket teratas
+      .slice(0, 5); // Get top 5 packages
     
     const topPackagesData: ChartData[] = sortedPackageEntries
       .map(([name, value]) => ({ name, value }));
     
-    // Data untuk chart pesanan per bulan
+    // Data for monthly orders chart
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     
     // Create monthly orders data synchronized with the selected year/month
@@ -272,7 +270,7 @@ export function Dashboard() {
     };
   }, [orders, selectedYear, selectedMonth, vendors]);
   
-  // Handlers for modal
+  // Handle modal states
   const handleOpenAddOrderModal = () => setIsAddOrderModalOpen(true);
   const handleCloseAddOrderModal = () => setIsAddOrderModalOpen(false);
 
@@ -283,18 +281,17 @@ export function Dashboard() {
       .slice(0, 5);
   }, [orders]);
 
-  // Format currency untuk Rupiah
-  const formatCurrency = (amount: number): string => {
-    // Add safety check to prevent invalid formatting
-    if (!isFinite(amount) || isNaN(amount)) {
-      return "Rp 0";
+  // Get filter description for stat cards
+  const getFilterDescription = () => {
+    if (selectedYear === "Semua Data" && selectedMonth === "Semua Data") {
+      return "Semua Data";
+    } else if (selectedMonth === "Semua Data") {
+      return `Tahun ${selectedYear}`;
+    } else if (selectedYear === "Semua Data") {
+      return `Bulan ${selectedMonth}`;
+    } else {
+      return `${selectedMonth} ${selectedYear}`;
     }
-    
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   return (
@@ -326,17 +323,16 @@ export function Dashboard() {
         </div>
       ) : (
         <>
-          {/* Mengubah grid layout menjadi 2 kolom pada mobile dan 4 kolom pada desktop */}
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-4">
             <StatCard
               title="Total Pesanan"
               value={stats.totalOrders}
               icon={<ShoppingCart className="h-3 w-3 text-white" />}
-              description="Keseluruhan pesanan"
+              description={getFilterDescription()}
             />
             <StatCard
               title="Total Omset"
-              value={stats.totalRevenue}
+              value={formatCurrency(stats.totalRevenue)}
               icon={<DollarSign className="h-3 w-3 text-white" />}
               description={`${stats.totalOrders} pesanan`}
               type="warning"
@@ -345,14 +341,14 @@ export function Dashboard() {
               title="Sudah Lunas"
               value={stats.paidOrdersCount}
               icon={<Check className="h-3 w-3 text-white" />}
-              description={stats.paidRevenue}
+              description={formatCurrency(stats.paidRevenue)}
               type="success"
             />
             <StatCard
               title="Belum Lunas"
               value={stats.pendingOrdersCount}
               icon={<X className="h-3 w-3 text-white" />}
-              description={stats.pendingRevenue}
+              description={formatCurrency(stats.pendingRevenue)}
               type="danger"
             />
           </div>
@@ -389,14 +385,14 @@ export function Dashboard() {
             />
           </div>
 
-          {/* New charts for top themes and packages */}
+          {/* Theme and package charts */}
           <div className="grid gap-4 md:grid-cols-2">
             <ChartCard
               title="Tema Terlaris"
               description="5 tema paling banyak dipesan"
               data={stats.topThemesData}
               type="bar"
-              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} // Purple shades
+              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} 
               icon={<Layers className="h-4 w-4" />}
             />
             <ChartCard
@@ -404,12 +400,12 @@ export function Dashboard() {
               description="5 paket paling banyak dipesan"
               data={stats.topPackagesData}
               type="bar"
-              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} // Purple shades
+              colors={["#9A84FF", "#A990FF", "#B89CFF", "#C7A8FF", "#D5B4FF"]} 
               icon={<Package className="h-4 w-4" />}
             />
           </div>
 
-          {/* Chart for vendor payment statistics with payment status colors */}
+          {/* Vendor payment chart */}
           <div className="grid gap-4">
             <ChartCard
               title="Pembayaran Per Vendor"
@@ -426,7 +422,7 @@ export function Dashboard() {
         </>
       )}
       
-      {/* AddOrderModal will appear when isAddOrderModalOpen is true */}
+      {/* Order modal */}
       {isAddOrderModalOpen && (
         <AddOrderModal
           isOpen={isAddOrderModalOpen}

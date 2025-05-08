@@ -6,10 +6,9 @@ import { formatCurrency } from "@/lib/utils";
 
 interface OrderStatsProps {
   orders: Order[];
-  formatCurrency: (amount: number) => string;
 }
 
-const OrderStats: React.FC<OrderStatsProps> = ({ orders, formatCurrency }) => {
+const OrderStats: React.FC<OrderStatsProps> = ({ orders }) => {
   // Ensure we convert strings to numbers before adding
   const getNumericAmount = (amount: any): number => {
     if (typeof amount === 'number' && !isNaN(amount)) {

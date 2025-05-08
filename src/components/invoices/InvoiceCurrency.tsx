@@ -7,7 +7,7 @@ interface InvoiceCurrencyProps {
 }
 
 export function InvoiceCurrency({ amount }: InvoiceCurrencyProps) {
-  // Memastikan amount adalah angka yang valid
+  // Ensure amount is a valid number
   const safeAmount = typeof amount === 'number' && !isNaN(amount) && isFinite(amount) ? amount : 0;
   
   return <>{formatCurrency(safeAmount)}</>;

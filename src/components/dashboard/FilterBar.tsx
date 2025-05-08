@@ -50,8 +50,7 @@ export function FilterBar({
     }
     
     if (!selectedMonth && onMonthChange) {
-      const currentMonthIndex = new Date().getMonth();
-      onMonthChange(months[currentMonthIndex + 1]); // +1 because index 0 is "Semua Data"
+      onMonthChange("Semua Data");
     }
   }, [selectedYear, selectedMonth, onYearChange, onMonthChange, years]);
 

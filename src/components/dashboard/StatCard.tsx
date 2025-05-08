@@ -47,6 +47,9 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
         return () => {
           clearInterval(timer);
         };
+      } else {
+        // Set the value directly if it's 0 or we've already loaded
+        setAnimatedValue(end);
       }
     } else {
       // For string values, just set them directly after a short delay
@@ -110,36 +113,7 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
     }
     
     // For numeric values that are being animated, use the animated value
-    if (typeof value === 'number') {
-      // Format to Indonesian currency if the value is over 1000
-      if (value >= 1000) {
-        return new Intl.NumberFormat("id-ID", {
-          style: "currency",
-          currency: "IDR",
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(animatedValue);
-      } else {
-        return animatedValue.toString();
-      }
-    }
-    
-    // Fallback for unexpected types
-    return String(value);
-  };
-
-  // Format description if it's a number (for currency values)
-  const formatDescription = () => {
-    if (typeof description === 'number') {
-      // Format numbers as currency
-      return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(description);
-    }
-    return description;
+    return animatedValue.toString();
   };
 
   return (
@@ -162,7 +136,7 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
             </div>
             {description && (
               <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
-                {formatDescription()}
+                {description}
               </p>
             )}
           </div>

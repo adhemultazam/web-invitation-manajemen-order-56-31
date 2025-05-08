@@ -1,17 +1,25 @@
 
-import { format } from "date-fns";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn, monthsInIndonesian } from "@/lib/utils";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 export function Topbar() {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isDarkMode = theme === "dark";
@@ -58,11 +66,44 @@ export function Topbar() {
       </div>
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        <Avatar className="h-9 w-9 bg-wedding-primary/10">
-          <AvatarFallback className="bg-wedding-primary text-white text-sm">
-            {user?.name?.charAt(0) || 'U'}
-          </AvatarFallback>
-        </Avatar>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full p-0 overflow-hidden">
+              <Avatar className="h-9 w-9 bg-wedding-primary/10">
+                {user?.profileImage ? (
+                  <AvatarImage 
+                    src={user.profileImage} 
+                    alt={user?.name || 'User'} 
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback className="bg-violet-500 text-white text-sm">
+                  {user?.name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          
+          <DropdownMenuContent align="end" className="w-56 mt-1">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <Link to="/pengaturan">
+              <DropdownMenuItem>
+                Pengaturan
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => logout()}>
+              Keluar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

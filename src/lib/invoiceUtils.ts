@@ -103,7 +103,9 @@ export const generateInvoice = (
       orderId: order.id,
       clientName: order.clientName,
       orderDate: order.orderDate,
-      amount: numericAmount
+      amount: numericAmount,
+      package: order.package,
+      addons: order.addons
     };
   });
   

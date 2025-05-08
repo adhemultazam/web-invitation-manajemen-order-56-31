@@ -84,12 +84,16 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
             </thead>
             <tbody>
               {invoice.orders.map((order, index) => {
-                // Parse addons from order properly
-                const addonsArray = Array.isArray(order.addons) 
-                  ? order.addons 
-                  : typeof order.addons === 'string' && order.addons
-                    ? order.addons.split(',').map(a => a.trim())
-                    : [];
+                // Safely handle addons with proper type checking
+                let addonsArray: string[] = [];
+                
+                if (order.addons) {
+                  if (Array.isArray(order.addons)) {
+                    addonsArray = order.addons;
+                  } else if (typeof order.addons === 'string') {
+                    addonsArray = order.addons.split(',').map(a => a.trim());
+                  }
+                }
                 
                 return (
                   <tr key={order.orderId} className="border-t">
@@ -100,9 +104,7 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                     <td className="py-1.5 px-2">{order.clientName}</td>
                     <td className="py-1.5 px-2">{order.package || "-"}</td>
                     <td className="py-1.5 px-2">
-                      {addonsArray && addonsArray.length > 0
-                        ? addonsArray.join(", ")
-                        : "-"}
+                      {addonsArray.length > 0 ? addonsArray.join(", ") : "-"}
                     </td>
                     <td className="py-1.5 px-2 text-right font-medium">
                       {formatCurrency(order.amount)}

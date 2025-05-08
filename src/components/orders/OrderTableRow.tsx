@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor, Theme } from "@/types/types";
@@ -12,7 +11,7 @@ import OrderActions from "./OrderActions";
 import { WorkStatus, Package } from "@/types/types";
 import { Calendar, Clock } from "lucide-react";
 
-interface OrderTableRowProps {
+export interface OrderTableRowProps {
   order: Order;
   index: number; // Add index for numbering
   updatingOrders: Set<string>;
@@ -35,7 +34,7 @@ interface OrderTableRowProps {
   handleDeleteOrder: (order: Order) => void;
 }
 
-const OrderTableRow: React.FC<OrderTableRowProps> = ({
+export const OrderTableRow: React.FC<OrderTableRowProps> = ({
   order,
   index,
   updatingOrders,

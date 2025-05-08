@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import OrderTableHeader from "./OrderTableHeader";
-import OrderTableRow from "./OrderTableRow";
+import { OrderTableHeader } from "./OrderTableHeader";
+import { OrderTableRow } from "./OrderTableRow";
 import { Order, WorkStatus, Vendor, Theme, Package } from "@/types/types";
 
 interface OrderTableProps {
@@ -92,7 +92,6 @@ export function OrderTable({
               <OrderTableRow
                 key={order.id}
                 order={order}
-                index={index}
                 updatingOrders={updatingOrders}
                 vendorColors={vendorColors}
                 addonStyles={addonStyles}
@@ -111,6 +110,7 @@ export function OrderTable({
                 handleViewOrderDetail={handleViewOrderDetail}
                 handleOpenEditDialog={handleOpenEditDialog}
                 handleDeleteOrder={handleDeleteOrder}
+                index={index}
               />
             ))
           ) : (

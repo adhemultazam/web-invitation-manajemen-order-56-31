@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "sonner";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 // Define a user type
 interface User {
@@ -17,7 +18,7 @@ interface AuthContextType {
     logo: string;
     favicon?: string;
   };
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
   updateBrandSettings: (settings: { name: string; logo: string; favicon?: string }) => void;
   updateUserProfile: (profile: Partial<User>) => void;
@@ -52,7 +53,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Use localStorage to persist auth state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const savedAuth = sessionStorage.getItem("isAuthenticated");
+    const savedAuth = sessionStorage.getItem("isAuthenticated") || localStorage.getItem("isAuthenticated");
     return savedAuth === "true";
   });
   
@@ -70,7 +71,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   // Effect to save auth state when it changes
   useEffect(() => {
-    sessionStorage.setItem("isAuthenticated", String(isAuthenticated));
+    // Auth state is managed in login/logout functions now to respect rememberMe
+    
     // If logging out, set user to null
     if (!isAuthenticated) {
       setUser(null);
@@ -93,12 +95,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [brandSettings]);
   
   // Login function - in a real app this would call an API
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string, rememberMe = false): Promise<boolean> => {
     try {
       // Simple validation for demo purposes
       if (username === "admin" && password === "admin") {
         setIsAuthenticated(true);
         setUser(defaultUser); // Set default user on login
+        
+        // Store auth state based on rememberMe preference
+        if (rememberMe) {
+          localStorage.setItem("isAuthenticated", "true");
+          // Remove from session storage to avoid conflicts
+          sessionStorage.removeItem("isAuthenticated");
+        } else {
+          sessionStorage.setItem("isAuthenticated", "true");
+          // Remove from local storage to respect user preference
+          localStorage.removeItem("isAuthenticated");
+        }
+        
         toast.success("Login berhasil!", {
           description: "Selamat datang kembali!"
         });
@@ -122,6 +136,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    
+    // Clear auth state from both storage options
+    localStorage.removeItem("isAuthenticated");
+    sessionStorage.removeItem("isAuthenticated");
+    
     toast.success("Logout berhasil", {
       description: "Anda telah keluar dari sistem."
     });

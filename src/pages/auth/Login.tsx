@@ -11,11 +11,13 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/auth/BrandLogo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { isAuthenticated, login, brandSettings } = useAuth();
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -41,20 +43,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const success = await login(username, password);
-      if (success) {
-        const storedPath = sessionStorage.getItem("lastVisitedPath") || "/";
-        navigate(storedPath);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    try {
-      const success = await login("admin", "admin");
+      const success = await login(username, password, rememberMe);
       if (success) {
         const storedPath = sessionStorage.getItem("lastVisitedPath") || "/";
         navigate(storedPath);
@@ -107,6 +96,19 @@ export default function Login() {
                 disabled={loading}
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="remember" 
+                checked={rememberMe} 
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label 
+                htmlFor="remember" 
+                className="text-sm cursor-pointer"
+              >
+                Ingat saya
+              </Label>
+            </div>
             <Button 
               type="submit" 
               className="w-full bg-wedding-primary hover:bg-wedding-accent" 
@@ -120,14 +122,6 @@ export default function Login() {
           <div className="text-sm text-center text-gray-500 dark:text-gray-400 mt-2">
             <p>Demo credentials: admin / admin</p>
           </div>
-          <Button 
-            variant="outline" 
-            className="mt-2 w-full" 
-            onClick={handleDemoLogin}
-            disabled={loading}
-          >
-            Login Demo
-          </Button>
         </CardFooter>
       </Card>
     </div>

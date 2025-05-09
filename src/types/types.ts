@@ -1,3 +1,4 @@
+
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -24,6 +25,9 @@ export type Order = {
   postPermission?: boolean;
   notes?: string;
 };
+
+// Add OrderFormData type for use in OrderForm component
+export type OrderFormData = Omit<Order, "id">;
 
 // Chart data types
 export type ChartData = {

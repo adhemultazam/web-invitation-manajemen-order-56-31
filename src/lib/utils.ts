@@ -8,6 +8,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Add this array to fix the monthsInIndonesian reference error
+export const monthsInIndonesian = [
+  "januari", "februari", "maret", "april", "mei", "juni",
+  "juli", "agustus", "september", "oktober", "november", "desember"
+];
+
 export function generateVendorColor(): string {
   const colors = [
     "#6366f1", // Indigo

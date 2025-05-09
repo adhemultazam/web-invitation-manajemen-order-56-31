@@ -40,7 +40,7 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    commission: 0,
+    landingPageUrl: "",
     color: "#6366f1"
   });
 
@@ -50,7 +50,7 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
       setFormData({
         name: currentVendor.name,
         code: currentVendor.code || "",
-        commission: currentVendor.commission !== undefined ? currentVendor.commission : 0,
+        landingPageUrl: currentVendor.landingPageUrl || "",
         color: currentVendor.color || "#6366f1"
       });
     } else {
@@ -58,7 +58,7 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
       setFormData({
         name: "",
         code: "",
-        commission: 0,
+        landingPageUrl: "",
         color: "#6366f1"
       });
     }
@@ -68,7 +68,7 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'commission' ? Number(value) : value
+      [name]: value
     }));
   };
 
@@ -118,17 +118,14 @@ export function VendorForm({ currentVendor, onSubmit, onCancel }: VendorFormProp
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="commission">Komisi (%)</Label>
+            <Label htmlFor="landingPageUrl">URL Landing Page</Label>
             <Input
-              id="commission"
-              name="commission"
-              type="number"
-              min="0"
-              max="100"
-              placeholder="Persentase komisi"
-              value={formData.commission}
+              id="landingPageUrl"
+              name="landingPageUrl"
+              type="url"
+              placeholder="https://example.com"
+              value={formData.landingPageUrl}
               onChange={handleChange}
-              required
             />
           </div>
           <div className="grid gap-2">

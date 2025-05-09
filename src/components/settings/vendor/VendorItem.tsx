@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Vendor } from "@/types/types";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, ExternalLink } from "lucide-react";
 
 interface VendorItemProps {
   vendor: Vendor;
@@ -35,7 +35,21 @@ export function VendorItem({ vendor, onEdit, onDelete }: VendorItemProps) {
           <span>{vendor.color || "#6366f1"}</span>
         </div>
       </TableCell>
-      <TableCell>{vendor.commission || 0}%</TableCell>
+      <TableCell>
+        {vendor.landingPageUrl ? (
+          <a 
+            href={vendor.landingPageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline flex items-center gap-1"
+          >
+            <span className="text-xs truncate max-w-[150px]">{vendor.landingPageUrl}</span>
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        ) : (
+          <span className="text-gray-500 text-xs">Tidak ada URL</span>
+        )}
+      </TableCell>
       <TableCell>
         <div className="flex space-x-1">
           <Button

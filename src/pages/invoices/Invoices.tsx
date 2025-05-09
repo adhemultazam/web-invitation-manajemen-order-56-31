@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -12,7 +11,7 @@ import {
   InvoiceFilter as InvoiceFilterType 
 } from "@/types/types";
 import { toast } from "sonner";
-import { monthsInIndonesian } from "@/lib/utils"; // Using correct import from lib/utils
+import { monthsInIndonesian } from "@/lib/utils"; // Now importing from the updated utils file
 import { markInvoiceAsPaid } from "@/lib/invoiceUtils";
 
 export default function Invoices() {
@@ -57,8 +56,8 @@ export default function Invoices() {
       } else {
         // Initialize with defaults if not found
         const defaultVendors: Vendor[] = [
-          { id: "v1", name: "Rizki Design", code: "RD", color: "#3b82f6", commission: 10 },
-          { id: "v2", name: "Putri Digital", code: "PD", color: "#8b5cf6", commission: 15 }
+          { id: "v1", name: "Rizki Design", code: "RD", color: "#3b82f6", landingPageUrl: "" },
+          { id: "v2", name: "Putri Digital", code: "PD", color: "#8b5cf6", landingPageUrl: "" }
         ];
         localStorage.setItem('vendors', JSON.stringify(defaultVendors));
         setVendors(defaultVendors);

@@ -9,9 +9,10 @@ interface StatCardProps {
   icon: React.ReactNode;
   description?: string | number;
   type?: "default" | "success" | "warning" | "danger";
+  className?: string; // Added className prop
 }
 
-export function StatCard({ title, value, icon, description, type = "default" }: StatCardProps) {
+export function StatCard({ title, value, icon, description, type = "default", className }: StatCardProps) {
   const [animatedValue, setAnimatedValue] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   
@@ -117,7 +118,7 @@ export function StatCard({ title, value, icon, description, type = "default" }: 
   };
 
   return (
-    <Card className={`overflow-hidden border rounded-xl shadow-sm stat-card ${getBackgroundClass()}`}>
+    <Card className={cn(`overflow-hidden border rounded-xl shadow-sm stat-card ${getBackgroundClass()}`, className)}>
       <CardContent className="p-2 sm:p-3 md:p-4">
         <div className="flex justify-between items-center mb-1 md:mb-2">
           <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>

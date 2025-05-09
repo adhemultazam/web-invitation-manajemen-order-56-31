@@ -52,7 +52,7 @@ export function OrderForm({
   const [selectedAddons, setSelectedAddons] = useState<string[]>(
     Array.isArray(initialData.addons) ? initialData.addons : []
   );
-  const [paymentStatus, setPaymentStatus] = useState(
+  const [paymentStatus, setPaymentStatus] = useState<"Pending" | "Lunas">(
     initialData.paymentStatus || "Pending"
   );
   const [paymentAmount, setPaymentAmount] = useState(
@@ -236,7 +236,7 @@ export function OrderForm({
           <Label htmlFor="paymentStatus">Status Pembayaran</Label>
           <Select
             value={paymentStatus}
-            onValueChange={setPaymentStatus}
+            onValueChange={(value: "Lunas" | "Pending") => setPaymentStatus(value)}
           >
             <SelectTrigger id="paymentStatus">
               <SelectValue placeholder="Pilih status pembayaran" />
@@ -325,9 +325,10 @@ export function OrderForm({
           </Button>
         )}
         <Button type="submit">
-          {initialData.id ? "Update Pesanan" : "Tambah Pesanan"}
+          {initialData && "id" in initialData ? "Update Pesanan" : "Tambah Pesanan"}
         </Button>
       </div>
     </form>
   );
 }
+

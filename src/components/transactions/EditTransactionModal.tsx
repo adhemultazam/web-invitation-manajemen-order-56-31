@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/utils";
 
 interface EditTransactionModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ export default function EditTransactionModal({
 }: EditTransactionModalProps) {
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
-  const [amount, setAmount] = useState(transaction.amount.toString());
+  const [amount, setAmount] = useState(transaction.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
   const [type, setType] = useState<"fixed" | "variable">(transaction.type);
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,7 +36,8 @@ export default function EditTransactionModal({
       return;
     }
     
-    const numAmount = parseFloat(amount);
+    // Parse amount properly - remove all dots and convert to number
+    const numAmount = parseFloat(amount.replace(/\./g, ""));
     if (isNaN(numAmount) || numAmount <= 0) {
       toast.error("Jumlah harus berupa angka positif");
       return;
@@ -51,6 +53,21 @@ export default function EditTransactionModal({
     });
     
     toast.success("Transaksi berhasil diperbarui");
+  };
+  
+  // Format amount with thousand separators
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
+    
+    if (numericValue === "") {
+      setAmount("");
+      return;
+    }
+    
+    // Format with thousand separators
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setAmount(formattedValue);
   };
   
   // Create a handler function that explicitly handles the type conversion
@@ -107,13 +124,11 @@ export default function EditTransactionModal({
           <div className="space-y-2">
             <Label htmlFor="amount">Jumlah (Rp)</Label>
             <Input
-              type="number"
+              type="text"
               id="amount"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Jumlah transaksi"
-              min="0"
-              step="1000"
+              onChange={handleAmountChange}
+              placeholder="Contoh: 500.000"
               required
             />
           </div>

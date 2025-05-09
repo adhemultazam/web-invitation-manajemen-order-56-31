@@ -62,7 +62,8 @@ export function AddTransactionModal({
       return;
     }
     
-    const parsedAmount = parseFloat(amount.replace(/[^\d.-]/g, ""));
+    // Parse amount properly - remove dots and convert to number
+    const parsedAmount = parseFloat(amount.replace(/\./g, ""));
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast.error("Masukkan jumlah transaksi yang valid");
       return;
@@ -71,7 +72,7 @@ export function AddTransactionModal({
     setIsLoading(true);
     
     try {
-      // Create transaction object
+      // Create transaction object with correct numeric amount
       const newTransaction: Transaction = {
         id: uuidv4(),
         date: date.toISOString(),
@@ -98,20 +99,19 @@ export function AddTransactionModal({
     }
   };
   
-  // Format amount input with thousand separator
+  // Improved format amount input with thousand separator
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const numericValue = value.replace(/[^\d]/g, "");
+    // Remove existing dots and non-numeric characters
+    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
     
     if (numericValue === "") {
       setAmount("");
       return;
     }
     
-    const formattedValue = new Intl.NumberFormat("id-ID").format(
-      parseInt(numericValue, 10)
-    );
-    
+    // Format with thousand separators (dots in Indonesian format)
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     setAmount(formattedValue);
   };
   
@@ -187,7 +187,7 @@ export function AddTransactionModal({
                 id="transaction-amount"
                 value={amount}
                 onChange={handleAmountChange}
-                placeholder="Contoh: 1,000,000"
+                placeholder="Contoh: 500.000"
               />
             </div>
           </div>

@@ -49,15 +49,31 @@ export function useTransactionsData(year: string, month: string) {
   
   // Add a new transaction
   const addTransaction = (transaction: Transaction) => {
-    const newTransactions = [...transactions, transaction];
+    // Ensure amount is a number before saving
+    const newTransaction = {
+      ...transaction,
+      amount: typeof transaction.amount === 'string' 
+        ? parseFloat(transaction.amount.replace(/\./g, "")) 
+        : transaction.amount
+    };
+    
+    const newTransactions = [...transactions, newTransaction];
     setTransactions(newTransactions);
     saveTransactions(newTransactions);
   };
   
   // Update a transaction
   const updateTransaction = (updatedTransaction: Transaction) => {
+    // Ensure amount is a number before saving
+    const transaction = {
+      ...updatedTransaction,
+      amount: typeof updatedTransaction.amount === 'string' 
+        ? parseFloat(updatedTransaction.amount.replace(/\./g, ""))
+        : updatedTransaction.amount
+    };
+    
     const newTransactions = transactions.map(t => 
-      t.id === updatedTransaction.id ? updatedTransaction : t
+      t.id === transaction.id ? transaction : t
     );
     setTransactions(newTransactions);
     saveTransactions(newTransactions);

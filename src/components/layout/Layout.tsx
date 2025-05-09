@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Topbar } from "./Topbar";
+import { MobileNavbar } from "./MobileNavbar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,9 +47,11 @@ export function Layout({ children }: LayoutProps) {
             isMobile ? "w-full" : (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]")
           )}
         >
-          <main className="container p-4 md:p-6 mx-auto max-w-full">
+          <Topbar />
+          <main className="container p-4 md:p-6 mx-auto max-w-full pb-16">
             {children}
           </main>
+          {isMobile && <MobileNavbar />}
         </div>
       </div>
     </SidebarProvider>

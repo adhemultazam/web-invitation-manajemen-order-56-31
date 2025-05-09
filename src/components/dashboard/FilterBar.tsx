@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect } from "react";
 
@@ -75,10 +74,10 @@ export function FilterBar({
           <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Tahun" />
           </SelectTrigger>
-          <SelectContent className="z-50 bg-white dark:bg-gray-800">
+          <SelectContent className="z-[100] bg-white dark:bg-gray-800">
             {years.map((year) => (
               <SelectItem key={year} value={year}>
-                {year}
+                {year === "Semua Data" ? "Semua Tahun" : year}
               </SelectItem>
             ))}
           </SelectContent>
@@ -93,10 +92,10 @@ export function FilterBar({
           <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Bulan" />
           </SelectTrigger>
-          <SelectContent className="z-50 bg-white dark:bg-gray-800">
+          <SelectContent className="z-[100] bg-white dark:bg-gray-800">
             {months.map((month) => (
               <SelectItem key={month} value={month}>
-                {month}
+                {month === "Semua Data" ? "Semua Bulan" : month}
               </SelectItem>
             ))}
           </SelectContent>

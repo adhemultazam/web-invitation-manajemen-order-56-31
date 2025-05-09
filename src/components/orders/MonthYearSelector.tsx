@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -31,6 +30,7 @@ export function MonthYearSelector({
     
     // Only navigate if we're on an orders route
     if (location.pathname.includes('/pesanan')) {
+      // Use setTimeout to ensure state update completes before navigation
       setTimeout(() => {
         if (month === "Semua Data") {
           // Navigate to all orders page
@@ -40,7 +40,7 @@ export function MonthYearSelector({
           const monthParam = month.toLowerCase();
           navigate(`/pesanan/${monthParam}`);
         }
-      }, 0); // Use setTimeout to ensure state update before navigation
+      }, 50); // Increased timeout to ensure state updates complete
     }
   };
   
@@ -49,7 +49,6 @@ export function MonthYearSelector({
     // Only sync if we're on an orders route
     if (location.pathname.includes('/pesanan')) {
       const pathParts = location.pathname.split('/');
-      const monthParam = pathParts[pathParts.length - 1];
       
       // If we're on /pesanan route without month param, set selectedMonth to "Semua Data"
       if (pathParts[1] === "pesanan" && !pathParts[2]) {
@@ -57,8 +56,31 @@ export function MonthYearSelector({
           onMonthChange("Semua Data");
         }
       }
+      // If we're on specific month route, sync the month selector with URL
+      else if (pathParts[1] === "pesanan" && pathParts[2]) {
+        const monthParam = pathParts[2];
+        const monthMap: Record<string, string> = {
+          'januari': 'Januari',
+          'februari': 'Februari',
+          'maret': 'Maret',
+          'april': 'April',
+          'mei': 'Mei',
+          'juni': 'Juni',
+          'juli': 'Juli',
+          'agustus': 'Agustus',
+          'september': 'September',
+          'oktober': 'Oktober',
+          'november': 'November',
+          'desember': 'Desember'
+        };
+        
+        const mappedMonth = monthMap[monthParam];
+        if (mappedMonth && selectedMonth !== mappedMonth) {
+          onMonthChange(mappedMonth);
+        }
+      }
     }
-  }, [location.pathname, selectedMonth, onMonthChange]);
+  }, [location.pathname, onMonthChange]);
   
   const generateYearOptions = (previousYears: number = 5): string[] => {
     const currentYear = new Date().getFullYear();
@@ -87,7 +109,7 @@ export function MonthYearSelector({
         <SelectTrigger className="w-[120px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
           <SelectValue placeholder="Pilih Tahun" />
         </SelectTrigger>
-        <SelectContent className="z-50 bg-white dark:bg-gray-800">
+        <SelectContent className="z-[100] bg-white dark:bg-gray-800">
           {yearOptions.map(year => (
             <SelectItem key={year} value={year}>
               {year === "Semua Data" ? "Semua Tahun" : year}
@@ -103,7 +125,7 @@ export function MonthYearSelector({
         <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
           <SelectValue placeholder="Pilih Bulan" />
         </SelectTrigger>
-        <SelectContent className="z-50 bg-white dark:bg-gray-800">
+        <SelectContent className="z-[100] bg-white dark:bg-gray-800">
           <SelectItem value="Semua Data">Semua Bulan</SelectItem>
           <SelectItem value="Januari">Januari</SelectItem>
           <SelectItem value="Februari">Februari</SelectItem>

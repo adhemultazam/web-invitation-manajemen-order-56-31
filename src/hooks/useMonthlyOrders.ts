@@ -6,8 +6,8 @@ import { useOrderActions } from "./useOrderActions";
 import { useOrderStyles } from "./useOrderStyles";
 
 export const useMonthlyOrders = (month: string) => {
-  // Load and manage order state
-  const { orders, setOrders } = useOrdersState(month !== "Semua Data" ? month : undefined);
+  // Load and manage order state - handle 'Semua Data' as undefined to get all months
+  const { orders, setOrders } = useOrdersState(month && month !== "Semua Data" ? month : undefined);
   
   // Filtering functionality
   const { 
@@ -36,7 +36,9 @@ export const useMonthlyOrders = (month: string) => {
   const { vendorColors, addonStyles, updateVendorColors, updateAddonStyles } = useOrderStyles();
 
   // Order CRUD actions
-  const { handleAddOrder, handleUpdateOrder, handleDeleteOrder } = useOrderActions(month !== "Semua Data" ? month : undefined);
+  const { handleAddOrder, handleUpdateOrder, handleDeleteOrder } = useOrderActions(
+    month && month !== "Semua Data" ? month : undefined
+  );
   
   // Event handlers for order updates
   const togglePaymentStatus = (order: Order) => {

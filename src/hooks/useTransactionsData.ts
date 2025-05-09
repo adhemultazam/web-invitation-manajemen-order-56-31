@@ -53,7 +53,7 @@ export function useTransactionsData(year: string, month: string) {
     const newTransaction = {
       ...transaction,
       amount: typeof transaction.amount === 'string' 
-        ? parseFloat(transaction.amount.replace(/\./g, "")) 
+        ? parseFloat(String(transaction.amount).replace(/\./g, "")) 
         : transaction.amount
     };
     
@@ -68,7 +68,7 @@ export function useTransactionsData(year: string, month: string) {
     const transaction = {
       ...updatedTransaction,
       amount: typeof updatedTransaction.amount === 'string' 
-        ? parseFloat(updatedTransaction.amount.replace(/\./g, ""))
+        ? parseFloat(String(updatedTransaction.amount).replace(/\./g, ""))
         : updatedTransaction.amount
     };
     

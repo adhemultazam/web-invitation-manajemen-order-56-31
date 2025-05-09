@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Select, 
   SelectContent, 
@@ -23,17 +23,22 @@ export function MonthYearSelector({
   onMonthChange 
 }: MonthYearSelectorProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const handleMonthChange = (month: string) => {
+    // Always update the selected month state first
     onMonthChange(month);
     
-    if (month === "Semua Data") {
-      // Navigate to all orders page
-      navigate("/pesanan");
-    } else {
-      // Convert month name to URL parameter format
-      const monthParam = month.toLowerCase();
-      navigate(`/pesanan/${monthParam}`);
+    // Only navigate if we're on a orders route
+    if (location.pathname.includes('/pesanan')) {
+      if (month === "Semua Data") {
+        // Navigate to all orders page
+        navigate("/pesanan");
+      } else {
+        // Convert month name to URL parameter format
+        const monthParam = month.toLowerCase();
+        navigate(`/pesanan/${monthParam}`);
+      }
     }
   };
   
@@ -80,7 +85,7 @@ export function MonthYearSelector({
         <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
           <SelectValue placeholder="Pilih Bulan" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white dark:bg-gray-800">
           <SelectItem value="Semua Data">Semua Bulan</SelectItem>
           <SelectItem value="Januari">Januari</SelectItem>
           <SelectItem value="Februari">Februari</SelectItem>

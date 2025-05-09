@@ -75,7 +75,7 @@ export function FilterBar({
           <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Tahun" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white dark:bg-gray-800">
             {years.map((year) => (
               <SelectItem key={year} value={year}>
                 {year}
@@ -93,7 +93,7 @@ export function FilterBar({
           <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <SelectValue placeholder="Pilih Bulan" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white dark:bg-gray-800">
             {months.map((month) => (
               <SelectItem key={month} value={month}>
                 {month}

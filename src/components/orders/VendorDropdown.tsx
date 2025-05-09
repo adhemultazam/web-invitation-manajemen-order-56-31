@@ -34,12 +34,14 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
       disabled={isDisabled}
     >
       <SelectTrigger className={`${compact ? "h-8 w-full text-xs py-0 px-2" : "h-10"}`}>
-        <div className="flex items-center">
+        <div className="flex items-center w-full">
           <div
-            className="w-2 h-2 mr-1 rounded-full"
+            className="w-2 h-2 mr-1 flex-shrink-0 rounded-full"
             style={{ backgroundColor: selectedVendor?.color || '#6E6E6E' }}
           />
-          <SelectValue>{selectedVendor?.name || "Not set"}</SelectValue>
+          <SelectValue className="truncate">
+            {selectedVendor?.name || "Not set"}
+          </SelectValue>
         </div>
       </SelectTrigger>
       <SelectContent className="bg-white">
@@ -47,10 +49,12 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
           <SelectItem key={vendorOption.id} value={vendorOption.id}>
             <div className="flex items-center">
               <div
-                className="w-2 h-2 mr-2 rounded-full"
+                className="w-2 h-2 mr-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: vendorOption.color }}
               />
-              {vendorOption.name}
+              <span className="truncate max-w-[180px]" title={vendorOption.name}>
+                {vendorOption.name}
+              </span>
             </div>
           </SelectItem>
         ))}

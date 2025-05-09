@@ -42,8 +42,9 @@ const OrderAddons: React.FC<OrderAddonsProps> = ({
         <Badge 
           key={i} 
           style={getAddonStyle(addon)} 
-          variant="secondary" 
-          className={`${compact ? "compact-badge" : "text-xs"}`}
+          variant="secondary"
+          className={`${compact ? "compact-badge" : "text-xs"} max-w-[120px] truncate`}
+          title={addon} // Show full text on hover
         >
           {addon}
         </Badge>

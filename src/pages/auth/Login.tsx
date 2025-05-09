@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { BrandLogo } from "@/components/auth/BrandLogo";
 import { Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthFormData {
   email: string;
@@ -21,6 +23,7 @@ interface AuthFormData {
 export default function Login() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { signIn, signUp } = useSupabaseAuth();
   const navigate = useNavigate();
   
@@ -34,6 +37,7 @@ export default function Login() {
   
   const onSubmit = async (data: AuthFormData) => {
     setLoading(true);
+    setAuthError(null);
     
     try {
       if (activeTab === "login") {
@@ -49,7 +53,7 @@ export default function Login() {
         if (error) throw error;
         
         toast.success("Registrasi berhasil", {
-          description: "Silahkan cek email Anda untuk verifikasi"
+          description: "Silahkan cek email Anda untuk verifikasi, atau langsung login jika verifikasi email dinonaktifkan"
         });
         
         // Switch to login tab after successful registration
@@ -57,6 +61,7 @@ export default function Login() {
         reset();
       }
     } catch (error: any) {
+      setAuthError(error.message);
       toast.error(
         activeTab === "login" ? "Login gagal" : "Registrasi gagal", 
         { description: error.message }
@@ -79,6 +84,13 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {authError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Masuk</TabsTrigger>

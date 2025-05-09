@@ -4,6 +4,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileType } from "@/types/supabase-types";
+import { setupDatabaseTriggers, migrateLocalStorageToSupabase } from "@/utils/supabaseMigration";
 
 interface SupabaseAuthContextType {
   session: Session | null;
@@ -15,6 +16,7 @@ interface SupabaseAuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (profile: Partial<ProfileType>) => Promise<void>;
   updatePassword: (password: string) => Promise<{ error: any | null }>;
+  migrateData: () => Promise<{ success: boolean, error?: any }>;
 }
 
 const SupabaseAuthContext = createContext<SupabaseAuthContextType>({
@@ -27,6 +29,7 @@ const SupabaseAuthContext = createContext<SupabaseAuthContextType>({
   signOut: async () => {},
   updateProfile: async () => {},
   updatePassword: async () => ({ error: null }),
+  migrateData: async () => ({ success: false }),
 });
 
 export const useSupabaseAuth = () => useContext(SupabaseAuthContext);
@@ -48,14 +51,18 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
         
       if (error) {
         console.error('Error fetching profile:', error);
-        return;
+        return null;
       }
       
       if (data) {
         setProfile(data as ProfileType);
+        return data as ProfileType;
       }
+      
+      return null;
     } catch (error) {
       console.error('Error fetching profile:', error);
+      return null;
     }
   };
 
@@ -82,13 +89,24 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
+        
+        // Set up database triggers if needed
+        await setupDatabaseTriggers();
+        
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
-          await fetchProfile(currentSession.user.id);
+          const profileData = await fetchProfile(currentSession.user.id);
+          
+          // If we have a user and profile, attempt to migrate data
+          if (profileData) {
+            setTimeout(() => {
+              migrateLocalStorageToSupabase(currentSession.user.id);
+            }, 1000);
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -114,18 +132,12 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
       });
       
       if (error) {
-        toast.error("Login gagal", {
-          description: error.message
-        });
         return { error };
       }
       
       toast.success("Login berhasil");
       return { error: null };
     } catch (error: any) {
-      toast.error("Login error", {
-        description: error.message
-      });
       return { error };
     }
   };
@@ -142,20 +154,11 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
       });
       
       if (error) {
-        toast.error("Registrasi gagal", {
-          description: error.message
-        });
         return { error };
       }
       
-      toast.success("Registrasi berhasil", {
-        description: "Silahkan verifikasi email Anda"
-      });
       return { error: null };
     } catch (error: any) {
-      toast.error("Registrasi error", {
-        description: error.message
-      });
       return { error };
     }
   };
@@ -220,6 +223,14 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     }
   };
 
+  // Function to migrate data from localStorage to Supabase
+  const migrateData = async () => {
+    if (!user) {
+      return { success: false, error: "User not logged in" };
+    }
+    return await migrateLocalStorageToSupabase(user.id);
+  };
+
   const value = {
     session,
     user,
@@ -230,6 +241,7 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     signOut,
     updateProfile,
     updatePassword,
+    migrateData,
   };
 
   return (

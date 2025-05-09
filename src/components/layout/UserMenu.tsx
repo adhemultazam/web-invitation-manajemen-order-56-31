@@ -16,14 +16,18 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "react-router-dom";
 
 export function UserMenu() {
-  const { user, logout } = useAuth(); // Keep for backward compatibility
-  const { profile, signOut } = useSupabaseAuth();
+  const { user: localUser, logout } = useAuth(); // Keep for backward compatibility
+  const { profile, user: supabaseUser, signOut } = useSupabaseAuth();
   
   const handleLogout = async () => {
     // Call both logout methods for a smooth transition
     await signOut();
     logout();
   };
+  
+  const displayName = profile?.name || localUser?.name || supabaseUser?.email;
+  const displayEmail = profile?.email || supabaseUser?.email || localUser?.email;
+  const displayImage = profile?.profile_image || localUser?.profileImage;
   
   return (
     <div className="flex items-center gap-2">
@@ -33,8 +37,8 @@ export function UserMenu() {
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full p-0 overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <Avatar className="h-9 w-9">
               <AvatarImage 
-                src={profile?.profile_image || user?.profileImage} 
-                alt={(profile?.name || user?.name) || ""} 
+                src={displayImage} 
+                alt={displayName || ""} 
                 className="h-full w-full object-cover"
               />
               <AvatarFallback className="bg-wedding-primary text-white">
@@ -46,8 +50,8 @@ export function UserMenu() {
         <DropdownMenuContent align="end" className="w-56 mt-1">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{profile?.name || user?.name}</p>
-              <p className="text-xs leading-none text-muted-foreground">{profile?.email || user?.email}</p>
+              <p className="text-sm font-medium leading-none">{displayName}</p>
+              <p className="text-xs leading-none text-muted-foreground">{displayEmail}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

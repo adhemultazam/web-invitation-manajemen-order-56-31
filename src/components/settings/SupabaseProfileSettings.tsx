@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,16 +16,27 @@ interface ProfileFormData {
 }
 
 export function SupabaseProfileSettings() {
-  const { profile, updateProfile } = useSupabaseAuth();
+  const { profile, updateProfile, user } = useSupabaseAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register, handleSubmit, formState: { errors } } = useForm<ProfileFormData>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>({
     defaultValues: {
       name: profile?.name || "",
-      email: profile?.email || "",
+      email: profile?.email || user?.email || "",
       profileImage: profile?.profile_image || ""
     }
   });
+  
+  // Update form when profile changes
+  useEffect(() => {
+    if (profile || user) {
+      reset({
+        name: profile?.name || "",
+        email: profile?.email || user?.email || "",
+        profileImage: profile?.profile_image || ""
+      });
+    }
+  }, [profile, user, reset]);
   
   const onSubmit = async (data: ProfileFormData) => {
     try {

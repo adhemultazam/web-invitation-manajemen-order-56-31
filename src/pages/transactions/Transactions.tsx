@@ -115,18 +115,18 @@ export default function Transactions() {
         </div>
       </div>
       
-      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-1.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           title="Saldo Awal"
           value={formatCurrency(previousMonthBalance)}
-          icon={<Wallet className="h-3 w-3 text-white" />}
-          description={`Dari ${getPreviousMonthDescription()}`}
+          icon={<Wallet className="h-2.5 w-2.5 text-white" />}
+          description={`Dari ${getPreviousMonthDescription()} (Lunas)`}
           className="col-span-1"
         />
         <StatCard
           title="Pengeluaran Tetap"
           value={formatCurrency(totalFixedExpenses)}
-          icon={<ArrowDownCircle className="h-3 w-3 text-white" />}
+          icon={<ArrowDownCircle className="h-2.5 w-2.5 text-white" />}
           description="Biaya operasional"
           type="warning"
           className="col-span-1"
@@ -134,7 +134,7 @@ export default function Transactions() {
         <StatCard
           title="Pengeluaran Variabel"
           value={formatCurrency(totalVariableExpenses)}
-          icon={<ArrowDownCircle className="h-3 w-3 text-white" />}
+          icon={<ArrowDownCircle className="h-2.5 w-2.5 text-white" />}
           description="Biaya tidak tetap"
           type="danger"
           className="col-span-1"
@@ -142,7 +142,7 @@ export default function Transactions() {
         <StatCard
           title="Sisa Saldo"
           value={formatCurrency(remainingBalance)}
-          icon={<CreditCard className="h-3 w-3 text-white" />}
+          icon={<CreditCard className="h-2.5 w-2.5 text-white" />}
           description={`Setelah pengeluaran`}
           type={remainingBalance >= 0 ? "success" : "danger"}
           className="col-span-1"
@@ -150,7 +150,7 @@ export default function Transactions() {
         <StatCard
           title="Status Pembayaran"
           value={`${fixedExpenseStatus.paid}/${fixedExpenseStatus.total}`}
-          icon={<Check className="h-3 w-3 text-white" />}
+          icon={<Check className="h-2.5 w-2.5 text-white" />}
           description={`${fixedExpenseStatus.percent.toFixed(0)}% sudah dibayar`}
           type="success"
           className="col-span-1"
@@ -158,7 +158,7 @@ export default function Transactions() {
         <StatCard
           title="Anggaran vs Aktual"
           value={formatCurrency(budgetVsActual.difference)}
-          icon={<ListCheck className="h-3 w-3 text-white" />}
+          icon={<ListCheck className="h-2.5 w-2.5 text-white" />}
           description={`Dari ${formatCurrency(budgetVsActual.totalBudget)}`}
           type={budgetVsActual.difference >= 0 ? "success" : "danger"}
           className="col-span-1"

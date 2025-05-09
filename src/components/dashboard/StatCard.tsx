@@ -9,7 +9,7 @@ interface StatCardProps {
   icon: React.ReactNode;
   description?: string | number;
   type?: "default" | "success" | "warning" | "danger";
-  className?: string; // Added className prop
+  className?: string;
 }
 
 export function StatCard({ title, value, icon, description, type = "default", className }: StatCardProps) {
@@ -119,24 +119,24 @@ export function StatCard({ title, value, icon, description, type = "default", cl
 
   return (
     <Card className={cn(`overflow-hidden border rounded-xl shadow-sm stat-card ${getBackgroundClass()}`, className)}>
-      <CardContent className="p-2 sm:p-3 md:p-4">
-        <div className="flex justify-between items-center mb-1 md:mb-2">
-          <h3 className="text-xs font-bold text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
-          <div className={`rounded-full w-6 h-6 md:w-8 md:h-8 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
+      <CardContent className="p-1.5 sm:p-2 md:p-3">
+        <div className="flex justify-between items-center mb-0.5 md:mb-1">
+          <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
+          <div className={`rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
             {icon}
           </div>
         </div>
         <div className="flex items-end justify-between">
           <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
             <div className={cn(
-              "text-sm sm:text-md md:text-lg lg:text-xl font-bold overflow-hidden text-ellipsis whitespace-nowrap",
+              "text-xs sm:text-sm md:text-base font-bold overflow-hidden text-ellipsis whitespace-nowrap",
               getTextColorClass(),
               "font-poppins"
             )}>
               {formatValue()}
             </div>
             {description && (
-              <p className="text-xs mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
+              <p className="text-[10px] mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
                 {description}
               </p>
             )}

@@ -71,7 +71,7 @@ export default function Login() {
       <Card className="max-w-md w-full">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
-            <BrandLogo size={48} />
+            <BrandLogo name="App" size={48} />
           </div>
           <CardTitle className="text-2xl">Welcome</CardTitle>
           <CardDescription>

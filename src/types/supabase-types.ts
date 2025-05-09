@@ -1,4 +1,3 @@
-
 // Custom type definitions for Supabase data
 // These complement the auto-generated types from src/integrations/supabase/types.ts
 
@@ -9,6 +8,10 @@ export interface ProfileType {
   avatar_url?: string;
   website?: string;
   updated_at?: string;
+  // Adding properties needed for our application
+  name?: string;
+  email?: string;
+  profile_image?: string;
 }
 
 export interface OrderTable {

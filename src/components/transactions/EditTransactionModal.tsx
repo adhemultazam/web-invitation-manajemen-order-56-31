@@ -24,7 +24,7 @@ export default function EditTransactionModal({
   const [date, setDate] = useState(transaction.date);
   const [description, setDescription] = useState(transaction.description);
   const [amount, setAmount] = useState(transaction.amount.toString());
-  const [type, setType] = useState(transaction.type);
+  const [type, setType] = useState<"fixed" | "variable">(transaction.type);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,10 +47,17 @@ export default function EditTransactionModal({
       date,
       description,
       amount: numAmount,
-      type: type as "fixed" | "variable"
+      type
     });
     
     toast.success("Transaksi berhasil diperbarui");
+  };
+  
+  // Create a handler function that explicitly handles the type conversion
+  const handleTypeChange = (value: string) => {
+    if (value === "fixed" || value === "variable") {
+      setType(value);
+    }
   };
   
   return (
@@ -73,7 +80,7 @@ export default function EditTransactionModal({
           
           <div className="space-y-2">
             <Label>Kategori</Label>
-            <RadioGroup value={type} onValueChange={setType} className="flex gap-4">
+            <RadioGroup value={type} onValueChange={handleTypeChange} className="flex gap-4">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="fixed" id="fixed" />
                 <Label htmlFor="fixed" className="cursor-pointer">Tetap</Label>

@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { Order } from "@/types/types";
@@ -18,7 +17,7 @@ interface OrderActionsProps {
   compact?: boolean;
 }
 
-const OrderActions: React.FC<OrderActionsProps> = ({ order, onView, onEdit, onDelete, compact = false }) => {
+const OrderActions = ({ order, onView, onEdit, onDelete, compact = false }: OrderActionsProps) => {
   return (
     <div className="flex items-center justify-end">
       <DropdownMenu>

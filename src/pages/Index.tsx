@@ -1,7 +1,6 @@
 
 import { Dashboard } from "@/components/dashboard/Dashboard";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Index() {

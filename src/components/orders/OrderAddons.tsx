@@ -1,18 +1,18 @@
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface OrderAddonsProps {
   addons: string[];
   addonStyles: Record<string, { color: string }>;
-  compact?: boolean; // Added compact prop
+  compact?: boolean;
 }
 
-const OrderAddons: React.FC<OrderAddonsProps> = ({ 
+const OrderAddons = ({ 
   addons, 
   addonStyles,
-  compact = false // Default to false
-}) => {
+  compact = false
+}: OrderAddonsProps) => {
   // Store last used addons in localStorage
   useEffect(() => {
     try {
@@ -44,7 +44,7 @@ const OrderAddons: React.FC<OrderAddonsProps> = ({
           style={getAddonStyle(addon)} 
           variant="secondary"
           className={`${compact ? "compact-badge" : "text-[10px]"} max-w-[120px] truncate font-normal`}
-          title={addon} // Show full text on hover
+          title={addon}
         >
           {addon}
         </Badge>

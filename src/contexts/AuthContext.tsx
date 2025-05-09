@@ -1,8 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "sonner";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { useNavigate } from "react-router-dom";
 
 // Define a user type
 interface User {
@@ -77,8 +75,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   // Effect to save auth state when it changes
   useEffect(() => {
-    // Auth state is managed in login/logout functions now to respect rememberMe
-    
     // If logging out, set user to null
     if (!isAuthenticated) {
       setUser(null);

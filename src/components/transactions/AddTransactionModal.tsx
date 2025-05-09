@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Transaction } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,17 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
+// Predefined categories for fixed expenses
+const FIXED_EXPENSE_CATEGORIES = [
+  "Gaji Karyawan",
+  "Sewa Kantor",
+  "Tagihan Listrik",
+  "Tagihan Internet",
+  "Asuransi",
+  "Langganan Software",
+  "Lainnya"
+];
+
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,6 +59,19 @@ export function AddTransactionModal({
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [category, setCategory] = useState<string>("");
+  const [budget, setBudget] = useState("");
+  const [isPaid, setIsPaid] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+  
+  // Reset form when transaction type changes
+  useEffect(() => {
+    if (type === "variable") {
+      setCategory("");
+      setBudget("");
+      setIsPaid(false);
+    }
+  }, [type]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,16 +94,42 @@ export function AddTransactionModal({
       return;
     }
     
+    // For fixed expenses, validate category and budget if provided
+    let finalCategory = "";
+    let parsedBudget: number | undefined = undefined;
+    
+    if (type === "fixed") {
+      finalCategory = category === "Lainnya" ? customCategory : category;
+      
+      if (!finalCategory) {
+        toast.error("Pilih atau masukkan kategori pengeluaran tetap");
+        return;
+      }
+      
+      if (budget) {
+        parsedBudget = parseFloat(budget.replace(/\./g, ""));
+        if (isNaN(parsedBudget) || parsedBudget <= 0) {
+          toast.error("Masukkan anggaran yang valid");
+          return;
+        }
+      }
+    }
+    
     setIsLoading(true);
     
     try {
-      // Create transaction object with correct numeric amount
+      // Create transaction object
       const newTransaction: Transaction = {
         id: uuidv4(),
         date: date.toISOString(),
         type,
         description: description.trim(),
-        amount: parsedAmount
+        amount: parsedAmount,
+        ...(type === "fixed" && {
+          category: finalCategory,
+          isPaid,
+          ...(parsedBudget && { budget: parsedBudget })
+        })
       };
       
       // Call onAddTransaction callback
@@ -89,6 +140,10 @@ export function AddTransactionModal({
       setType("variable");
       setDescription("");
       setAmount("");
+      setCategory("");
+      setBudget("");
+      setIsPaid(false);
+      setCustomCategory("");
       
       toast.success("Transaksi berhasil ditambahkan");
     } catch (error) {
@@ -113,6 +168,20 @@ export function AddTransactionModal({
     // Format with thousand separators (dots in Indonesian format)
     const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     setAmount(formattedValue);
+  };
+  
+  // Format budget input with thousand separator
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
+    
+    if (numericValue === "") {
+      setBudget("");
+      return;
+    }
+    
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setBudget(formattedValue);
   };
   
   return (
@@ -156,13 +225,13 @@ export function AddTransactionModal({
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="transaction-type">Kategori</Label>
+              <Label htmlFor="transaction-type">Tipe Pengeluaran</Label>
               <Select 
                 value={type}
                 onValueChange={(value) => setType(value as "fixed" | "variable")}
               >
                 <SelectTrigger id="transaction-type">
-                  <SelectValue placeholder="Pilih kategori" />
+                  <SelectValue placeholder="Pilih tipe pengeluaran" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="fixed">Pengeluaran Tetap</SelectItem>
@@ -170,6 +239,34 @@ export function AddTransactionModal({
                 </SelectContent>
               </Select>
             </div>
+            
+            {type === "fixed" && (
+              <div className="grid gap-2">
+                <Label htmlFor="transaction-category">Kategori</Label>
+                <Select 
+                  value={category}
+                  onValueChange={setCategory}
+                >
+                  <SelectTrigger id="transaction-category">
+                    <SelectValue placeholder="Pilih kategori" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FIXED_EXPENSE_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {category === "Lainnya" && (
+                  <Input
+                    className="mt-2"
+                    placeholder="Masukkan kategori kustom"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                  />
+                )}
+              </div>
+            )}
             
             <div className="grid gap-2">
               <Label htmlFor="transaction-description">Keterangan</Label>
@@ -190,6 +287,34 @@ export function AddTransactionModal({
                 placeholder="Contoh: 500.000"
               />
             </div>
+            
+            {type === "fixed" && (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="transaction-budget">Anggaran (Rp) (Opsional)</Label>
+                  <Input
+                    id="transaction-budget"
+                    value={budget}
+                    onChange={handleBudgetChange}
+                    placeholder="Contoh: 600.000"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox
+                    id="is-paid"
+                    checked={isPaid}
+                    onCheckedChange={(checked) => setIsPaid(checked === true)}
+                  />
+                  <Label 
+                    htmlFor="is-paid"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    Sudah Dibayar
+                  </Label>
+                </div>
+              </>
+            )}
           </div>
           
           <DialogFooter>

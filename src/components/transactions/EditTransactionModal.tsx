@@ -1,13 +1,25 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Transaction } from "@/types/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+
+// Predefined categories for fixed expenses
+const FIXED_EXPENSE_CATEGORIES = [
+  "Gaji Karyawan",
+  "Sewa Kantor",
+  "Tagihan Listrik",
+  "Tagihan Internet",
+  "Asuransi",
+  "Langganan Software",
+  "Lainnya"
+];
 
 interface EditTransactionModalProps {
   isOpen: boolean;
@@ -26,6 +38,28 @@ export default function EditTransactionModal({
   const [description, setDescription] = useState(transaction.description);
   const [amount, setAmount] = useState(transaction.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
   const [type, setType] = useState<"fixed" | "variable">(transaction.type);
+  const [category, setCategory] = useState(transaction.category || "");
+  const [customCategory, setCustomCategory] = useState("");
+  const [budget, setBudget] = useState(transaction.budget ? 
+    transaction.budget.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "");
+  const [isPaid, setIsPaid] = useState(transaction.isPaid || false);
+  
+  // Update category when changing type
+  useEffect(() => {
+    if (type === "variable") {
+      setCategory("");
+      setBudget("");
+      setIsPaid(false);
+    }
+  }, [type]);
+  
+  // Initialize custom category if needed
+  useEffect(() => {
+    if (transaction.category && !FIXED_EXPENSE_CATEGORIES.includes(transaction.category)) {
+      setCategory("Lainnya");
+      setCustomCategory(transaction.category);
+    }
+  }, [transaction.category]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,13 +77,43 @@ export default function EditTransactionModal({
       return;
     }
     
+    let finalCategory = "";
+    let parsedBudget: number | undefined = undefined;
+    
+    // For fixed expenses, validate category and budget
+    if (type === "fixed") {
+      finalCategory = category === "Lainnya" ? customCategory : category;
+      
+      if (!finalCategory) {
+        toast.error("Pilih atau masukkan kategori pengeluaran tetap");
+        return;
+      }
+      
+      if (budget) {
+        parsedBudget = parseFloat(budget.replace(/\./g, ""));
+        if (isNaN(parsedBudget) || parsedBudget <= 0) {
+          toast.error("Anggaran harus berupa angka positif");
+          return;
+        }
+      }
+    }
+    
     // Save the updated transaction
     onSave({
       ...transaction,
       date,
       description,
       amount: numAmount,
-      type
+      type,
+      ...(type === "fixed" ? {
+        category: finalCategory,
+        budget: parsedBudget,
+        isPaid
+      } : {
+        category: undefined,
+        budget: undefined,
+        isPaid: undefined
+      })
     });
     
     toast.success("Transaksi berhasil diperbarui");
@@ -68,6 +132,21 @@ export default function EditTransactionModal({
     // Format with thousand separators
     const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     setAmount(formattedValue);
+  };
+  
+  // Format budget with thousand separators
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
+    
+    if (numericValue === "") {
+      setBudget("");
+      return;
+    }
+    
+    // Format with thousand separators
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setBudget(formattedValue);
   };
   
   // Create a handler function that explicitly handles the type conversion
@@ -96,7 +175,7 @@ export default function EditTransactionModal({
           </div>
           
           <div className="space-y-2">
-            <Label>Kategori</Label>
+            <Label>Tipe Pengeluaran</Label>
             <RadioGroup value={type} onValueChange={handleTypeChange} className="flex gap-4">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="fixed" id="fixed" />
@@ -108,6 +187,31 @@ export default function EditTransactionModal({
               </div>
             </RadioGroup>
           </div>
+          
+          {type === "fixed" && (
+            <div className="space-y-2">
+              <Label htmlFor="category">Kategori</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FIXED_EXPENSE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {category === "Lainnya" && (
+                <Input
+                  className="mt-2"
+                  placeholder="Masukkan kategori kustom"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                />
+              )}
+            </div>
+          )}
           
           <div className="space-y-2">
             <Label htmlFor="description">Keterangan</Label>
@@ -132,6 +236,35 @@ export default function EditTransactionModal({
               required
             />
           </div>
+          
+          {type === "fixed" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="budget">Anggaran (Rp) (Opsional)</Label>
+                <Input
+                  type="text"
+                  id="budget"
+                  value={budget}
+                  onChange={handleBudgetChange}
+                  placeholder="Contoh: 600.000"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isPaid"
+                  checked={isPaid}
+                  onCheckedChange={(checked) => setIsPaid(checked === true)}
+                />
+                <Label 
+                  htmlFor="isPaid" 
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Sudah Dibayar
+                </Label>
+              </div>
+            </>
+          )}
           
           <DialogFooter className="mt-4">
             <Button type="button" variant="outline" onClick={onClose}>

@@ -57,6 +57,13 @@ export function useTransactionsData(year: string, month: string) {
         : transaction.amount
     };
     
+    // If it's a fixed expense with budget, ensure budget is also a number
+    if (transaction.type === 'fixed' && transaction.budget) {
+      newTransaction.budget = typeof transaction.budget === 'string'
+        ? parseFloat(String(transaction.budget).replace(/\./g, ""))
+        : transaction.budget;
+    }
+    
     const newTransactions = [...transactions, newTransaction];
     setTransactions(newTransactions);
     saveTransactions(newTransactions);
@@ -72,8 +79,24 @@ export function useTransactionsData(year: string, month: string) {
         : updatedTransaction.amount
     };
     
+    // If it's a fixed expense with budget, ensure budget is also a number
+    if (transaction.type === 'fixed' && transaction.budget) {
+      transaction.budget = typeof transaction.budget === 'string'
+        ? parseFloat(String(transaction.budget).replace(/\./g, ""))
+        : transaction.budget;
+    }
+    
     const newTransactions = transactions.map(t => 
       t.id === transaction.id ? transaction : t
+    );
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+  
+  // Toggle payment status
+  const togglePaymentStatus = (id: string) => {
+    const newTransactions = transactions.map(t => 
+      t.id === id ? { ...t, isPaid: !t.isPaid } : t
     );
     setTransactions(newTransactions);
     saveTransactions(newTransactions);
@@ -98,13 +121,28 @@ export function useTransactionsData(year: string, month: string) {
       .filter(t => t.type === "variable")
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
+
+  // Calculate budget vs actual for fixed expenses
+  const budgetVsActual = useMemo(() => {
+    const fixedExpenses = transactions.filter(t => t.type === "fixed");
+    const totalBudget = fixedExpenses.reduce((sum, t) => sum + (t.budget || 0), 0);
+    const totalActual = fixedExpenses.reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      totalBudget,
+      totalActual,
+      difference: totalBudget - totalActual
+    };
+  }, [transactions]);
   
   return {
     transactions,
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    togglePaymentStatus,
     totalFixedExpenses,
-    totalVariableExpenses
+    totalVariableExpenses,
+    budgetVsActual
   };
 }

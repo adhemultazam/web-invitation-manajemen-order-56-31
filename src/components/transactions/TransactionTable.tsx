@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import TransactionActions from "@/components/transactions/TransactionActions";
 import ViewTransactionModal from "@/components/transactions/ViewTransactionModal";
 import EditTransactionModal from "@/components/transactions/EditTransactionModal";
@@ -32,9 +33,15 @@ interface TransactionTableProps {
   transactions: Transaction[];
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: string) => void;
+  onTogglePaymentStatus?: (id: string) => void;
 }
 
-export function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
+export function TransactionTable({ 
+  transactions, 
+  onEdit, 
+  onDelete,
+  onTogglePaymentStatus 
+}: TransactionTableProps) {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -88,6 +95,12 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
       setDeletingTransactionId(null);
     }
   };
+
+  const handleTogglePayment = (transactionId: string) => {
+    if (onTogglePaymentStatus) {
+      onTogglePaymentStatus(transactionId);
+    }
+  };
   
   return (
     <div className="space-y-4">
@@ -103,17 +116,37 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
             <Table className="w-full">
               <TableHeader>
                 <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+                  {activeTab === "fixed" && (
+                    <TableHead className="w-12 py-3 font-poppins text-xs tracking-wide text-center">Status</TableHead>
+                  )}
                   <TableHead className="py-3 font-poppins text-xs tracking-wide">Tanggal</TableHead>
                   <TableHead className="py-3 font-poppins text-xs tracking-wide">Kategori</TableHead>
+                  {activeTab === "fixed" && (
+                    <TableHead className="py-3 font-poppins text-xs tracking-wide">Subkategori</TableHead>
+                  )}
                   <TableHead className="py-3 font-poppins text-xs tracking-wide">Keterangan</TableHead>
+                  {activeTab === "fixed" && (
+                    <TableHead className="text-right py-3 font-poppins text-xs tracking-wide">Anggaran</TableHead>
+                  )}
                   <TableHead className="text-right py-3 font-poppins text-xs tracking-wide">Jumlah</TableHead>
                   <TableHead className="text-right py-3 font-poppins text-xs tracking-wide w-[100px]">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((transaction, index) => (
+                  filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id} className="h-14">
+                      {(activeTab === "fixed" || transaction.type === "fixed") && (
+                        <TableCell className="text-center py-3">
+                          {transaction.type === "fixed" && (
+                            <Checkbox
+                              checked={transaction.isPaid}
+                              onCheckedChange={() => handleTogglePayment(transaction.id)}
+                              className="mx-auto"
+                            />
+                          )}
+                        </TableCell>
+                      )}
                       <TableCell className="py-3">
                         {format(new Date(transaction.date), "dd MMM yyyy")}
                       </TableCell>
@@ -122,7 +155,17 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
                           {getCategoryLabel(transaction.type)}
                         </Badge>
                       </TableCell>
+                      {(activeTab === "fixed" || transaction.type === "fixed") && (
+                        <TableCell className="py-3">
+                          {transaction.category || "-"}
+                        </TableCell>
+                      )}
                       <TableCell className="py-3">{transaction.description}</TableCell>
+                      {(activeTab === "fixed" || transaction.type === "fixed") && (
+                        <TableCell className="text-right py-3 font-medium">
+                          {transaction.budget ? formatCurrency(transaction.budget) : "-"}
+                        </TableCell>
+                      )}
                       <TableCell className="text-right py-3 font-medium">
                         {formatCurrency(transaction.amount)}
                       </TableCell>
@@ -138,7 +181,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={activeTab === "fixed" ? 8 : 6} className="h-24 text-center">
                       Tidak ada data transaksi
                     </TableCell>
                   </TableRow>
@@ -148,9 +191,21 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
           </div>
           
           {filteredTransactions.length > 0 && (
-            <div className="flex justify-end mt-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-4">
+              <div className="text-sm">
+                {activeTab === "fixed" && (
+                  <div className="flex flex-col space-y-1">
+                    <span>Total Anggaran: {formatCurrency(
+                      filteredTransactions.reduce((sum, t) => sum + (t.budget || 0), 0)
+                    )}</span>
+                    <span className="text-muted-foreground">
+                      {filteredTransactions.filter(t => t.isPaid).length} dari {filteredTransactions.length} sudah dibayar
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="text-sm font-medium">
-                Total: {formatCurrency(filteredTransactions.reduce((sum, t) => sum + t.amount, 0))}
+                Total Pengeluaran: {formatCurrency(filteredTransactions.reduce((sum, t) => sum + t.amount, 0))}
               </div>
             </div>
           )}

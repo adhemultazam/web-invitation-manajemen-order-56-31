@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus, ListCheck, Check } from "lucide-react";
 import { useOrdersData } from "@/hooks/useOrdersData";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
@@ -26,8 +26,10 @@ export default function Transactions() {
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    togglePaymentStatus,
     totalFixedExpenses,
-    totalVariableExpenses
+    totalVariableExpenses,
+    budgetVsActual
   } = useTransactionsData(selectedYear, selectedMonth);
   
   // Calculate total revenue/saldo from only PAID orders
@@ -64,6 +66,24 @@ export default function Transactions() {
     }
   };
 
+  // Calculate paid fixed expenses
+  const fixedExpensesPaid = useMemo(() => {
+    return transactions
+      .filter(t => t.type === "fixed" && t.isPaid)
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
+
+  // Count how many fixed expenses are paid vs total
+  const fixedExpenseStatus = useMemo(() => {
+    const fixedExpenses = transactions.filter(t => t.type === "fixed");
+    const paidCount = fixedExpenses.filter(t => t.isPaid).length;
+    return {
+      paid: paidCount,
+      total: fixedExpenses.length,
+      percent: fixedExpenses.length > 0 ? (paidCount / fixedExpenses.length) * 100 : 0
+    };
+  }, [transactions]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -91,12 +111,13 @@ export default function Transactions() {
         </div>
       </div>
       
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           title="Total Saldo Bulanan"
           value={formatCurrency(totalRevenue)}
           icon={<Wallet className="h-3 w-3 text-white" />}
           description={`${getFilterDescription()} (Hanya Lunas)`}
+          className="col-span-2"
         />
         <StatCard
           title="Pengeluaran Tetap"
@@ -113,11 +134,18 @@ export default function Transactions() {
           type="danger"
         />
         <StatCard
-          title="Sisa Saldo"
-          value={formatCurrency(remainingSaldo)}
-          icon={<ArrowUpCircle className="h-3 w-3 text-white" />}
-          description="Setelah pengeluaran"
-          type={remainingSaldo >= 0 ? "success" : "danger"}
+          title="Status Pembayaran"
+          value={`${fixedExpenseStatus.paid}/${fixedExpenseStatus.total}`}
+          icon={<Check className="h-3 w-3 text-white" />}
+          description={`${fixedExpenseStatus.percent.toFixed(0)}% sudah dibayar`}
+          type="success"
+        />
+        <StatCard
+          title="Anggaran vs Aktual"
+          value={formatCurrency(budgetVsActual.difference)}
+          icon={<ListCheck className="h-3 w-3 text-white" />}
+          description={`Dari anggaran ${formatCurrency(budgetVsActual.totalBudget)}`}
+          type={budgetVsActual.difference >= 0 ? "success" : "danger"}
         />
       </div>
       
@@ -126,6 +154,7 @@ export default function Transactions() {
           transactions={transactions}
           onEdit={updateTransaction}
           onDelete={deleteTransaction}
+          onTogglePaymentStatus={togglePaymentStatus}
         />
       </div>
       

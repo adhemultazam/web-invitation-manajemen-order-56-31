@@ -1,4 +1,3 @@
-
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -128,4 +127,7 @@ export interface Transaction {
   type: "fixed" | "variable";
   description: string;
   amount: number;
+  category?: string;  // Added for custom categories
+  isPaid?: boolean;   // Added for payment status
+  budget?: number;    // Added for budget tracking
 }

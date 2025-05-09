@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Order, Vendor, Theme } from "@/types/types";
@@ -89,6 +90,13 @@ export const OrderTableRow: React.FC<OrderTableRowProps> = ({
         {index + 1}
       </TableCell>
       
+      {/* Countdown */}
+      <TableCell className="font-mono text-[9px] py-2.5 px-4">
+        <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
+          {order.countdownDays} hari
+        </span>
+      </TableCell>
+      
       {/* Combined Dates - Tgl Pesan & Tgl Acara */}
       <TableCell className="py-2.5 px-4">
         <div className="flex flex-col gap-0.5">
@@ -101,14 +109,7 @@ export const OrderTableRow: React.FC<OrderTableRowProps> = ({
         </div>
       </TableCell>
       
-      {/* Countdown */}
-      <TableCell className="font-mono text-[9px] py-2.5 px-4">
-        <span className={isPastDate(order.eventDate) ? "text-red-500 font-semibold" : ""}>
-          {order.countdownDays} hari
-        </span>
-      </TableCell>
-      
-      {/* Client & Nama combined - SWAPPED ORDER */}
+      {/* Client & Nama combined */}
       <TableCell className="py-2.5 px-4">
         <div className="flex flex-col gap-0.5">
           <div className="text-xs font-medium leading-tight">

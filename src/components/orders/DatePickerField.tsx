@@ -36,7 +36,8 @@ export function DatePickerField({
             "w-full justify-start text-left font-normal",
             !date && "text-muted-foreground"
           )}
-          required={required}
+          // Remove the required attribute as it's not supported by the Button component
+          aria-required={required}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? format(date, "dd/MM/yyyy") : placeholder}

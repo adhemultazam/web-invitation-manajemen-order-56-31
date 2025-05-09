@@ -49,6 +49,11 @@ const RedirectWithParams = () => {
   return <Navigate to={`/pesanan/${month}`} replace />;
 };
 
+// Helper to get current month
+const getCurrentMonth = () => {
+  return new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
+};
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -82,12 +87,10 @@ const App = () => {
                   </ProtectedRoute>
                 } />
                 
-                {/* Route for all months */}
+                {/* Route for all orders without month specified - redirect to current month */}
                 <Route path="/pesanan" element={
                   <ProtectedRoute>
-                    <Layout>
-                      <MonthlyOrders />
-                    </Layout>
+                    <Navigate to={`/pesanan/${getCurrentMonth()}`} replace />
                   </ProtectedRoute>
                 } />
                 

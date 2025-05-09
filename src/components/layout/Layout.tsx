@@ -9,8 +9,9 @@ import { MobileNavbar } from "./MobileNavbar";
 import { UserMenu } from "./UserMenu";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -19,56 +20,66 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const isMobile = useIsMobile();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
+  
+  // Save current path to sessionStorage when it changes
+  useEffect(() => {
+    if (location.pathname) {
+      sessionStorage.setItem('lastVisitedPath', location.pathname);
+    }
+  }, [location.pathname]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
-
+  
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full overflow-x-hidden">
-        {!isMobile && (
-          <AppSidebar 
-            collapsed={sidebarCollapsed}
-            onCollapseToggle={toggleSidebar}
-          />
-        )}
-
-        <div className={cn(
-          "flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full overflow-hidden",
-          !isMobile && (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]"),
-          isDarkMode ? "bg-[#121222]" : "bg-gray-50"
-        )}>
-          <Topbar />
-
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+    )}>
+      {isMobile ? (
+        <SidebarProvider>
+          <div className="flex flex-col h-screen">
+            <Topbar>
+              <div className="flex items-center">
+                <SidebarTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu />
+                  </Button>
+                </SidebarTrigger>
+              </div>
+              <UserMenu />
+            </Topbar>
+            <div className="flex-1 overflow-auto px-4 py-4 pb-20">
+              {children}
+            </div>
+            <MobileNavbar />
+            <AppSidebar />
+          </div>
+        </SidebarProvider>
+      ) : (
+        <div className="flex">
+          <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={toggleSidebar} />
           <div className={cn(
-            "flex-1 p-4 md:p-6 overflow-x-hidden",
-            isMobile && "pb-24" // Add extra padding at the bottom on mobile to prevent content being hidden by navbar
+            "flex-1 min-h-screen flex flex-col transition-all duration-300",
+            sidebarCollapsed ? "ml-[70px]" : "ml-[260px]"
           )}>
-            {children}
+            <Topbar>
+              <div className="flex-1"></div>
+              <UserMenu />
+            </Topbar>
+            <div className="flex-1 overflow-auto px-6 py-6">
+              {children}
+            </div>
           </div>
         </div>
-
-        {isMobile && (
-          <SidebarTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="fixed bottom-4 right-4 h-12 w-12 rounded-full shadow-lg z-30"
-            >
-              <Menu />
-            </Button>
-          </SidebarTrigger>
-        )}
-
-        {isMobile && <MobileNavbar />}
-      </div>
-      
+      )}
       <Toaster />
       <Sonner />
-    </SidebarProvider>
+    </div>
   );
 }

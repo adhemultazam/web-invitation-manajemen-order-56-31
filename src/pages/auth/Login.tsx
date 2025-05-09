@@ -1,119 +1,135 @@
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/auth/BrandLogo";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { InfoIcon } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, login, brandSettings } = useAuth();
   const navigate = useNavigate();
-  const {
-    login,
-    isAuthenticated,
-    brandSettings
-  } = useAuth();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
-  // Redirect if already logged in
+  // Handle redirect when already logged in or after login
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      // Check for a stored path first
+      const storedPath = sessionStorage.getItem("lastVisitedPath");
+      
+      if (storedPath) {
+        navigate(storedPath);
+      } else {
+        navigate("/");
+      }
     }
   }, [isAuthenticated, navigate]);
 
-  // Try to get the stored email for better UX
-  useEffect(() => {
-    try {
-      const storedAuth = localStorage.getItem("auth");
-      if (storedAuth) {
-        const { user } = JSON.parse(storedAuth);
-        if (user && user.email) {
-          setEmail(user.email);
-        } else {
-          setEmail("admin@example.com"); // Default fallback
-        }
-      } else {
-        setEmail("admin@example.com"); // Default fallback
-      }
-    } catch (e) {
-      setEmail("admin@example.com"); // Default fallback
-      console.error("Error getting stored email", e);
-    }
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!username || !password) return;
+
+    setLoading(true);
     try {
-      const success = await login(email, password);
+      const success = await login(username, password);
       if (success) {
-        toast.success("Login berhasil", {
-          description: "Selamat datang kembali"
-        });
-        navigate("/");
-      } else {
-        toast.error("Login gagal", {
-          description: "Email atau password salah"
-        });
+        const storedPath = sessionStorage.getItem("lastVisitedPath") || "/";
+        navigate(storedPath);
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Terjadi kesalahan", {
-        description: "Silakan coba beberapa saat lagi"
-      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    try {
+      const success = await login("admin", "admin");
+      if (success) {
+        const storedPath = sessionStorage.getItem("lastVisitedPath") || "/";
+        navigate(storedPath);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md px-8">
-        <div className="mx-auto mb-8 flex flex-col items-center">
+    <div className={cn(
+      "min-h-screen flex items-center justify-center p-4",
+      isDarkMode ? "bg-gray-900" : "bg-gray-50"
+    )}>
+      <Card className={cn(
+        "w-full max-w-md shadow-xl",
+        isDarkMode ? "bg-gray-800 text-gray-100 border-gray-700" : "bg-white"
+      )}>
+        <CardHeader className="space-y-4 flex flex-col items-center justify-center">
           <BrandLogo logo={brandSettings.logo} name={brandSettings.name} />
-          
-          <h1 className="mt-4 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {brandSettings.name}
-          </h1>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">Order Management Dashboard</p>
-        </div>
-
-        <div className="rounded-lg border bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-800">
+          <div className="text-center space-y-1">
+            <CardTitle className="text-2xl">{brandSettings.name}</CardTitle>
+            <CardDescription>Masuk ke akun manajemen Anda</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="contoh@email.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                placeholder="Masukkan username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                disabled={loading}
+                className={isDarkMode ? "bg-gray-700 border-gray-600" : ""}
+              />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <ForgotPasswordDialog disabled={isLoading} />
+                <ForgotPasswordDialog />
               </div>
-              <PasswordInput id="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••" disabled={isLoading} />
+              <PasswordInput
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Masukkan password"
+                disabled={loading}
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Masuk..." : "Masuk"}
+            <Button 
+              type="submit" 
+              className="w-full bg-wedding-primary hover:bg-wedding-accent" 
+              disabled={loading}
+            >
+              {loading ? "Memuat..." : "Masuk"}
             </Button>
-            
-            <div className="mt-2 flex items-center gap-2 rounded-md bg-blue-50 p-2 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-              <InfoIcon className="h-4 w-4" />
-              <p>Default password: password123</p>
-            </div>
           </form>
-
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p className="text-xs">Silahkan masukkan Email dan Password untuk melanjutkan</p>
+        </CardContent>
+        <CardFooter className="flex flex-col">
+          <div className="text-sm text-center text-gray-500 dark:text-gray-400 mt-2">
+            <p>Demo credentials: admin / admin</p>
           </div>
-        </div>
-      </div>
+          <Button 
+            variant="outline" 
+            className="mt-2 w-full" 
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            Login Demo
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

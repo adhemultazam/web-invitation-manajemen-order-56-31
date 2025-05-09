@@ -1,170 +1,135 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-
-interface User {
-  name: string;
-  email: string;
-  avatar?: string;
-  profileImage?: string; // Added missing property
-}
-
-interface BrandSettings {
-  name: string;
-  logo?: string;
-  favicon?: string; // Added missing property
-}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: User | null;
-  brandSettings: BrandSettings;
-  login: (email: string, password: string) => Promise<boolean>;
+  username: string;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateBrandSettings: (settings: Partial<BrandSettings>) => void; // Added missing method
-  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>; // Added missing method
-  updateUserProfile: (profile: Partial<User>) => void; // Added missing method
+  brandSettings: {
+    name: string;
+    logo: string;
+  };
+  updateBrandSettings: (settings: { name?: string; logo?: string }) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  user: null,
-  brandSettings: {
-    name: "Undangan Digital",
-    logo: "",
-  },
+  username: "",
   login: async () => false,
   logout: () => {},
-  updateBrandSettings: () => {}, // Added default implementation
-  updatePassword: async () => false, // Added default implementation
-  updateUserProfile: () => {}, // Added default implementation
+  brandSettings: {
+    name: "Nikah Digital",
+    logo: "",
+  },
+  updateBrandSettings: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [brandSettings, setBrandSettings] = useState<BrandSettings>({
-    name: "Undangan Digital",
+  const [username, setUsername] = useState<string>("");
+  const [brandSettings, setBrandSettings] = useState({
+    name: "Nikah Digital",
     logo: "",
-    favicon: "", // Initialize with empty string
   });
 
+  // Initialize auth state from localStorage
   useEffect(() => {
-    // Check if user is already authenticated
-    const storedAuth = localStorage.getItem("isAuthenticated");
-    if (storedAuth === "true") {
-      setIsAuthenticated(true);
-      
-      // Load user data if available
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          console.error("Failed to parse stored user data", e);
-        }
-      } else {
-        // Default user if authenticated but no data
-        setUser({
-          name: "Admin",
-          email: "admin@example.com",
-        });
+    const storedAuth = localStorage.getItem("auth");
+    if (storedAuth) {
+      try {
+        const parsedAuth = JSON.parse(storedAuth);
+        setIsAuthenticated(parsedAuth.isAuthenticated);
+        setUsername(parsedAuth.username || "");
+      } catch (e) {
+        console.error("Error parsing auth data:", e);
       }
-      
-      // Load brand settings if available
-      const storedSettings = localStorage.getItem("brandSettings");
-      if (storedSettings) {
-        try {
-          setBrandSettings(JSON.parse(storedSettings));
-        } catch (e) {
-          console.error("Failed to parse stored brand settings", e);
-        }
+    }
+
+    // Load brand settings
+    const storedSettings = localStorage.getItem("brandSettings");
+    if (storedSettings) {
+      try {
+        const parsedSettings = JSON.parse(storedSettings);
+        setBrandSettings(parsedSettings);
+      } catch (e) {
+        console.error("Error parsing brand settings:", e);
       }
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simple mock authentication
-    if (email === "admin@example.com" && password.length >= 6) {
-      const userData = {
-        name: "Admin",
-        email: "admin@example.com",
-      };
-      
-      setUser(userData);
+  // Mock login function
+  const login = async (username: string, password: string) => {
+    // Demo credentials for testing
+    if (username && password) {
       setIsAuthenticated(true);
+      setUsername(username);
       
-      // Store authentication state and user data
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(userData));
+      // Save auth state to localStorage
+      localStorage.setItem(
+        "auth",
+        JSON.stringify({ isAuthenticated: true, username })
+      );
       
-      // Mock loading for realistic feel
-      await new Promise(resolve => setTimeout(resolve, 800));
+      toast.success("Login berhasil", {
+        description: `Selamat datang, ${username}!`,
+      });
       
-      toast.success("Login berhasil");
       return true;
     }
     
     toast.error("Login gagal", {
-      description: "Email atau password tidak valid",
+      description: "Username atau password salah",
     });
+    
     return false;
   };
 
-  const logout = () => {
-    setUser(null);
+  // Logout function
+  const logout = useCallback(() => {
     setIsAuthenticated(false);
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("user");
+    setUsername("");
+    
+    // Clear auth state from localStorage
+    localStorage.setItem(
+      "auth",
+      JSON.stringify({ isAuthenticated: false, username: "" })
+    );
+    
+    // Clear the lastVisitedPath to ensure clean state on next login
+    sessionStorage.removeItem("lastVisitedPath");
+    
     toast.success("Logout berhasil");
-  };
+  }, []);
 
-  // Implement the missing methods
-  const updateBrandSettings = (settings: Partial<BrandSettings>) => {
-    const updatedSettings = { ...brandSettings, ...settings };
-    setBrandSettings(updatedSettings);
-    localStorage.setItem("brandSettings", JSON.stringify(updatedSettings));
-  };
-
-  const updateUserProfile = (profile: Partial<User>) => {
-    if (!user) return;
-    
-    const updatedUser = { ...user, ...profile };
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-  };
-
-  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    // In a real app, we would verify the current password on the server
-    // For this mock implementation, we'll simulate success if the current password meets our criterion
-    if (currentPassword.length >= 6) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+  // Update brand settings
+  const updateBrandSettings = useCallback((settings: { name?: string; logo?: string }) => {
+    setBrandSettings(prev => {
+      const newSettings = {
+        ...prev,
+        ...settings,
+      };
       
-      toast.success("Password berhasil diperbarui");
-      return true;
-    }
-    
-    toast.error("Password saat ini tidak valid");
-    return false;
+      // Save to localStorage
+      localStorage.setItem("brandSettings", JSON.stringify(newSettings));
+      
+      return newSettings;
+    });
+  }, []);
+
+  const contextValue = {
+    isAuthenticated,
+    username,
+    login,
+    logout,
+    brandSettings,
+    updateBrandSettings,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        user,
-        brandSettings,
-        login,
-        logout,
-        updateBrandSettings,
-        updateUserProfile,
-        updatePassword,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };

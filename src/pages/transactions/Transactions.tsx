@@ -91,7 +91,7 @@ export default function Transactions() {
         </div>
       </div>
       
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         <StatCard
           title="Total Saldo Bulanan"
           value={formatCurrency(totalRevenue)}

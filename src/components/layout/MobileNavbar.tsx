@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, CalendarDays, Settings, FileText } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Settings, FileText, WalletIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileNavbar() {
@@ -15,6 +15,7 @@ export function MobileNavbar() {
     if (route === "/pengaturan" && path === "/pengaturan") return true;
     if (route === "/pesanan" && (path.includes("/pesanan") || path.includes("/bulan"))) return true;
     if (route === "/invoices" && path === "/invoices") return true;
+    if (route === "/transaksi" && path === "/transaksi") return true;
     return false;
   };
 
@@ -46,6 +47,20 @@ export function MobileNavbar() {
       >
         <CalendarDays className="h-4 w-4" />
         <span className="text-[10px] mt-1">Pesanan</span>
+      </Link>
+      
+      <Link 
+        to="/transaksi" 
+        className={cn(
+          "flex flex-col items-center justify-center w-full h-full",
+          isActive("/transaksi") 
+            ? "text-primary after:absolute after:top-0 after:h-0.5 after:w-6 after:bg-primary" 
+            : "text-muted-foreground",
+          "relative"
+        )}
+      >
+        <WalletIcon className="h-4 w-4" />
+        <span className="text-[10px] mt-1">Transaksi</span>
       </Link>
       
       <Link 

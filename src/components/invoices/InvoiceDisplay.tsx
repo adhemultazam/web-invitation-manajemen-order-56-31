@@ -93,7 +93,7 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                 if (order.addons) {
                   if (Array.isArray(order.addons) && order.addons.length > 0) {
                     addonsList = order.addons.join(", ");
-                  } else if (typeof order.addons === 'string' && order.addons.length > 0) {
+                  } else if (typeof order.addons === 'string' && order.addons !== '') {
                     addonsList = order.addons;
                   }
                 }

@@ -4,6 +4,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -34,19 +35,21 @@ export function Layout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 w-full overflow-hidden">
-      <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={toggleSidebar} />
-      <div
-        className={cn(
-          "flex-1 transition-all duration-300 ease-in-out overflow-y-auto",
-          "min-h-screen max-w-full",
-          isMobile ? "w-full" : (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]")
-        )}
-      >
-        <main className="container p-4 md:p-6 mx-auto max-w-full">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 w-full overflow-hidden">
+        <AppSidebar collapsed={sidebarCollapsed} onCollapseToggle={toggleSidebar} />
+        <div
+          className={cn(
+            "flex-1 transition-all duration-300 ease-in-out overflow-y-auto",
+            "min-h-screen max-w-full",
+            isMobile ? "w-full" : (sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[260px]")
+          )}
+        >
+          <main className="container p-4 md:p-6 mx-auto max-w-full">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

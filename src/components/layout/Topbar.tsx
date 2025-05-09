@@ -18,7 +18,11 @@ import {
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export function Topbar() {
+interface TopbarProps {
+  children?: React.ReactNode;
+}
+
+export function Topbar({ children }: TopbarProps) {
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -66,47 +70,53 @@ export function Topbar() {
           {capitalizedDate}
         </p>
       </div>
-      <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
-        <ThemeToggle />
-        
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-8 w-8 md:h-9 md:w-9 rounded-full p-0 overflow-hidden">
-              <Avatar className="h-8 w-8 md:h-9 md:w-9 bg-wedding-primary/10">
-                {user?.profileImage ? (
-                  <AvatarImage 
-                    src={user.profileImage} 
-                    alt={user?.name || 'User'} 
-                    className="object-cover"
-                  />
-                ) : null}
-                <AvatarFallback className="bg-violet-500 text-white text-sm">
-                  {user?.name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
+      
+      {/* Child elements passed to Topbar */}
+      {children}
+      
+      {!children && (
+        <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
+          <ThemeToggle />
           
-          <DropdownMenuContent align="end" className="w-56 mt-1">
-            <DropdownMenuLabel>
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{user?.email}</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <Link to="/pengaturan">
-              <DropdownMenuItem>
-                Pengaturan
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative h-8 w-8 md:h-9 md:w-9 rounded-full p-0 overflow-hidden">
+                <Avatar className="h-8 w-8 md:h-9 md:w-9 bg-wedding-primary/10">
+                  {user?.profileImage ? (
+                    <AvatarImage 
+                      src={user.profileImage} 
+                      alt={user?.name || 'User'} 
+                      className="object-cover"
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-violet-500 text-white text-sm">
+                    {user?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            
+            <DropdownMenuContent align="end" className="w-56 mt-1">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <Link to="/pengaturan">
+                <DropdownMenuItem>
+                  Pengaturan
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => logout()}>
+                Keluar
               </DropdownMenuItem>
-            </Link>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()}>
-              Keluar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
     </div>
   );
 }

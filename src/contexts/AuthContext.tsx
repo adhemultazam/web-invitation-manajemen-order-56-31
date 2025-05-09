@@ -2,12 +2,14 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useNavigate } from "react-router-dom";
 
 // Define a user type
 interface User {
   name: string;
   email: string;
   profileImage?: string;
+  lastLogin?: Date;
 }
 
 interface AuthContextType {
@@ -68,6 +70,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const savedSettings = localStorage.getItem("brandSettings");
     return savedSettings ? JSON.parse(savedSettings) : defaultBrandSettings;
   });
+
+  // Store login attempts for security
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [loginLockUntil, setLoginLockUntil] = useState<Date | null>(null);
   
   // Effect to save auth state when it changes
   useEffect(() => {
@@ -78,7 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
     } else if (!user) {
       // If logging in and no user exists, set default user
-      setUser(defaultUser);
+      const newUser = {
+        ...defaultUser,
+        lastLogin: new Date()
+      };
+      setUser(newUser);
     }
   }, [isAuthenticated, user]);
   
@@ -92,15 +102,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Effect to save brand settings when they change
   useEffect(() => {
     localStorage.setItem("brandSettings", JSON.stringify(brandSettings));
+    
+    // Apply favicon to document if provided
+    if (brandSettings.favicon) {
+      const existingFavicon = document.querySelector("link[rel*='icon']");
+      if (existingFavicon) {
+        existingFavicon.setAttribute("href", brandSettings.favicon);
+      } else {
+        const newFavicon = document.createElement("link");
+        newFavicon.rel = "icon";
+        newFavicon.href = brandSettings.favicon;
+        document.head.appendChild(newFavicon);
+      }
+    }
+    
+    // Update document title if needed
+    if (brandSettings.name) {
+      document.title = brandSettings.name + " - Manajemen Order";
+    }
   }, [brandSettings]);
+  
+  // Check for lockout
+  const isLockedOut = () => {
+    if (!loginLockUntil) return false;
+    return new Date() < loginLockUntil;
+  };
   
   // Login function - in a real app this would call an API
   const login = async (username: string, password: string, rememberMe = false): Promise<boolean> => {
     try {
+      // Check if account is locked
+      if (isLockedOut()) {
+        const minutes = Math.ceil((loginLockUntil!.getTime() - new Date().getTime()) / 60000);
+        toast.error(`Akun terkunci sementara`, {
+          description: `Coba lagi setelah ${minutes} menit`
+        });
+        return false;
+      }
+      
       // Simple validation for demo purposes
       if (username === "admin" && password === "admin") {
         setIsAuthenticated(true);
-        setUser(defaultUser); // Set default user on login
+        
+        // Update user with login time
+        const updatedUser = {
+          ...defaultUser,
+          lastLogin: new Date()
+        };
+        setUser(updatedUser);
+        
+        // Reset login attempts on successful login
+        setLoginAttempts(0);
+        setLoginLockUntil(null);
         
         // Store auth state based on rememberMe preference
         if (rememberMe) {
@@ -118,9 +171,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         return true;
       } else {
-        toast.error("Login gagal!", {
-          description: "Username atau password salah. Coba lagi."
-        });
+        // Increment login attempts
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        
+        // Lock account after 5 failed attempts
+        if (newAttempts >= 5) {
+          const lockTime = new Date();
+          lockTime.setMinutes(lockTime.getMinutes() + 15); // Lock for 15 minutes
+          setLoginLockUntil(lockTime);
+          
+          toast.error("Terlalu banyak percobaan gagal!", {
+            description: "Akun Anda telah dikunci sementara selama 15 menit."
+          });
+        } else {
+          toast.error("Login gagal!", {
+            description: "Username atau password salah. Coba lagi."
+          });
+        }
         return false;
       }
     } catch (error) {
@@ -140,6 +208,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Clear auth state from both storage options
     localStorage.removeItem("isAuthenticated");
     sessionStorage.removeItem("isAuthenticated");
+    
+    // Also clear lastVisitedPath
+    sessionStorage.removeItem("lastVisitedPath");
     
     toast.success("Logout berhasil", {
       description: "Anda telah keluar dari sistem."

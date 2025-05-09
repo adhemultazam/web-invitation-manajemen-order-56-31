@@ -12,6 +12,8 @@ import { BrandLogo } from "@/components/auth/BrandLogo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Shield, Info } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -39,7 +41,21 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) return;
+    
+    // Basic validation
+    if (!username) {
+      toast.error("Username diperlukan", {
+        description: "Silakan masukkan username Anda"
+      });
+      return;
+    }
+    
+    if (!password) {
+      toast.error("Password diperlukan", {
+        description: "Silakan masukkan password Anda"
+      });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -53,13 +69,20 @@ export default function Login() {
     }
   };
 
+  // Detect if user is on a public/shared device
+  const isPublicDevice = () => {
+    // Check if there are multiple recent user cookies or localStorage items
+    const hasMultipleUsers = Object.keys(localStorage).some(key => key.includes('user_'));
+    return hasMultipleUsers;
+  };
+
   return (
     <div className={cn(
       "min-h-screen flex items-center justify-center p-4",
       isDarkMode ? "bg-gray-900" : "bg-gray-50"
     )}>
       <Card className={cn(
-        "w-full max-w-md shadow-xl",
+        "w-full max-w-md shadow-xl animate-fade-in",
         isDarkMode ? "bg-gray-800 text-gray-100 border-gray-700" : "bg-white"
       )}>
         <CardHeader className="space-y-4 flex flex-col items-center justify-center">
@@ -80,7 +103,10 @@ export default function Login() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={loading}
-                className={isDarkMode ? "bg-gray-700 border-gray-600" : ""}
+                className={cn(
+                  isDarkMode ? "bg-gray-700 border-gray-600" : "",
+                  "focus:ring-wedding-primary focus:border-wedding-primary"
+                )}
               />
             </div>
             <div className="space-y-2">
@@ -111,16 +137,30 @@ export default function Login() {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-wedding-primary hover:bg-wedding-accent" 
+              className="w-full bg-wedding-primary hover:bg-wedding-accent transition-colors" 
               disabled={loading}
             >
               {loading ? "Memuat..." : "Masuk"}
             </Button>
           </form>
+          
+          {/* Security information */}
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm flex gap-2">
+            <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+            <div className="text-blue-700 dark:text-blue-300">
+              <p className="font-medium">Informasi Keamanan</p>
+              <p className="mt-1 text-xs">
+                {isPublicDevice() ? 
+                  "Anda tampaknya berada di perangkat umum. Jangan aktifkan 'Ingat saya' jika ini bukan perangkat pribadi Anda." : 
+                  "Pastikan Anda logout setelah selesai jika menggunakan perangkat publik."}
+              </p>
+            </div>
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col">
-          <div className="text-sm text-center text-gray-500 dark:text-gray-400 mt-2">
-            <p>Demo credentials: admin / admin</p>
+          <div className="flex items-center gap-1 text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <Shield className="h-3.5 w-3.5" /> 
+            <p>Credential demo: admin / admin</p>
           </div>
         </CardFooter>
       </Card>

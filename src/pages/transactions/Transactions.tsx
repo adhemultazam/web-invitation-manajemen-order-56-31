@@ -89,15 +89,15 @@ export default function Transactions() {
   }, [transactions]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Catatan Transaksi Pengeluaran</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Pantau dan lacak pengeluaran bulanan bisnis Anda
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <FilterBar
             onYearChange={setSelectedYear}
             onMonthChange={setSelectedMonth}
@@ -115,12 +115,12 @@ export default function Transactions() {
         </div>
       </div>
       
-      <div className="grid gap-1 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-1.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           title="Saldo Awal"
           value={formatCurrency(previousMonthBalance)}
           icon={<Wallet className="h-2.5 w-2.5 text-white" />}
-          description={`Dari ${getPreviousMonthDescription()}`}
+          description={`Dari ${getPreviousMonthDescription()} (Lunas)`}
           className="col-span-1"
         />
         <StatCard
@@ -165,7 +165,7 @@ export default function Transactions() {
         />
       </div>
       
-      <div className="mt-4">
+      <div className="space-y-6">
         <TransactionTable 
           transactions={transactions}
           onEdit={updateTransaction}

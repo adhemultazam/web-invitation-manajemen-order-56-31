@@ -119,24 +119,24 @@ export function StatCard({ title, value, icon, description, type = "default", cl
 
   return (
     <Card className={cn(`overflow-hidden border rounded-xl shadow-sm stat-card ${getBackgroundClass()}`, className)}>
-      <CardContent className="p-1 sm:p-1.5 md:p-2">
-        <div className="flex justify-between items-center mb-0.5">
-          <h3 className="text-[10px] font-medium text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
-          <div className={`rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
-            <span className="scale-75">{icon}</span>
+      <CardContent className="p-1.5 sm:p-2 md:p-3">
+        <div className="flex justify-between items-center mb-0.5 md:mb-1">
+          <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400 font-poppins">{title}</h3>
+          <div className={`rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center shadow-md ${getIconColorClass()}`}>
+            {icon}
           </div>
         </div>
         <div className="flex items-end justify-between">
           <div className="animate-count-up" style={{ animationDelay: '0.2s' }}>
             <div className={cn(
-              "text-[11px] sm:text-xs md:text-sm font-bold overflow-hidden text-ellipsis whitespace-nowrap",
+              "text-xs sm:text-sm md:text-base font-bold overflow-hidden text-ellipsis whitespace-nowrap",
               getTextColorClass(),
               "font-poppins"
             )}>
               {formatValue()}
             </div>
             {description && (
-              <p className="text-[8px] mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
+              <p className="text-[10px] mt-0.5 text-gray-500 dark:text-gray-400 font-inter">
                 {description}
               </p>
             )}

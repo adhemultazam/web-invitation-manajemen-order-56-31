@@ -49,83 +49,13 @@ export function useTransactionsData(year: string, month: string) {
   // Load transactions from localStorage
   useEffect(() => {
     try {
-      // First, handle loading transactions based on filters
       const storageKey = getStorageKey();
-      console.log(`Loading transactions with key: ${storageKey}`);
+      const storedTransactions = localStorage.getItem(storageKey);
       
-      if (month === "Semua Data" || year === "Semua Data") {
-        // Handle "All Months" filter case
-        const allTransactions: Transaction[] = [];
-        const monthNames = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
-        const years = [
-          (new Date().getFullYear() - 5).toString(),
-          (new Date().getFullYear() - 4).toString(),
-          (new Date().getFullYear() - 3).toString(),
-          (new Date().getFullYear() - 2).toString(),
-          (new Date().getFullYear() - 1).toString(),
-          new Date().getFullYear().toString(),
-          (new Date().getFullYear() + 1).toString()
-        ];
-        
-        // If only month is "All Data", filter by the selected year
-        if (month === "Semua Data" && year !== "Semua Data") {
-          monthNames.forEach(monthName => {
-            const monthKey = `transactions_${year}_${monthName}`;
-            const storedData = localStorage.getItem(monthKey);
-            if (storedData) {
-              try {
-                const parsedData = JSON.parse(storedData);
-                allTransactions.push(...parsedData);
-              } catch (error) {
-                console.error(`Error parsing data for ${monthKey}:`, error);
-              }
-            }
-          });
-        }
-        // If only year is "All Data", filter by the selected month
-        else if (year === "Semua Data" && month !== "Semua Data") {
-          years.forEach(yearVal => {
-            const monthKey = `transactions_${yearVal}_${month.toLowerCase()}`;
-            const storedData = localStorage.getItem(monthKey);
-            if (storedData) {
-              try {
-                const parsedData = JSON.parse(storedData);
-                allTransactions.push(...parsedData);
-              } catch (error) {
-                console.error(`Error parsing data for ${monthKey}:`, error);
-              }
-            }
-          });
-        }
-        // If both are "All Data", load everything
-        else if (year === "Semua Data" && month === "Semua Data") {
-          years.forEach(yearVal => {
-            monthNames.forEach(monthName => {
-              const monthKey = `transactions_${yearVal}_${monthName}`;
-              const storedData = localStorage.getItem(monthKey);
-              if (storedData) {
-                try {
-                  const parsedData = JSON.parse(storedData);
-                  allTransactions.push(...parsedData);
-                } catch (error) {
-                  console.error(`Error parsing data for ${monthKey}:`, error);
-                }
-              }
-            });
-          });
-        }
-        
-        console.log(`Found ${allTransactions.length} transactions for all months`);
-        setTransactions(allTransactions);
+      if (storedTransactions) {
+        setTransactions(JSON.parse(storedTransactions));
       } else {
-        // Standard case: specific month and year
-        const storedTransactions = localStorage.getItem(storageKey);
-        
-        if (storedTransactions) {
-          setTransactions(JSON.parse(storedTransactions));
-        } else {
-          setTransactions([]);
-        }
+        setTransactions([]);
       }
 
       // Load categories
@@ -137,30 +67,27 @@ export function useTransactionsData(year: string, month: string) {
       // Load previous month's balance
       const prevMonthKey = getPreviousMonthStorageKey();
       if (prevMonthKey) {
-        console.log(`Checking previous month balance from: ${prevMonthKey}`);
         const ordersData = localStorage.getItem(prevMonthKey);
         if (ordersData) {
           try {
             const orders = JSON.parse(ordersData);
-            console.log(`Found ${orders.length} orders for previous month ${prevMonthKey}`);
             
             // Calculate total from paid orders only (with status "Lunas")
-            const paidOrders = orders.filter((order: any) => order.paymentStatus === "Lunas");
-            console.log(`Found ${paidOrders.length} paid orders for previous month`);
-            
-            const paidTotal = paidOrders.reduce((sum: number, order: any) => {
-              // Clean and parse the payment amount
-              let amount = 0;
-              if (typeof order.paymentAmount === 'number') {
-                amount = order.paymentAmount;
-              } else if (typeof order.paymentAmount === 'string') {
-                // Remove non-numeric characters except decimal point
-                const cleanAmount = String(order.paymentAmount).replace(/[^\d.-]/g, '');
-                amount = parseFloat(cleanAmount || '0');
-              }
-              
-              return sum + (isNaN(amount) ? 0 : amount);
-            }, 0);
+            const paidTotal = orders
+              .filter((order: any) => order.paymentStatus === "Lunas")
+              .reduce((sum: number, order: any) => {
+                // Clean and parse the payment amount
+                let amount = 0;
+                if (typeof order.paymentAmount === 'number') {
+                  amount = order.paymentAmount;
+                } else if (typeof order.paymentAmount === 'string') {
+                  // Remove non-numeric characters except decimal point
+                  const cleanAmount = String(order.paymentAmount).replace(/[^\d.-]/g, '');
+                  amount = parseFloat(cleanAmount || '0');
+                }
+                
+                return sum + (isNaN(amount) ? 0 : amount);
+              }, 0);
             
             console.log(`Previous month (${prevMonthKey}) paid orders total:`, paidTotal);
             setPreviousMonthBalance(paidTotal);

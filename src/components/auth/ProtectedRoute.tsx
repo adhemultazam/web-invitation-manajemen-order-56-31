@@ -1,6 +1,6 @@
-
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { useEffect } from "react";
 
 interface ProtectedRouteProps {
@@ -9,18 +9,20 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated } = useAuth();
+  const { session } = useSupabaseAuth();
   const location = useLocation();
-  
-  // Save the current path to session storage whenever it changes
+
+  // Save last visited path
   useEffect(() => {
-    if (isAuthenticated && location.pathname !== "/login") {
+    if ((isAuthenticated || session) && location.pathname !== "/login") {
       sessionStorage.setItem("lastVisitedPath", location.pathname);
     }
-  }, [location.pathname, isAuthenticated]);
-  
-  if (!isAuthenticated) {
+  }, [location.pathname, isAuthenticated, session]);
+
+  // Redirect if not authenticated by both systems
+  if (!isAuthenticated && !session) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 }

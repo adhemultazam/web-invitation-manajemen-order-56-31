@@ -16,6 +16,7 @@ import Login from "./pages/auth/Login";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { migrateVendorData } from "./lib/utils";
 
 // Initialize data storage if it doesn't exist
 const initializeLocalStorage = () => {
@@ -60,6 +61,9 @@ const App = () => {
   useEffect(() => {
     // Initialize storage on app load
     initializeLocalStorage();
+    
+    // Migrate vendor data from commission to landingPageUrl
+    migrateVendorData();
   }, []);
   
   return (

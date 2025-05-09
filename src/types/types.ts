@@ -1,4 +1,3 @@
-
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -43,9 +42,9 @@ export type MultiBarChartData = {
 export type Vendor = {
   id: string;
   name: string;
-  code?: string;
-  color?: string;
-  commission?: number; // Added missing field
+  code: string;
+  color: string;
+  landingPageUrl?: string;
 };
 
 // WorkStatus type
@@ -121,4 +120,3 @@ export type User = {
   email?: string;
   profileImage?: string; // Added missing property
 };
-

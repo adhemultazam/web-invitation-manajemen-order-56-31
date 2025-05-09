@@ -1,4 +1,3 @@
-
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -30,17 +29,17 @@ export type Order = {
 export type OrderFormData = Omit<Order, "id">;
 
 // Chart data types
-export type ChartData = {
+export interface ChartData {
   name: string;
   value: number;
-};
+}
 
 export type ChartDataArray = ChartData[];
 
-export type MultiBarChartData = {
+export interface MultiBarChartData {
   name: string;
   [key: string]: string | number;
-};
+}
 
 // Vendor type
 export type Vendor = {
@@ -83,24 +82,17 @@ export type Theme = {
 };
 
 // Invoice type
-export type Invoice = {
+export interface Invoice {
   id: string;
-  invoiceNumber: string;
+  vendor: string;
   vendorId: string;
-  vendor: string; // Vendor name, kept for backwards compatibility
+  invoiceNumber: string;
   dateIssued: string;
   dueDate: string;
-  status: "Paid" | "Unpaid";
+  orders: Order[];
   totalAmount: number;
-  orders: {
-    orderId: string;
-    clientName: string;
-    orderDate: string;
-    amount: number;
-    package?: string;
-    addons?: string[] | string; // Supporting both array and string formats
-  }[];
-};
+  status: "Paid" | "Unpaid";
+}
 
 // Bank account type for invoice settings
 export type BankAccount = {
@@ -111,12 +103,12 @@ export type BankAccount = {
 };
 
 // InvoiceFilter type
-export type InvoiceFilter = {
+export interface InvoiceFilter {
   vendor?: string;
-  status: "Paid" | "Unpaid" | "All";
-  sortBy: "dueDate" | "amount";
-  sortDirection: "asc" | "desc";
-};
+  status: 'Paid' | 'Unpaid' | 'All';
+  sortBy: 'dueDate' | 'amount';
+  sortDirection: 'asc' | 'desc';
+}
 
 // User type
 export type User = {
@@ -124,3 +116,12 @@ export type User = {
   email?: string;
   profileImage?: string; // Added missing property
 };
+
+// Transaction type
+export interface Transaction {
+  id: string;
+  date: string;
+  type: "fixed" | "variable";
+  description: string;
+  amount: number;
+}

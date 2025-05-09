@@ -1,3 +1,4 @@
+
 import { 
   Sidebar, 
   SidebarContent, 
@@ -17,7 +18,8 @@ import {
   FileText,
   Image,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  DollarSign
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -154,6 +156,29 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                         : "",
                     )} />
                     <span className="text-sm">Invoice</span>
+                  </Link>
+                </li>
+
+                <li>
+                  <Link 
+                    to="/transaksi" 
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                      location.pathname === "/transaksi" 
+                        ? isDarkMode 
+                          ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                          : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                        : isDarkMode
+                          ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                          : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                    )}
+                  >
+                    <DollarSign size={18} className={cn(
+                      location.pathname === "/transaksi" 
+                        ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                        : "",
+                    )} />
+                    <span className="text-sm">Transaksi Pengeluaran</span>
                   </Link>
                 </li>
 
@@ -356,6 +381,35 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                         </Link>
                       </TooltipTrigger>
                       {collapsed && <TooltipContent side="right" className="text-xs">Invoice</TooltipContent>}
+                    </Tooltip>
+                  </li>
+
+                  <li>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link 
+                          to="/transaksi" 
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200",
+                            collapsed && "justify-center px-3",
+                            location.pathname === "/transaksi" 
+                              ? isDarkMode 
+                                ? "bg-gradient-to-r from-indigo-900/40 to-indigo-800/20 text-indigo-300 font-bold" 
+                                : "bg-gradient-to-r from-wedding-muted to-wedding-light text-wedding-primary font-bold" 
+                              : isDarkMode
+                                ? "text-gray-200 font-medium hover:bg-gray-800/50 hover:scale-[1.02]"
+                                : "text-gray-700 font-semibold hover:bg-gray-50 hover:scale-[1.02]"
+                          )}
+                        >
+                          <DollarSign size={collapsed ? 24 : 18} className={cn(
+                            location.pathname === "/transaksi" 
+                              ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
+                              : "",
+                          )} />
+                          {!collapsed && <span className="text-sm">Transaksi</span>}
+                        </Link>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right" className="text-xs">Transaksi Pengeluaran</TooltipContent>}
                     </Tooltip>
                   </li>
 

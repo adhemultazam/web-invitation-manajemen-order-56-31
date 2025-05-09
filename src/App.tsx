@@ -12,6 +12,7 @@ import Settings from "./pages/settings/Settings";
 import MonthlyOrders from "./pages/orders/MonthlyOrders";
 import NotFound from "./pages/NotFound";
 import Invoices from "./pages/invoices/Invoices";
+import Transactions from "./pages/transactions/Transactions";
 import Login from "./pages/auth/Login";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
@@ -87,6 +88,14 @@ const App = () => {
                   <ProtectedRoute>
                     <Layout>
                       <Settings />
+                    </Layout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/transaksi" element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Transactions />
                     </Layout>
                   </ProtectedRoute>
                 } />

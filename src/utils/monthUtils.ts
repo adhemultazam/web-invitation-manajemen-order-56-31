@@ -15,3 +15,25 @@ export const getMonthTitle = (month: string): string => {
   }
   return "Pesanan Bulanan";
 };
+
+export const getPreviousMonth = (month: string, year: string): { month: string; year: string } => {
+  const monthIndex = indonesianMonths.findIndex(m => m.toLowerCase() === month.toLowerCase());
+  
+  if (monthIndex === -1) {
+    return { month, year }; // Return the same if invalid
+  }
+  
+  // Calculate previous month and year
+  let prevMonthIndex = monthIndex - 1;
+  let prevYear = year;
+  
+  if (prevMonthIndex < 0) {
+    prevMonthIndex = 11; // December
+    prevYear = (parseInt(year) - 1).toString();
+  }
+  
+  return {
+    month: indonesianMonths[prevMonthIndex],
+    year: prevYear
+  };
+};

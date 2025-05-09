@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Transaction, TransactionCategory } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
+import { indonesianMonths } from "@/utils/monthUtils";
 
 export function useTransactionsData(year: string, month: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -28,8 +29,8 @@ export function useTransactionsData(year: string, month: string) {
       return ""; // Cannot determine previous month if viewing all data
     }
     
-    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    const currentMonthIndex = monthNames.findIndex(m => m === month);
+    const monthNames = indonesianMonths.map(m => m.charAt(0).toUpperCase() + m.slice(1));
+    const currentMonthIndex = monthNames.findIndex(m => m.toLowerCase() === month.toLowerCase());
     
     if (currentMonthIndex === -1) return ""; // Invalid month
     
@@ -43,7 +44,7 @@ export function useTransactionsData(year: string, month: string) {
     }
     
     const prevMonth = monthNames[prevMonthIndex].toLowerCase();
-    return `orders_${prevYear}_${prevMonth}`;
+    return `orders_${prevMonth}`;
   };
   
   // Load transactions from localStorage
@@ -64,9 +65,10 @@ export function useTransactionsData(year: string, month: string) {
         setCategories(JSON.parse(storedCategories));
       }
       
-      // Load previous month's balance
+      // Load previous month's balance from orders
       const prevMonthKey = getPreviousMonthStorageKey();
       if (prevMonthKey) {
+        console.log(`Looking for previous month data with key: ${prevMonthKey}`);
         const ordersData = localStorage.getItem(prevMonthKey);
         if (ordersData) {
           try {
@@ -89,7 +91,7 @@ export function useTransactionsData(year: string, month: string) {
                 return sum + (isNaN(amount) ? 0 : amount);
               }, 0);
             
-            console.log(`Previous month (${prevMonthKey}) paid orders total:`, paidTotal);
+            console.log(`Previous month (${prevMonthKey}) paid orders total: ${paidTotal}`);
             setPreviousMonthBalance(paidTotal);
           } catch (error) {
             console.error("Error parsing previous month orders:", error);

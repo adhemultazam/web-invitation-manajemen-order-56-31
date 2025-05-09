@@ -22,6 +22,30 @@ export function useTransactionsData(year: string, month: string) {
     return `transactions_${year}_${month.toLowerCase()}`;
   };
 
+  // Helper to get previous month's storage key
+  const getPreviousMonthStorageKey = (): string => {
+    if (month === "Semua Data" || year === "Semua Data") {
+      return ""; // Cannot determine previous month if viewing all data
+    }
+    
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const currentMonthIndex = monthNames.findIndex(m => m === month);
+    
+    if (currentMonthIndex === -1) return ""; // Invalid month
+    
+    // Calculate previous month and year
+    let prevMonthIndex = currentMonthIndex - 1;
+    let prevYear = year;
+    
+    if (prevMonthIndex < 0) {
+      prevMonthIndex = 11; // December
+      prevYear = (parseInt(year) - 1).toString();
+    }
+    
+    const prevMonth = monthNames[prevMonthIndex].toLowerCase();
+    return `orders_${prevYear}_${prevMonth}`;
+  };
+  
   // Load transactions from localStorage
   useEffect(() => {
     try {
@@ -110,64 +134,42 @@ export function useTransactionsData(year: string, month: string) {
         setCategories(JSON.parse(storedCategories));
       }
       
-      // Load previous month's balance from orders
-      if (month !== "Semua Data" && year !== "Semua Data") {
-        const monthNames = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
-        const currentMonthIndex = monthNames.findIndex(m => m.toLowerCase() === month.toLowerCase());
-        
-        if (currentMonthIndex !== -1) {
-          // Calculate previous month and year
-          let prevMonthIndex = currentMonthIndex - 1;
-          let prevYear = year;
-          
-          if (prevMonthIndex < 0) {
-            prevMonthIndex = 11; // December
-            prevYear = (parseInt(year) - 1).toString();
-          }
-          
-          const prevMonth = monthNames[prevMonthIndex];
-          const prevMonthKey = `orders_${prevYear}_${prevMonth}`;
-          
-          console.log(`Checking previous month balance from: ${prevMonthKey}`);
-          const ordersData = localStorage.getItem(prevMonthKey);
-          
-          if (ordersData) {
-            try {
-              const orders = JSON.parse(ordersData);
-              console.log(`Found ${orders.length} orders for previous month ${prevMonthKey}`);
+      // Load previous month's balance
+      const prevMonthKey = getPreviousMonthStorageKey();
+      if (prevMonthKey) {
+        console.log(`Checking previous month balance from: ${prevMonthKey}`);
+        const ordersData = localStorage.getItem(prevMonthKey);
+        if (ordersData) {
+          try {
+            const orders = JSON.parse(ordersData);
+            console.log(`Found ${orders.length} orders for previous month ${prevMonthKey}`);
+            
+            // Calculate total from paid orders only (with status "Lunas")
+            const paidOrders = orders.filter((order: any) => order.paymentStatus === "Lunas");
+            console.log(`Found ${paidOrders.length} paid orders for previous month`);
+            
+            const paidTotal = paidOrders.reduce((sum: number, order: any) => {
+              // Clean and parse the payment amount
+              let amount = 0;
+              if (typeof order.paymentAmount === 'number') {
+                amount = order.paymentAmount;
+              } else if (typeof order.paymentAmount === 'string') {
+                // Remove non-numeric characters except decimal point
+                const cleanAmount = String(order.paymentAmount).replace(/[^\d.-]/g, '');
+                amount = parseFloat(cleanAmount || '0');
+              }
               
-              // Calculate total from paid orders only (with status "Lunas")
-              const paidOrders = orders.filter((order: any) => order.paymentStatus === "Lunas");
-              console.log(`Found ${paidOrders.length} paid orders for previous month`);
-              
-              let paidTotal = 0;
-              paidOrders.forEach((order: any) => {
-                // Clean and parse the payment amount
-                let amount = 0;
-                if (typeof order.paymentAmount === 'number') {
-                  amount = order.paymentAmount;
-                } else if (typeof order.paymentAmount === 'string') {
-                  // Remove non-numeric characters except decimal point
-                  const cleanAmount = String(order.paymentAmount).replace(/[^\d.-]/g, '');
-                  amount = parseFloat(cleanAmount || '0');
-                }
-                
-                if (!isNaN(amount)) {
-                  paidTotal += amount;
-                }
-              });
-              
-              console.log(`Previous month (${prevMonthKey}) paid orders total:`, paidTotal);
-              setPreviousMonthBalance(paidTotal);
-            } catch (error) {
-              console.error("Error parsing previous month orders:", error);
-              setPreviousMonthBalance(0);
-            }
-          } else {
-            console.log(`No orders data found for previous month (${prevMonthKey})`);
+              return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+            
+            console.log(`Previous month (${prevMonthKey}) paid orders total:`, paidTotal);
+            setPreviousMonthBalance(paidTotal);
+          } catch (error) {
+            console.error("Error parsing previous month orders:", error);
             setPreviousMonthBalance(0);
           }
         } else {
+          console.log(`No orders data found for previous month (${prevMonthKey})`);
           setPreviousMonthBalance(0);
         }
       } else {

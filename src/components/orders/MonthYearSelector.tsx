@@ -37,7 +37,23 @@ export function MonthYearSelector({
     }
   };
   
-  const currentYear = new Date().getFullYear();
+  const generateYearOptions = (previousYears: number = 5): string[] => {
+    const currentYear = new Date().getFullYear();
+    const years = ["Semua Data"];
+    
+    // Add previous years
+    for (let i = previousYears; i >= 1; i--) {
+      years.push((currentYear - i).toString());
+    }
+    
+    // Add current year and next year
+    years.push(currentYear.toString());
+    years.push((currentYear + 1).toString());
+    
+    return years;
+  };
+  
+  const yearOptions = generateYearOptions(5); // Show 5 previous years by default
   
   return (
     <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
@@ -49,16 +65,11 @@ export function MonthYearSelector({
           <SelectValue placeholder="Pilih Tahun" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="Semua Data">Semua Tahun</SelectItem>
-          <SelectItem value={(currentYear - 1).toString()}>
-            {currentYear - 1}
-          </SelectItem>
-          <SelectItem value={currentYear.toString()}>
-            {currentYear}
-          </SelectItem>
-          <SelectItem value={(currentYear + 1).toString()}>
-            {currentYear + 1}
-          </SelectItem>
+          {yearOptions.map(year => (
+            <SelectItem key={year} value={year}>
+              {year === "Semua Data" ? "Semua Tahun" : year}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       

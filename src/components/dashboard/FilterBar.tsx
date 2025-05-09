@@ -10,9 +10,20 @@ interface FilterBarProps {
   className?: string;
 }
 
-const generateYearOptions = (): string[] => {
+const generateYearOptions = (previousYears: number = 5): string[] => {
   const currentYear = new Date().getFullYear();
-  return ["Semua Data", (currentYear - 1).toString(), currentYear.toString(), (currentYear + 1).toString()];
+  const years = ["Semua Data"];
+  
+  // Add previous years
+  for (let i = previousYears; i >= 1; i--) {
+    years.push((currentYear - i).toString());
+  }
+  
+  // Add current year and next year
+  years.push(currentYear.toString());
+  years.push((currentYear + 1).toString());
+  
+  return years;
 };
 
 const months = [
@@ -38,7 +49,7 @@ export function FilterBar({
   selectedMonth,
   className = "",
 }: FilterBarProps) {
-  const years = generateYearOptions();
+  const years = generateYearOptions(5); // Show 5 previous years by default
   
   // Set default year and month on initial render if not already set
   useEffect(() => {

@@ -2,218 +2,63 @@
 import { useState, useEffect, useMemo } from "react";
 import { Transaction, TransactionCategory } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
-import { indonesianMonths, getPreviousMonth } from "@/utils/monthUtils";
-import { toast } from "sonner";
+import { usePreviousMonthBalance } from "./usePreviousMonthBalance";
+import { useFixedExpensesGenerator } from "./useFixedExpensesGenerator";
+import { 
+  loadTransactions, 
+  saveTransactions, 
+  normalizeTransactionAmounts 
+} from "@/utils/transactionStorageUtils";
 
 export function useTransactionsData(year: string, month: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<TransactionCategory[]>([]);
-  const [previousMonthBalance, setPreviousMonthBalance] = useState<number>(0);
   
-  // Get the storage key based on year and month
-  const getStorageKey = (): string => {
-    if (year === "Semua Data" && month === "Semua Data") {
-      return "transactions_all";
-    }
-    if (year === "Semua Data") {
-      return `transactions_${month.toLowerCase()}`;
-    }
-    if (month === "Semua Data") {
-      return `transactions_${year}`;
-    }
-    return `transactions_${year}_${month.toLowerCase()}`;
-  };
-
-  // Helper to get previous month's storage key
-  const getPreviousMonthStorageKey = (): string => {
-    if (month === "Semua Data" || year === "Semua Data") {
-      return ""; // Cannot determine previous month if viewing all data
-    }
-    
-    const monthNames = indonesianMonths.map(m => m.charAt(0).toUpperCase() + m.slice(1));
-    const currentMonthIndex = monthNames.findIndex(m => m.toLowerCase() === month.toLowerCase());
-    
-    if (currentMonthIndex === -1) return ""; // Invalid month
-    
-    // Calculate previous month and year
-    let prevMonthIndex = currentMonthIndex - 1;
-    let prevYear = year;
-    
-    if (prevMonthIndex < 0) {
-      prevMonthIndex = 11; // December
-      prevYear = (parseInt(year) - 1).toString();
-    }
-    
-    const prevMonth = monthNames[prevMonthIndex].toLowerCase();
-    return `orders_${prevMonth}`;
+  // Use the extracted hooks
+  const previousMonthBalance = usePreviousMonthBalance(year, month);
+  
+  // Update transactions handler for the fixed expenses generator
+  const updateTransactions = (newTransactions: Transaction[]) => {
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions, year, month);
   };
   
-  // Auto-generate fixed expenses based on categories
-  const generateFixedExpenses = () => {
-    const storageKey = getStorageKey();
-    const fixedCategories = categories.filter(c => c.type === "fixed" && c.isActive);
-    
-    // Skip if no fixed categories or we're looking at "Semua Data"
-    if (fixedCategories.length === 0 || storageKey === "transactions_all") {
-      return;
-    }
-    
-    // Check if current month already has transactions
-    const existingTransactions = transactions.filter(t => t.type === "fixed");
-    
-    // Get all fixed expense categories that are not yet in this month's transactions
-    const missingCategories = fixedCategories.filter(category => 
-      !existingTransactions.some(t => t.category === category.name)
-    );
-    
-    if (missingCategories.length > 0) {
-      // Create new transactions for missing categories
-      const newTransactions = missingCategories.map(category => ({
-        id: uuidv4(),
-        date: new Date().toISOString(),
-        type: "fixed" as const,
-        description: `${category.name} ${month} ${year}`,
-        amount: 0, // Start with zero, will need to be updated by user
-        category: category.name,
-        budget: category.defaultBudget || 0,
-        isPaid: false
-      }));
-      
-      // Add new transactions to existing ones
-      const updatedTransactions = [...transactions, ...newTransactions];
-      setTransactions(updatedTransactions);
-      saveTransactions(updatedTransactions);
-      
-      // Show notification
-      toast.info(`${newTransactions.length} pengeluaran tetap otomatis ditambahkan untuk bulan ini`);
-    }
-  };
+  // Use the fixed expense generator hook
+  useFixedExpensesGenerator(year, month, transactions, categories, updateTransactions);
   
-  // Load transactions from localStorage
+  // Load transactions and categories from localStorage
   useEffect(() => {
     try {
-      const storageKey = getStorageKey();
-      const storedTransactions = localStorage.getItem(storageKey);
-      
-      if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
-      } else {
-        setTransactions([]);
-      }
+      const loadedTransactions = loadTransactions(year, month);
+      setTransactions(loadedTransactions || []);
 
       // Load categories
       const storedCategories = localStorage.getItem("transactionCategories");
       if (storedCategories) {
         setCategories(JSON.parse(storedCategories));
       }
-      
-      // Load previous month's balance from orders
-      const prevMonthKey = getPreviousMonthStorageKey();
-      if (prevMonthKey) {
-        console.log(`Looking for previous month data with key: ${prevMonthKey}`);
-        const ordersData = localStorage.getItem(prevMonthKey);
-        if (ordersData) {
-          try {
-            const orders = JSON.parse(ordersData);
-            
-            // Calculate total from paid orders only (with status "Lunas")
-            const paidTotal = orders
-              .filter((order: any) => order.paymentStatus === "Lunas")
-              .reduce((sum: number, order: any) => {
-                // Clean and parse the payment amount
-                let amount = 0;
-                if (typeof order.paymentAmount === 'number') {
-                  amount = order.paymentAmount;
-                } else if (typeof order.paymentAmount === 'string') {
-                  // Remove non-numeric characters except decimal point
-                  const cleanAmount = String(order.paymentAmount).replace(/[^\d.-]/g, '');
-                  amount = parseFloat(cleanAmount || '0');
-                }
-                
-                return sum + (isNaN(amount) ? 0 : amount);
-              }, 0);
-            
-            console.log(`Previous month (${prevMonthKey}) paid orders total: ${paidTotal}`);
-            setPreviousMonthBalance(paidTotal);
-          } catch (error) {
-            console.error("Error parsing previous month orders:", error);
-            setPreviousMonthBalance(0);
-          }
-        } else {
-          console.log(`No orders data found for previous month (${prevMonthKey})`);
-          setPreviousMonthBalance(0);
-        }
-      } else {
-        setPreviousMonthBalance(0);
-      }
     } catch (error) {
-      console.error("Error loading transactions:", error);
+      console.error("Error loading data:", error);
       setTransactions([]);
-      setPreviousMonthBalance(0);
     }
   }, [year, month]);
   
-  // Effect to auto-generate fixed expenses after categories are loaded
-  useEffect(() => {
-    if (categories.length > 0 && month !== "Semua Data" && year !== "Semua Data") {
-      generateFixedExpenses();
-    }
-  }, [categories, month, year]);
-  
-  // Save transactions to localStorage
-  const saveTransactions = (transactions: Transaction[]) => {
-    try {
-      const storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(transactions));
-    } catch (error) {
-      console.error("Error saving transactions:", error);
-    }
-  };
-  
   // Add a new transaction
   const addTransaction = (transaction: Transaction) => {
-    // Ensure amount is a number before saving
-    const newTransaction = {
-      ...transaction,
-      amount: typeof transaction.amount === 'string' 
-        ? parseFloat(String(transaction.amount).replace(/\./g, "")) 
-        : transaction.amount
-    };
-    
-    // If it's a fixed expense with budget, ensure budget is also a number
-    if (transaction.type === 'fixed' && transaction.budget) {
-      newTransaction.budget = typeof transaction.budget === 'string'
-        ? parseFloat(String(transaction.budget).replace(/\./g, ""))
-        : transaction.budget;
-    }
-    
-    const newTransactions = [...transactions, newTransaction];
+    const normalizedTransaction = normalizeTransactionAmounts(transaction);
+    const newTransactions = [...transactions, normalizedTransaction];
     setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    saveTransactions(newTransactions, year, month);
   };
   
   // Update a transaction
   const updateTransaction = (updatedTransaction: Transaction) => {
-    // Ensure amount is a number before saving
-    const transaction = {
-      ...updatedTransaction,
-      amount: typeof updatedTransaction.amount === 'string' 
-        ? parseFloat(String(updatedTransaction.amount).replace(/\./g, ""))
-        : updatedTransaction.amount
-    };
-    
-    // If it's a fixed expense with budget, ensure budget is also a number
-    if (transaction.type === 'fixed' && transaction.budget) {
-      transaction.budget = typeof transaction.budget === 'string'
-        ? parseFloat(String(transaction.budget).replace(/\./g, ""))
-        : transaction.budget;
-    }
-    
+    const normalizedTransaction = normalizeTransactionAmounts(updatedTransaction);
     const newTransactions = transactions.map(t => 
-      t.id === transaction.id ? transaction : t
+      t.id === normalizedTransaction.id ? normalizedTransaction : t
     );
     setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    saveTransactions(newTransactions, year, month);
   };
   
   // Toggle payment status
@@ -222,17 +67,17 @@ export function useTransactionsData(year: string, month: string) {
       t.id === id ? { ...t, isPaid: !t.isPaid } : t
     );
     setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    saveTransactions(newTransactions, year, month);
   };
   
   // Delete a transaction
   const deleteTransaction = (id: string) => {
     const newTransactions = transactions.filter(t => t.id !== id);
     setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    saveTransactions(newTransactions, year, month);
   };
   
-  // Calculate totals for fixed and variable expenses
+  // Calculate totals and stats using memoization
   const totalFixedExpenses = useMemo(() => {
     return transactions
       .filter(t => t.type === "fixed")
@@ -263,17 +108,15 @@ export function useTransactionsData(year: string, month: string) {
     return previousMonthBalance - totalFixedExpenses - totalVariableExpenses;
   }, [previousMonthBalance, totalFixedExpenses, totalVariableExpenses]);
 
-  // Get active categories
+  // Get active categories by type
   const activeCategories = useMemo(() => {
     return categories.filter(c => c.isActive);
   }, [categories]);
 
-  // Get fixed expense categories
   const fixedCategories = useMemo(() => {
     return categories.filter(c => c.type === "fixed" && c.isActive);
   }, [categories]);
 
-  // Get variable expense categories  
   const variableCategories = useMemo(() => {
     return categories.filter(c => c.type === "variable" && c.isActive);
   }, [categories]);

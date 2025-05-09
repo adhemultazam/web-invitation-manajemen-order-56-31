@@ -46,3 +46,38 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+/* Add responsive utility classes */
+@media (max-width: 768px) {
+  .mobile-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    width: 100%;
+  }
+  
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-stack {
+    flex-direction: column;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+}
+
+/* Fix common chart and table overflows */
+.recharts-wrapper {
+  max-width: 100%;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.overflow-x-auto {
+  max-width: 100%;
+}

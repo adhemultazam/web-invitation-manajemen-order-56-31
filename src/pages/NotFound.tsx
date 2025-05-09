@@ -1,27 +1,30 @@
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
 
-const NotFound = () => {
-  const location = useLocation();
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
+export default function NotFound() {
+  const navigate = useNavigate();
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 text-center">
+        <h1 className="mb-4 text-6xl font-bold text-gray-900 dark:text-white sm:text-7xl">404</h1>
+        <h2 className="mb-8 text-2xl font-semibold text-gray-700 dark:text-gray-300">
+          Halaman Tidak Ditemukan
+        </h2>
+        <p className="mb-8 max-w-lg mx-auto text-gray-600 dark:text-gray-400">
+          Maaf, halaman yang Anda cari tidak dapat ditemukan atau telah dipindahkan.
+        </p>
+        <Button
+          onClick={() => navigate("/")}
+          variant="outline" 
+          className="flex items-center gap-2 mx-auto"
+        >
+          <ArrowLeft size={18} />
+          Kembali ke Dashboard
+        </Button>
       </div>
     </div>
   );
-};
-
-export default NotFound;
+}

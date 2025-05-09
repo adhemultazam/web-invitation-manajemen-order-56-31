@@ -47,7 +47,7 @@ const PaymentStatusBadge: React.FC<PaymentStatusBadgeProps> = ({
           )}
         </Badge>
       </Button>
-      <span className={`${compact ? "text-[11px]" : "text-xs"} font-mono mt-1`}>
+      <span className={`${compact ? "text-[11px]" : "text-xs"} font-mono mt-1 font-normal`}>
         {formatCurrency(amount)}
       </span>
     </div>

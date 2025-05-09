@@ -27,7 +27,6 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect } from "react";
 
@@ -406,7 +405,7 @@ export function AppSidebar({ collapsed = false, onCollapseToggle }: AppSidebarPr
                               ? isDarkMode ? "text-indigo-300" : "text-wedding-accent" 
                               : "",
                           )} />
-                          {!collapsed && <span className="text-sm">Transaksi</span>}
+                          {!collapsed && <span className="text-sm">Transaksi Pengeluaran</span>}
                         </Link>
                       </TooltipTrigger>
                       {collapsed && <TooltipContent side="right" className="text-xs">Transaksi Pengeluaran</TooltipContent>}

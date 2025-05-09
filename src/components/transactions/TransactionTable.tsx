@@ -14,13 +14,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import TransactionActions from "@/components/transactions/TransactionActions";
+import ViewTransactionModal from "@/components/transactions/ViewTransactionModal";
+import EditTransactionModal from "@/components/transactions/EditTransactionModal";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface TransactionTableProps {
   transactions: Transaction[];
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (id: string) => void;
 }
 
-export function TransactionTable({ transactions }: TransactionTableProps) {
+export function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [viewingTransaction, setViewingTransaction] = useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
   
   // Filter transactions based on active tab
   const filteredTransactions = transactions.filter(transaction => {
@@ -32,7 +50,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const getBadgeVariant = (type: string) => {
     switch (type) {
       case "fixed":
-        return "warning"; // Using our new warning variant
+        return "warning"; // Using our warning variant
       case "variable":
         return "destructive";
       default:
@@ -49,6 +67,25 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         return "Tidak Tetap";
       default:
         return "Lainnya";
+    }
+  };
+
+  const handleViewTransaction = (transaction: Transaction) => {
+    setViewingTransaction(transaction);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleDeletePrompt = (id: string) => {
+    setDeletingTransactionId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deletingTransactionId) {
+      onDelete(deletingTransactionId);
+      setDeletingTransactionId(null);
     }
   };
   
@@ -70,6 +107,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                   <TableHead className="py-3 font-poppins text-xs tracking-wide">Kategori</TableHead>
                   <TableHead className="py-3 font-poppins text-xs tracking-wide">Keterangan</TableHead>
                   <TableHead className="text-right py-3 font-poppins text-xs tracking-wide">Jumlah</TableHead>
+                  <TableHead className="text-right py-3 font-poppins text-xs tracking-wide w-[100px]">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -80,7 +118,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                         {format(new Date(transaction.date), "dd MMM yyyy")}
                       </TableCell>
                       <TableCell className="py-3">
-                        <Badge variant={getBadgeVariant(transaction.type)}>
+                        <Badge variant={getBadgeVariant(transaction.type) as "warning" | "destructive" | "outline"}>
                           {getCategoryLabel(transaction.type)}
                         </Badge>
                       </TableCell>
@@ -88,11 +126,19 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                       <TableCell className="text-right py-3 font-medium">
                         {formatCurrency(transaction.amount)}
                       </TableCell>
+                      <TableCell className="text-right py-3">
+                        <TransactionActions
+                          transaction={transaction}
+                          onView={() => handleViewTransaction(transaction)}
+                          onEdit={() => handleEditTransaction(transaction)}
+                          onDelete={() => handleDeletePrompt(transaction.id)}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       Tidak ada data transaksi
                     </TableCell>
                   </TableRow>
@@ -110,6 +156,46 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* View Transaction Modal */}
+      {viewingTransaction && (
+        <ViewTransactionModal 
+          isOpen={viewingTransaction !== null}
+          onClose={() => setViewingTransaction(null)}
+          transaction={viewingTransaction}
+        />
+      )}
+
+      {/* Edit Transaction Modal */}
+      {editingTransaction && (
+        <EditTransactionModal 
+          isOpen={editingTransaction !== null}
+          onClose={() => setEditingTransaction(null)}
+          onSave={(updatedTransaction) => {
+            onEdit(updatedTransaction);
+            setEditingTransaction(null);
+          }}
+          transaction={editingTransaction}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deletingTransactionId !== null} onOpenChange={(open) => !open && setDeletingTransactionId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Transaksi</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

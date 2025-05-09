@@ -24,13 +24,18 @@ export default function Transactions() {
   const { 
     transactions, 
     addTransaction,
+    updateTransaction,
+    deleteTransaction,
     totalFixedExpenses,
     totalVariableExpenses
   } = useTransactionsData(selectedYear, selectedMonth);
   
-  // Calculate total revenue/saldo from orders
+  // Calculate total revenue/saldo from only PAID orders
   const totalRevenue = useMemo(() => {
-    return orders.reduce((sum, order) => {
+    // Filter only paid orders
+    const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
+    
+    return paidOrders.reduce((sum, order) => {
       const amount = typeof order.paymentAmount === 'number' 
         ? order.paymentAmount 
         : parseFloat(String(order.paymentAmount).replace(/[^\d.-]/g, '') || '0');
@@ -91,7 +96,7 @@ export default function Transactions() {
           title="Total Saldo Bulanan"
           value={formatCurrency(totalRevenue)}
           icon={<Wallet className="h-3 w-3 text-white" />}
-          description={getFilterDescription()}
+          description={`${getFilterDescription()} (Hanya Lunas)`}
         />
         <StatCard
           title="Pengeluaran Tetap"
@@ -119,6 +124,8 @@ export default function Transactions() {
       <div className="space-y-6">
         <TransactionTable 
           transactions={transactions}
+          onEdit={updateTransaction}
+          onDelete={deleteTransaction}
         />
       </div>
       

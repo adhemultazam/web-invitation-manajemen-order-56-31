@@ -37,17 +37,37 @@ export function useTransactionsData(year: string, month: string) {
     }
   }, [year, month]);
   
+  // Save transactions to localStorage
+  const saveTransactions = (transactions: Transaction[]) => {
+    try {
+      const storageKey = getStorageKey();
+      localStorage.setItem(storageKey, JSON.stringify(transactions));
+    } catch (error) {
+      console.error("Error saving transactions:", error);
+    }
+  };
+  
   // Add a new transaction
   const addTransaction = (transaction: Transaction) => {
     const newTransactions = [...transactions, transaction];
     setTransactions(newTransactions);
-    
-    try {
-      const storageKey = getStorageKey();
-      localStorage.setItem(storageKey, JSON.stringify(newTransactions));
-    } catch (error) {
-      console.error("Error saving transaction:", error);
-    }
+    saveTransactions(newTransactions);
+  };
+  
+  // Update a transaction
+  const updateTransaction = (updatedTransaction: Transaction) => {
+    const newTransactions = transactions.map(t => 
+      t.id === updatedTransaction.id ? updatedTransaction : t
+    );
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+  
+  // Delete a transaction
+  const deleteTransaction = (id: string) => {
+    const newTransactions = transactions.filter(t => t.id !== id);
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
   };
   
   // Calculate totals for fixed and variable expenses
@@ -66,6 +86,8 @@ export function useTransactionsData(year: string, month: string) {
   return {
     transactions,
     addTransaction,
+    updateTransaction,
+    deleteTransaction,
     totalFixedExpenses,
     totalVariableExpenses
   };

@@ -9,7 +9,433 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      addons: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string | null
+          order_id: string | null
+          price: number
+          quantity: number
+          subtotal: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id?: string | null
+          order_id?: string | null
+          price?: number
+          quantity?: number
+          subtotal?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string | null
+          order_id?: string | null
+          price?: number
+          quantity?: number
+          subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_address: string | null
+          client_contact: string | null
+          client_name: string
+          created_at: string
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          notes: string | null
+          status: string
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          client_address?: string | null
+          client_contact?: string | null
+          client_name: string
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          notes?: string | null
+          status?: string
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          client_address?: string | null
+          client_contact?: string | null
+          client_name?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          notes?: string | null
+          status?: string
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_addons: {
+        Row: {
+          addon_id: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+        }
+        Insert: {
+          addon_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+        }
+        Update: {
+          addon_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_addons_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_addons_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          client_name: string
+          created_at: string
+          discount: number
+          event_date: string | null
+          id: string
+          month: string
+          notes: string | null
+          order_date: string
+          package_id: string | null
+          payment_status: string
+          price: number
+          theme_id: string | null
+          updated_at: string
+          vendor_id: string | null
+          work_status_id: string | null
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          discount?: number
+          event_date?: string | null
+          id?: string
+          month: string
+          notes?: string | null
+          order_date: string
+          package_id?: string | null
+          payment_status?: string
+          price?: number
+          theme_id?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          work_status_id?: string | null
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          discount?: number
+          event_date?: string | null
+          id?: string
+          month?: string
+          notes?: string | null
+          order_date?: string
+          package_id?: string | null
+          payment_status?: string
+          price?: number
+          theme_id?: string | null
+          updated_at?: string
+          vendor_id?: string | null
+          work_status_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_work_status_id_fkey"
+            columns: ["work_status_id"]
+            isOneToOne: false
+            referencedRelation: "work_statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          last_login: string | null
+          name: string
+          profile_image: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          last_login?: string | null
+          name: string
+          profile_image?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          last_login?: string | null
+          name?: string
+          profile_image?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      themes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          budget: number | null
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          is_paid: boolean
+          month: string
+          type: string
+          updated_at: string
+          year: string
+        }
+        Insert: {
+          amount?: number
+          budget?: number | null
+          category: string
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean
+          month: string
+          type: string
+          updated_at?: string
+          year: string
+        }
+        Update: {
+          amount?: number
+          budget?: number | null
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          is_paid?: boolean
+          month?: string
+          type?: string
+          updated_at?: string
+          year?: string
+        }
+        Relationships: []
+      }
+      vendors: {
+        Row: {
+          code: string
+          color: string
+          created_at: string
+          id: string
+          landing_page_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          color?: string
+          created_at?: string
+          id?: string
+          landing_page_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          color?: string
+          created_at?: string
+          id?: string
+          landing_page_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_statuses: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          order_number: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          order_number?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          order_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

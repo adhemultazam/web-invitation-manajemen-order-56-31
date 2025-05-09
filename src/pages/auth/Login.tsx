@@ -1,168 +1,182 @@
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PasswordInput } from "@/components/auth/PasswordInput";
-import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
-import { BrandLogo } from "@/components/auth/BrandLogo";
-import { useTheme } from "@/contexts/ThemeContext";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, Info } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { BrandLogo } from "@/components/auth/BrandLogo";
+import { Loader2 } from "lucide-react";
+
+interface AuthFormData {
+  email: string;
+  password: string;
+  name?: string;
+}
 
 export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const { isAuthenticated, login, brandSettings } = useAuth();
+  const { signIn, signUp } = useSupabaseAuth();
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
-
-  // Handle redirect when already logged in or after login
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Check for a stored path first
-      const storedPath = sessionStorage.getItem("lastVisitedPath");
-      
-      if (storedPath) {
-        navigate(storedPath);
-      } else {
-        navigate("/");
-      }
+  
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+      name: ""
     }
-  }, [isAuthenticated, navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!username) {
-      toast.error("Username diperlukan", {
-        description: "Silakan masukkan username Anda"
-      });
-      return;
-    }
-    
-    if (!password) {
-      toast.error("Password diperlukan", {
-        description: "Silakan masukkan password Anda"
-      });
-      return;
-    }
-
+  });
+  
+  const onSubmit = async (data: AuthFormData) => {
     setLoading(true);
+    
     try {
-      const success = await login(username, password, rememberMe);
-      if (success) {
-        const storedPath = sessionStorage.getItem("lastVisitedPath") || "/";
-        navigate(storedPath);
+      if (activeTab === "login") {
+        // Login logic
+        const { error } = await signIn(data.email, data.password);
+        if (error) throw error;
+        
+        const lastVisitedPath = sessionStorage.getItem("lastVisitedPath") || "/";
+        navigate(lastVisitedPath, { replace: true });
+      } else {
+        // Register logic
+        const { error } = await signUp(data.email, data.password, { name: data.name || "" });
+        if (error) throw error;
+        
+        toast.success("Registrasi berhasil", {
+          description: "Silahkan cek email Anda untuk verifikasi"
+        });
+        
+        // Switch to login tab after successful registration
+        setActiveTab("login");
+        reset();
       }
+    } catch (error: any) {
+      toast.error(
+        activeTab === "login" ? "Login gagal" : "Registrasi gagal", 
+        { description: error.message }
+      );
     } finally {
       setLoading(false);
     }
   };
-
-  // Detect if user is on a public/shared device
-  const isPublicDevice = () => {
-    // Check if there are multiple recent user cookies or localStorage items
-    const hasMultipleUsers = Object.keys(localStorage).some(key => key.includes('user_'));
-    return hasMultipleUsers;
-  };
-
+  
   return (
-    <div className={cn(
-      "min-h-screen flex items-center justify-center p-4",
-      isDarkMode ? "bg-gray-900" : "bg-gray-50"
-    )}>
-      <Card className={cn(
-        "w-full max-w-md shadow-xl animate-fade-in",
-        isDarkMode ? "bg-gray-800 text-gray-100 border-gray-700" : "bg-white"
-      )}>
-        <CardHeader className="space-y-4 flex flex-col items-center justify-center">
-          <BrandLogo logo={brandSettings.logo} name={brandSettings.name} />
-          <div className="text-center space-y-1">
-            <CardTitle className="text-2xl">{brandSettings.name}</CardTitle>
-            <CardDescription>Masuk ke akun manajemen Anda</CardDescription>
+    <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <Card className="max-w-md w-full">
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center mb-4">
+            <BrandLogo size={48} />
           </div>
+          <CardTitle className="text-2xl">Welcome</CardTitle>
+          <CardDescription>
+            Masuk ke akun Anda untuk melanjutkan
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                placeholder="Masukkan username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-                className={cn(
-                  isDarkMode ? "bg-gray-700 border-gray-600" : "",
-                  "focus:ring-wedding-primary focus:border-wedding-primary"
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <ForgotPasswordDialog />
-              </div>
-              <PasswordInput
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Masukkan password"
-                disabled={loading}
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="remember" 
-                checked={rememberMe} 
-                onCheckedChange={(checked) => setRememberMe(checked === true)}
-              />
-              <Label 
-                htmlFor="remember" 
-                className="text-sm cursor-pointer"
-              >
-                Ingat saya
-              </Label>
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-wedding-primary hover:bg-wedding-accent transition-colors" 
-              disabled={loading}
-            >
-              {loading ? "Memuat..." : "Masuk"}
-            </Button>
-          </form>
-          
-          {/* Security information */}
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm flex gap-2">
-            <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-            <div className="text-blue-700 dark:text-blue-300">
-              <p className="font-medium">Informasi Keamanan</p>
-              <p className="mt-1 text-xs">
-                {isPublicDevice() ? 
-                  "Anda tampaknya berada di perangkat umum. Jangan aktifkan 'Ingat saya' jika ini bukan perangkat pribadi Anda." : 
-                  "Pastikan Anda logout setelah selesai jika menggunakan perangkat publik."}
-              </p>
-            </div>
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Masuk</TabsTrigger>
+              <TabsTrigger value="register">Daftar</TabsTrigger>
+            </TabsList>
+            
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <TabsContent value="login" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="nama@example.com" 
+                    {...register("email", { required: "Email harus diisi" })}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                  </div>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    {...register("password", { required: "Password harus diisi" })}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500">{errors.password.message}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...
+                    </>
+                  ) : (
+                    "Masuk"
+                  )}
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="register" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nama</Label>
+                  <Input 
+                    id="name" 
+                    placeholder="Nama lengkap" 
+                    {...register("name", { required: "Nama harus diisi" })}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-500">{errors.name.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="registerEmail">Email</Label>
+                  <Input 
+                    id="registerEmail" 
+                    type="email" 
+                    placeholder="nama@example.com" 
+                    {...register("email", { required: "Email harus diisi" })}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="registerPassword">Password</Label>
+                  <Input 
+                    id="registerPassword" 
+                    type="password" 
+                    {...register("password", { 
+                      required: "Password harus diisi",
+                      minLength: {
+                        value: 6,
+                        message: "Password minimal 6 karakter"
+                      }
+                    })}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500">{errors.password.message}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mendaftar...
+                    </>
+                  ) : (
+                    "Daftar"
+                  )}
+                </Button>
+              </TabsContent>
+            </form>
+          </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col">
-          <div className="flex items-center gap-1 text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-            <Shield className="h-3.5 w-3.5" /> 
-            <p>Credential demo: admin / admin</p>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

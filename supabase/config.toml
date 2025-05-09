@@ -1,0 +1,41 @@
+
+# This file is used by the Supabase CLI to manage the project
+
+project_id = "grhwzhhjeiytjgtcllew"
+
+[api]
+port = 54321
+schemas = ["public", "storage"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://localhost:5173"]
+autoconfirm = true
+jwt_expiry = 3600
+enable_signup = true
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[auth.external.google]
+enabled = false
+
+[auth.external.facebook]
+enabled = false
+
+[auth.external.github]
+enabled = false

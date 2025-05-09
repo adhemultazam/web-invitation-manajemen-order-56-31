@@ -18,6 +18,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { migrateVendorData } from "./lib/utils";
+import { SupabaseAuthProvider } from "./contexts/SupabaseAuthContext";
 
 // Initialize data storage if it doesn't exist
 const initializeLocalStorage = () => {
@@ -70,74 +71,76 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider defaultTheme="light" storageKey="nikah-theme-mode">
-            <TooltipProvider>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Index />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/pengaturan" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Settings />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/transaksi" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Transactions />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Route for all orders without month specified - redirect to current month */}
-                <Route path="/pesanan" element={
-                  <ProtectedRoute>
-                    <Navigate to={`/pesanan/${getCurrentMonth()}`} replace />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Route for specific month */}
-                <Route path="/pesanan/:month" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MonthlyOrders />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Redirect old routes to new format */}
-                <Route path="/bulan/:month" element={
-                  <ProtectedRoute>
-                    <RedirectWithParams />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/invoices" element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Invoices />
-                    </Layout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </ThemeProvider>
-        </AuthProvider>
+        <SupabaseAuthProvider>
+          <AuthProvider>
+            <ThemeProvider defaultTheme="light" storageKey="nikah-theme-mode">
+              <TooltipProvider>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Index />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/pengaturan" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Settings />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/transaksi" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Transactions />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Route for all orders without month specified - redirect to current month */}
+                  <Route path="/pesanan" element={
+                    <ProtectedRoute>
+                      <Navigate to={`/pesanan/${getCurrentMonth()}`} replace />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Route for specific month */}
+                  <Route path="/pesanan/:month" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <MonthlyOrders />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Redirect old routes to new format */}
+                  <Route path="/bulan/:month" element={
+                    <ProtectedRoute>
+                      <RedirectWithParams />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/invoices" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Invoices />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+                <Sonner />
+              </TooltipProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </SupabaseAuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

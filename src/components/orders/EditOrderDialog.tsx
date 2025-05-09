@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -177,36 +176,27 @@ export function EditOrderDialog({
 
   // Format payment amount with thousands separators
   const formatPaymentAmount = (value: string | number) => {
-    if (typeof value === 'string') {
-      // Remove non-numeric characters
-      const numericValue = value.replace(/[^0-9.]/g, '');
-      if (!numericValue) return '';
-      
-      // Format with thousands separator
-      return new Intl.NumberFormat('id-ID', {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-      }).format(Number(numericValue));
-    } else if (typeof value === 'number') {
-      return new Intl.NumberFormat('id-ID', {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-      }).format(value);
-    }
+    if (typeof value === 'string' && value === '') return '';
     
-    return '';
+    // Remove non-numeric characters
+    const numericValue = String(value).replace(/[^0-9.]/g, '');
+    if (!numericValue) return '';
+    
+    // Format with thousands separator
+    return new Intl.NumberFormat('id-ID', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+    }).format(Number(numericValue));
   };
 
+  // Modified to fix manual input
   const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const inputValue = e.target.value;
     
-    // Remove formatting and store numeric value
-    const numericValue = value.replace(/[^0-9.]/g, '');
-    
-    // Store formatted value in state
+    // Store raw value in form state to allow editing
     setFormData(prevState => ({ 
       ...prevState, 
-      paymentAmount: formatPaymentAmount(numericValue)
+      paymentAmount: inputValue 
     }));
   };
 
@@ -246,8 +236,10 @@ export function EditOrderDialog({
 
   if (!order) return null;
 
-  // Prepare formatted payment amount for display
-  const displayPaymentAmount = formatPaymentAmount(formData.paymentAmount);
+  // Fix: Don't format for display until submission
+  const displayPaymentAmount = typeof formData.paymentAmount === 'number' 
+    ? formatPaymentAmount(formData.paymentAmount)
+    : formData.paymentAmount;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

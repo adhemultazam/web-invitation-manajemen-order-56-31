@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -160,7 +159,7 @@ export function EditOrderModal({
     handleInputChange('addons', currentAddons);
   };
 
-  // Format payment amount with thousands separators
+  // Format payment amount with thousands separators - only for display
   const formatAmount = (value: string | number) => {
     if (value === '') return '';
     
@@ -175,10 +174,10 @@ export function EditOrderModal({
     }).format(Number(numStr));
   };
 
+  // Modified to fix manual input issues
   const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Store formatted value in state
-    handleInputChange('paymentAmount', formatAmount(value));
+    // Store unformatted value to allow editing
+    handleInputChange('paymentAmount', e.target.value);
   };
 
   // Handle focus on payment amount input (select all)
@@ -457,11 +456,10 @@ export function EditOrderModal({
                   <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
                   <Input
                     id="paymentAmount"
-                    value={typeof formData.paymentAmount === "number" 
-                      ? formatAmount(formData.paymentAmount) 
-                      : formData.paymentAmount}
+                    value={formData.paymentAmount}
                     onChange={handlePaymentAmountChange}
                     onFocus={handlePaymentFocus}
+                    placeholder="0"
                   />
                 </div>
                 

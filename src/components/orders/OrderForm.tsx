@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,7 +122,7 @@ export function OrderForm({
     onSubmit(orderData);
   };
 
-  // Helper for formatting currency input
+  // Helper for formatting currency input - only used for display
   const formatCurrency = (value: string): string => {
     // Remove non-numeric characters except decimal point
     const numericValue = value.replace(/[^0-9.]/g, '');
@@ -139,21 +138,12 @@ export function OrderForm({
     return '';
   };
 
-  // Handle currency input changes
+  // Modified to fix manual input issues
   const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // If input is cleared, reset the state
-    if (!value) {
-      setPaymentAmount('');
-      return;
-    }
-    
-    // Remove formatting and store numeric value
-    const numericValue = value.replace(/[^0-9.]/g, '');
-    
-    // Store formatted value in state
-    setPaymentAmount(formatCurrency(numericValue));
+    // Store raw input value to allow editing
+    setPaymentAmount(value);
   };
 
   // Handle focus on payment amount input (select all text)

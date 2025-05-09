@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { Transaction, TransactionCategory } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
@@ -6,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 export function useTransactionsData(year: string, month: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<TransactionCategory[]>([]);
+  const [previousMonthBalance, setPreviousMonthBalance] = useState<number>(0);
   
   // Get the storage key based on year and month
   const getStorageKey = (): string => {
@@ -19,6 +19,30 @@ export function useTransactionsData(year: string, month: string) {
       return `transactions_${year}`;
     }
     return `transactions_${year}_${month.toLowerCase()}`;
+  };
+
+  // Helper to get previous month's storage key
+  const getPreviousMonthStorageKey = (): string => {
+    if (month === "Semua Data" || year === "Semua Data") {
+      return ""; // Cannot determine previous month if viewing all data
+    }
+    
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const currentMonthIndex = monthNames.findIndex(m => m === month);
+    
+    if (currentMonthIndex === -1) return ""; // Invalid month
+    
+    // Calculate previous month and year
+    let prevMonthIndex = currentMonthIndex - 1;
+    let prevYear = year;
+    
+    if (prevMonthIndex < 0) {
+      prevMonthIndex = 11; // December
+      prevYear = (parseInt(year) - 1).toString();
+    }
+    
+    const prevMonth = monthNames[prevMonthIndex].toLowerCase();
+    return `orders_${prevYear}_${prevMonth}`;
   };
   
   // Load transactions from localStorage
@@ -38,9 +62,35 @@ export function useTransactionsData(year: string, month: string) {
       if (storedCategories) {
         setCategories(JSON.parse(storedCategories));
       }
+      
+      // Load previous month's balance
+      const prevMonthKey = getPreviousMonthStorageKey();
+      if (prevMonthKey) {
+        const ordersData = localStorage.getItem(prevMonthKey);
+        if (ordersData) {
+          const orders = JSON.parse(ordersData);
+          // Calculate total from paid orders only
+          const paidTotal = orders
+            .filter((order: any) => order.paymentStatus === "Lunas")
+            .reduce((sum: number, order: any) => {
+              const amount = typeof order.paymentAmount === 'number' 
+                ? order.paymentAmount 
+                : parseFloat(String(order.paymentAmount).replace(/[^\d.-]/g, '') || '0');
+              
+              return sum + (Number.isNaN(amount) ? 0 : amount);
+            }, 0);
+          
+          setPreviousMonthBalance(paidTotal);
+        } else {
+          setPreviousMonthBalance(0);
+        }
+      } else {
+        setPreviousMonthBalance(0);
+      }
     } catch (error) {
       console.error("Error loading transactions:", error);
       setTransactions([]);
+      setPreviousMonthBalance(0);
     }
   }, [year, month]);
   
@@ -142,6 +192,11 @@ export function useTransactionsData(year: string, month: string) {
     };
   }, [transactions]);
 
+  // Calculate remaining balance
+  const remainingBalance = useMemo(() => {
+    return previousMonthBalance - totalFixedExpenses - totalVariableExpenses;
+  }, [previousMonthBalance, totalFixedExpenses, totalVariableExpenses]);
+
   // Get active categories
   const activeCategories = useMemo(() => {
     return categories.filter(c => c.isActive);
@@ -168,6 +223,8 @@ export function useTransactionsData(year: string, month: string) {
     budgetVsActual,
     activeCategories,
     fixedCategories,
-    variableCategories
+    variableCategories,
+    previousMonthBalance,
+    remainingBalance
   };
 }

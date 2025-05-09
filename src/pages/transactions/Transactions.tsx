@@ -3,8 +3,7 @@ import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus, ListCheck, Check } from "lucide-react";
-import { useOrdersData } from "@/hooks/useOrdersData";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus, ListCheck, Check, CreditCard } from "lucide-react";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
@@ -17,10 +16,7 @@ export default function Transactions() {
   );
   const [isAddTransactionModalOpen, setIsAddTransactionModalOpen] = useState(false);
   
-  // Get order data based on filters for saldo calculation
-  const { orders } = useOrdersData(selectedYear, selectedMonth);
-  
-  // Get transaction data from localStorage
+  // Get transaction data from localStorage with the updated hook
   const { 
     transactions, 
     addTransaction,
@@ -29,25 +25,10 @@ export default function Transactions() {
     togglePaymentStatus,
     totalFixedExpenses,
     totalVariableExpenses,
-    budgetVsActual
+    budgetVsActual,
+    previousMonthBalance,
+    remainingBalance
   } = useTransactionsData(selectedYear, selectedMonth);
-  
-  // Calculate total revenue/saldo from only PAID orders
-  const totalRevenue = useMemo(() => {
-    // Filter only paid orders
-    const paidOrders = orders.filter(order => order.paymentStatus === "Lunas");
-    
-    return paidOrders.reduce((sum, order) => {
-      const amount = typeof order.paymentAmount === 'number' 
-        ? order.paymentAmount 
-        : parseFloat(String(order.paymentAmount).replace(/[^\d.-]/g, '') || '0');
-      
-      return sum + (Number.isNaN(amount) ? 0 : amount);
-    }, 0);
-  }, [orders]);
-  
-  // Calculate remaining saldo after expenses
-  const remainingSaldo = totalRevenue - totalFixedExpenses - totalVariableExpenses;
   
   // Handle modal states
   const handleOpenAddTransactionModal = () => setIsAddTransactionModalOpen(true);
@@ -64,6 +45,29 @@ export default function Transactions() {
     } else {
       return `${selectedMonth} ${selectedYear}`;
     }
+  };
+
+  // Get previous month description
+  const getPreviousMonthDescription = () => {
+    if (selectedMonth === "Semua Data" || selectedYear === "Semua Data") {
+      return "bulan sebelumnya";
+    }
+    
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const currentMonthIndex = monthNames.findIndex(m => m === selectedMonth);
+    
+    if (currentMonthIndex === -1) return "bulan sebelumnya";
+    
+    let prevMonthIndex = currentMonthIndex - 1;
+    let prevYear = selectedYear;
+    
+    if (prevMonthIndex < 0) {
+      prevMonthIndex = 11; // December
+      prevYear = (parseInt(selectedYear) - 1).toString();
+    }
+    
+    const prevMonth = monthNames[prevMonthIndex];
+    return `${prevMonth} ${prevYear}`;
   };
 
   // Calculate paid fixed expenses
@@ -111,27 +115,37 @@ export default function Transactions() {
         </div>
       </div>
       
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
-          title="Total Saldo Bulanan"
-          value={formatCurrency(totalRevenue)}
+          title="Saldo Awal"
+          value={formatCurrency(previousMonthBalance)}
           icon={<Wallet className="h-3 w-3 text-white" />}
-          description={`${getFilterDescription()} (Hanya Lunas)`}
-          className="col-span-2"
+          description={`Dari ${getPreviousMonthDescription()}`}
+          className="col-span-1"
         />
         <StatCard
           title="Pengeluaran Tetap"
           value={formatCurrency(totalFixedExpenses)}
           icon={<ArrowDownCircle className="h-3 w-3 text-white" />}
-          description="Biaya operasional tetap"
+          description="Biaya operasional"
           type="warning"
+          className="col-span-1"
         />
         <StatCard
-          title="Pengeluaran Tidak Tetap"
+          title="Pengeluaran Variabel"
           value={formatCurrency(totalVariableExpenses)}
           icon={<ArrowDownCircle className="h-3 w-3 text-white" />}
-          description="Biaya tidak terencana"
+          description="Biaya tidak tetap"
           type="danger"
+          className="col-span-1"
+        />
+        <StatCard
+          title="Sisa Saldo"
+          value={formatCurrency(remainingBalance)}
+          icon={<CreditCard className="h-3 w-3 text-white" />}
+          description={`Setelah pengeluaran`}
+          type={remainingBalance >= 0 ? "success" : "danger"}
+          className="col-span-1"
         />
         <StatCard
           title="Status Pembayaran"
@@ -139,13 +153,15 @@ export default function Transactions() {
           icon={<Check className="h-3 w-3 text-white" />}
           description={`${fixedExpenseStatus.percent.toFixed(0)}% sudah dibayar`}
           type="success"
+          className="col-span-1"
         />
         <StatCard
           title="Anggaran vs Aktual"
           value={formatCurrency(budgetVsActual.difference)}
           icon={<ListCheck className="h-3 w-3 text-white" />}
-          description={`Dari anggaran ${formatCurrency(budgetVsActual.totalBudget)}`}
+          description={`Dari ${formatCurrency(budgetVsActual.totalBudget)}`}
           type={budgetVsActual.difference >= 0 ? "success" : "danger"}
+          className="col-span-1"
         />
       </div>
       

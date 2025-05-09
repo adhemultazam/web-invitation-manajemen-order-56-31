@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
@@ -124,7 +123,7 @@ export default function Transactions() {
       </div>
       
       {unpaidFixedExpenses.length > 0 && selectedMonth !== "Semua Data" && selectedYear !== "Semua Data" && (
-        <Alert variant="warning" className="bg-amber-50 border-amber-200">
+        <Alert variant="default" className="bg-amber-50 border-amber-200">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="font-semibold">Pengingat Pengeluaran Tetap</AlertTitle>
           <AlertDescription>

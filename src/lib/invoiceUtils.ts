@@ -92,21 +92,21 @@ export const generateInvoice = (
   const randomPart = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
   const invoiceNumber = `INV-${dateStr}-${randomPart}`;
   
-  // Map orders to the format needed for invoices
+  // Map orders to include orderId and amount fields for invoices
   const invoiceOrders = orders.map(order => {
     // Ensure amount is a number
     const numericAmount = typeof order.paymentAmount === 'number' ? 
       order.paymentAmount : 
       parseFloat(order.paymentAmount.toString()) || 0;
-    
-    return {
-      orderId: order.id,
-      clientName: order.clientName,
-      orderDate: order.orderDate,
-      amount: numericAmount,
-      package: order.package, // Explicitly include package information
-      addons: order.addons // Explicitly include addons information
+      
+    // Create a complete Order object with required fields
+    const invoiceOrder: Order = {
+      ...order,
+      orderId: order.id, // Copy id to orderId for reference
+      amount: numericAmount // Set the amount field from paymentAmount
     };
+    
+    return invoiceOrder;
   });
   
   return {
@@ -145,7 +145,10 @@ export const isOrderInvoiced = (orderId: string, invoices: Invoice[]): boolean =
   if (!invoices || invoices.length === 0) return false;
   
   return invoices.some(invoice => 
-    invoice.orders && invoice.orders.some(order => order.orderId === orderId)
+    invoice.orders && invoice.orders.some(order => 
+      // Check both id and orderId to ensure compatibility
+      (order.id === orderId || order.orderId === orderId)
+    )
   );
 };
 

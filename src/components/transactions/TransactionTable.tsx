@@ -32,7 +32,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   const getBadgeVariant = (type: string) => {
     switch (type) {
       case "fixed":
-        return "warning";
+        return "warning"; // Using our new warning variant
       case "variable":
         return "destructive";
       default:

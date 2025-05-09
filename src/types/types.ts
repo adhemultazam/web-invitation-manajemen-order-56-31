@@ -1,3 +1,4 @@
+
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -23,6 +24,9 @@ export type Order = {
   countdownDays?: number;
   postPermission?: boolean;
   notes?: string;
+  // Add these fields needed for invoices
+  orderId?: string; // For compatibility with invoice references
+  amount?: number;  // For invoice amount calculations
 };
 
 // Add OrderFormData type for use in OrderForm component

@@ -93,13 +93,23 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                 if (order.addons) {
                   if (Array.isArray(order.addons) && order.addons.length > 0) {
                     addonsList = order.addons.join(", ");
-                  } else if (typeof order.addons === 'string' && order.addons.trim() !== '') {
+                  } else if (typeof order.addons === 'string' && order.addons.length > 0) {
                     addonsList = order.addons;
                   }
                 }
 
+                // Use id if orderId is not available
+                const orderIdToUse = order.orderId || order.id;
+                
+                // Use amount if available, otherwise use paymentAmount
+                const amountToDisplay = order.amount !== undefined ? 
+                  order.amount : 
+                  (typeof order.paymentAmount === 'number' ? 
+                    order.paymentAmount : 
+                    parseFloat(String(order.paymentAmount).replace(/[^\d.-]/g, '') || '0'));
+
                 return (
-                  <tr key={order.orderId} className="border-t">
+                  <tr key={orderIdToUse} className="border-t">
                     <td className="py-1.5 px-2">{index + 1}</td>
                     <td className="py-1.5 px-2">
                       {format(new Date(order.orderDate), "dd/MM/yy")}
@@ -108,7 +118,7 @@ export function InvoiceDisplay({ invoice, vendor, invoiceSettings }: InvoiceDisp
                     <td className="py-1.5 px-2">{packageDisplay}</td>
                     <td className="py-1.5 px-2">{addonsList}</td>
                     <td className="py-1.5 px-2 text-right font-medium">
-                      {formatCurrency(order.amount)}
+                      {formatCurrency(amountToDisplay)}
                     </td>
                   </tr>
                 );

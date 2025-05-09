@@ -39,7 +39,7 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
             className="w-2 h-2 mr-1 flex-shrink-0 rounded-full"
             style={{ backgroundColor: selectedVendor?.color || '#6E6E6E' }}
           />
-          <SelectValue className="truncate">
+          <SelectValue className="truncate" title={selectedVendor?.name || "Not set"}>
             {selectedVendor?.name || "Not set"}
           </SelectValue>
         </div>

@@ -44,7 +44,7 @@ const VendorDropdown: React.FC<VendorDropdownProps> = ({
           </SelectValue>
         </div>
       </SelectTrigger>
-      <SelectContent className="bg-white">
+      <SelectContent className="bg-popover">
         {vendors.map((vendorOption) => (
           <SelectItem key={vendorOption.id} value={vendorOption.id}>
             <div className="flex items-center">

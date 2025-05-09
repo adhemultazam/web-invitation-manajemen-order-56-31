@@ -26,7 +26,7 @@ export function VendorSelectionDropdown({
         onValueChange={onVendorChange}
       >
         <SelectTrigger id="vendor">
-          <SelectValue placeholder="Pilih vendor" />
+          <SelectValue placeholder="Pilih vendor" className="truncate" />
         </SelectTrigger>
         <SelectContent>
           {vendors.map((vendor) => (
@@ -34,10 +34,10 @@ export function VendorSelectionDropdown({
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center">
                   <div 
-                    className="w-2 h-2 rounded-full mr-2" 
+                    className="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
                     style={{ backgroundColor: vendor.color || "#6366f1" }}
                   ></div>
-                  <span>{vendor.name}</span>
+                  <span className="truncate max-w-[150px]" title={vendor.name}>{vendor.name}</span>
                 </div>
                 {vendorOrderCounts[vendor.id] > 0 && (
                   <Badge variant="secondary" className="ml-2">

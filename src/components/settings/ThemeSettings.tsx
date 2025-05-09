@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export function ThemeSettings() {
   // State for theme management
@@ -249,22 +249,24 @@ export function ThemeSettings() {
           >
             {filteredThemes.map((theme) => (
               <div key={theme.id} className="border rounded-md overflow-hidden group">
-                <div className="relative aspect-[3/4] bg-gray-100">
-                  <img 
-                    src={theme.thumbnail || `https://placehold.co/200x280/f5f5f5/333333?text=${encodeURIComponent(theme.name)}`}
-                    alt={theme.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleEditClick(theme)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleDeleteClick(theme)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                <div className="relative">
+                  <AspectRatio ratio={1} className="bg-gray-100">
+                    <img 
+                      src={theme.thumbnail || `https://placehold.co/200x200/f5f5f5/333333?text=${encodeURIComponent(theme.name)}`}
+                      alt={theme.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleEditClick(theme)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="outline" className="h-7 w-7 bg-white" onClick={() => handleDeleteClick(theme)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </AspectRatio>
                 </div>
                 <div className={`p-2 ${viewMode === "compact" ? "text-xs" : "p-3"}`}>
                   <h3 className={`font-medium truncate ${viewMode === "compact" ? "text-xs" : ""}`}>{theme.name}</h3>

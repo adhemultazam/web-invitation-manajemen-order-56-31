@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,8 +59,8 @@ export function AddThemeModal({
       return;
     }
     
-    // Use a placeholder thumbnail if none provided
-    const finalThumbnail = thumbnail || `https://placehold.co/200x280/f5f5f5/333333?text=${encodeURIComponent(name)}`;
+    // Use a placeholder thumbnail if none provided - now using square dimensions (200x200)
+    const finalThumbnail = thumbnail || `https://placehold.co/200x200/f5f5f5/333333?text=${encodeURIComponent(name)}`;
     
     onAddTheme({
       name,

@@ -3,11 +3,13 @@ import { useState, useMemo } from "react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Button } from "@/components/ui/button";
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus, ListCheck, Check, CreditCard } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, Plus, ListCheck, Check, CreditCard, AlertTriangle } from "lucide-react";
 import { useTransactionsData } from "@/hooks/useTransactionsData";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { formatCurrency } from "@/lib/utils";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 export default function Transactions() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -27,7 +29,8 @@ export default function Transactions() {
     totalVariableExpenses,
     budgetVsActual,
     previousMonthBalance,
-    remainingBalance
+    remainingBalance,
+    unpaidFixedExpenses
   } = useTransactionsData(selectedYear, selectedMonth);
   
   // Handle modal states
@@ -88,6 +91,11 @@ export default function Transactions() {
     };
   }, [transactions]);
 
+  // Handle marking an expense as paid
+  const handleMarkAsPaid = (id: string) => {
+    togglePaymentStatus(id);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -114,6 +122,31 @@ export default function Transactions() {
           </Button>
         </div>
       </div>
+      
+      {unpaidFixedExpenses.length > 0 && selectedMonth !== "Semua Data" && selectedYear !== "Semua Data" && (
+        <Alert variant="warning" className="bg-amber-50 border-amber-200">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle className="font-semibold">Pengingat Pengeluaran Tetap</AlertTitle>
+          <AlertDescription>
+            <p className="mb-2">Anda memiliki {unpaidFixedExpenses.length} pengeluaran tetap yang belum dibayar bulan ini:</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {unpaidFixedExpenses.slice(0, 5).map(expense => (
+                <Badge key={expense.id} variant="outline" className="flex items-center gap-1 cursor-pointer border-amber-200 bg-amber-50 hover:bg-amber-100" 
+                  onClick={() => handleMarkAsPaid(expense.id)}>
+                  <span>{expense.category}</span>
+                  <span className="font-semibold">{formatCurrency(expense.budget || 0)}</span>
+                  <Check className="h-3 w-3 ml-1" />
+                </Badge>
+              ))}
+              {unpaidFixedExpenses.length > 5 && (
+                <Badge variant="outline" className="border-amber-200 bg-amber-50">
+                  +{unpaidFixedExpenses.length - 5} lainnya
+                </Badge>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid gap-1.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard

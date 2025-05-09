@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Transaction, TransactionCategory } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
-import { indonesianMonths } from "@/utils/monthUtils";
+import { indonesianMonths, getPreviousMonth } from "@/utils/monthUtils";
+import { toast } from "sonner";
 
 export function useTransactionsData(year: string, month: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -45,6 +46,47 @@ export function useTransactionsData(year: string, month: string) {
     
     const prevMonth = monthNames[prevMonthIndex].toLowerCase();
     return `orders_${prevMonth}`;
+  };
+  
+  // Auto-generate fixed expenses based on categories
+  const generateFixedExpenses = () => {
+    const storageKey = getStorageKey();
+    const fixedCategories = categories.filter(c => c.type === "fixed" && c.isActive);
+    
+    // Skip if no fixed categories or we're looking at "Semua Data"
+    if (fixedCategories.length === 0 || storageKey === "transactions_all") {
+      return;
+    }
+    
+    // Check if current month already has transactions
+    const existingTransactions = transactions.filter(t => t.type === "fixed");
+    
+    // Get all fixed expense categories that are not yet in this month's transactions
+    const missingCategories = fixedCategories.filter(category => 
+      !existingTransactions.some(t => t.category === category.name)
+    );
+    
+    if (missingCategories.length > 0) {
+      // Create new transactions for missing categories
+      const newTransactions = missingCategories.map(category => ({
+        id: uuidv4(),
+        date: new Date().toISOString(),
+        type: "fixed" as const,
+        description: `${category.name} ${month} ${year}`,
+        amount: 0, // Start with zero, will need to be updated by user
+        category: category.name,
+        budget: category.defaultBudget || 0,
+        isPaid: false
+      }));
+      
+      // Add new transactions to existing ones
+      const updatedTransactions = [...transactions, ...newTransactions];
+      setTransactions(updatedTransactions);
+      saveTransactions(updatedTransactions);
+      
+      // Show notification
+      toast.info(`${newTransactions.length} pengeluaran tetap otomatis ditambahkan untuk bulan ini`);
+    }
   };
   
   // Load transactions from localStorage
@@ -110,6 +152,13 @@ export function useTransactionsData(year: string, month: string) {
       setPreviousMonthBalance(0);
     }
   }, [year, month]);
+  
+  // Effect to auto-generate fixed expenses after categories are loaded
+  useEffect(() => {
+    if (categories.length > 0 && month !== "Semua Data" && year !== "Semua Data") {
+      generateFixedExpenses();
+    }
+  }, [categories, month, year]);
   
   // Save transactions to localStorage
   const saveTransactions = (transactions: Transaction[]) => {
@@ -228,6 +277,13 @@ export function useTransactionsData(year: string, month: string) {
   const variableCategories = useMemo(() => {
     return categories.filter(c => c.type === "variable" && c.isActive);
   }, [categories]);
+
+  // Get reminders for fixed expenses not yet paid
+  const unpaidFixedExpenses = useMemo(() => {
+    return transactions
+      .filter(t => t.type === "fixed" && !t.isPaid)
+      .sort((a, b) => (a.budget || 0) - (b.budget || 0));
+  }, [transactions]);
   
   return {
     transactions,
@@ -242,6 +298,7 @@ export function useTransactionsData(year: string, month: string) {
     fixedCategories,
     variableCategories,
     previousMonthBalance,
-    remainingBalance
+    remainingBalance,
+    unpaidFixedExpenses
   };
 }

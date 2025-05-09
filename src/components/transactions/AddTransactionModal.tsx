@@ -1,47 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { Transaction } from "@/types/types";
+import { v4 as uuidv4 } from "uuid";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Transaction, TransactionCategory } from "@/types/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTransactionsData } from "@/hooks/useTransactionsData";
 import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-
-// Predefined categories for fixed expenses
-const FIXED_EXPENSE_CATEGORIES = [
-  "Gaji Karyawan",
-  "Sewa Kantor",
-  "Tagihan Listrik",
-  "Tagihan Internet",
-  "Asuransi",
-  "Langganan Software",
-  "Lainnya"
-];
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -49,292 +20,252 @@ interface AddTransactionModalProps {
   onAddTransaction: (transaction: Transaction) => void;
 }
 
-export function AddTransactionModal({
-  isOpen,
-  onClose,
-  onAddTransaction
-}: AddTransactionModalProps) {
+export function AddTransactionModal({ isOpen, onClose, onAddTransaction }: AddTransactionModalProps) {
+  // Get categories from settings
+  const { activeCategories, fixedCategories, variableCategories } = useTransactionsData("Semua Data", "Semua Data");
+  
+  // Form state
   const [date, setDate] = useState<Date>(new Date());
-  const [type, setType] = useState<"fixed" | "variable">("variable");
+  const [type, setType] = useState<"fixed" | "variable">("fixed");
+  const [category, setCategory] = useState<string>("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [category, setCategory] = useState<string>("");
   const [budget, setBudget] = useState("");
-  const [isPaid, setIsPaid] = useState(false);
-  const [customCategory, setCustomCategory] = useState("");
-  
-  // Reset form when transaction type changes
+  const [categoryOptions, setCategoryOptions] = useState<TransactionCategory[]>([]);
+
+  // Update category options based on type
   useEffect(() => {
-    if (type === "variable") {
-      setCategory("");
-      setBudget("");
-      setIsPaid(false);
-    }
-  }, [type]);
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate inputs
-    if (!date) {
-      toast.error("Pilih tanggal transaksi");
-      return;
-    }
-    
-    if (!description.trim()) {
-      toast.error("Masukkan keterangan transaksi");
-      return;
-    }
-    
-    // Parse amount properly - remove dots and convert to number
-    const parsedAmount = parseFloat(amount.replace(/\./g, ""));
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast.error("Masukkan jumlah transaksi yang valid");
-      return;
-    }
-    
-    // For fixed expenses, validate category and budget if provided
-    let finalCategory = "";
-    let parsedBudget: number | undefined = undefined;
-    
     if (type === "fixed") {
-      finalCategory = category === "Lainnya" ? customCategory : category;
-      
-      if (!finalCategory) {
-        toast.error("Pilih atau masukkan kategori pengeluaran tetap");
-        return;
-      }
-      
-      if (budget) {
-        parsedBudget = parseFloat(budget.replace(/\./g, ""));
-        if (isNaN(parsedBudget) || parsedBudget <= 0) {
-          toast.error("Masukkan anggaran yang valid");
-          return;
-        }
+      setCategoryOptions(fixedCategories);
+    } else {
+      setCategoryOptions(variableCategories);
+    }
+    setCategory(""); // Reset category when type changes
+  }, [type, fixedCategories, variableCategories]);
+
+  // When category is selected, set budget if available
+  useEffect(() => {
+    if (category && type === "fixed") {
+      const selectedCategory = fixedCategories.find(c => c.id === category);
+      if (selectedCategory && selectedCategory.defaultBudget) {
+        setBudget(new Intl.NumberFormat('id-ID').format(selectedCategory.defaultBudget));
+      } else {
+        setBudget("");
       }
     }
-    
-    setIsLoading(true);
-    
-    try {
-      // Create transaction object
-      const newTransaction: Transaction = {
-        id: uuidv4(),
-        date: date.toISOString(),
-        type,
-        description: description.trim(),
-        amount: parsedAmount,
-        ...(type === "fixed" && {
-          category: finalCategory,
-          isPaid,
-          ...(parsedBudget && { budget: parsedBudget })
-        })
-      };
-      
-      // Call onAddTransaction callback
-      onAddTransaction(newTransaction);
-      
-      // Reset form
-      setDate(new Date());
-      setType("variable");
-      setDescription("");
-      setAmount("");
-      setCategory("");
-      setBudget("");
-      setIsPaid(false);
-      setCustomCategory("");
-      
-      toast.success("Transaksi berhasil ditambahkan");
-    } catch (error) {
-      console.error("Error adding transaction:", error);
-      toast.error("Gagal menambahkan transaksi");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Improved format amount input with thousand separator
+  }, [category, fixedCategories, type]);
+
+  // Format the amount input
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Remove existing dots and non-numeric characters
-    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
+    // Remove dots and convert to number
+    const numericValue = e.target.value.replace(/\./g, "");
     
-    if (numericValue === "") {
+    // Format with dots as thousand separators
+    if (numericValue) {
+      const formattedValue = new Intl.NumberFormat('id-ID').format(
+        parseInt(numericValue)
+      );
+      setAmount(formattedValue);
+    } else {
       setAmount("");
-      return;
     }
-    
-    // Format with thousand separators (dots in Indonesian format)
-    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    setAmount(formattedValue);
   };
-  
-  // Format budget input with thousand separator
+
+  // Format the budget input (for fixed expenses)
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const numericValue = value.replace(/\./g, "").replace(/[^\d]/g, "");
+    const numericValue = e.target.value.replace(/\./g, "");
     
-    if (numericValue === "") {
+    if (numericValue) {
+      const formattedValue = new Intl.NumberFormat('id-ID').format(
+        parseInt(numericValue)
+      );
+      setBudget(formattedValue);
+    } else {
       setBudget("");
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    if (!description || !amount) {
+      alert("Harap isi semua field yang diperlukan");
       return;
     }
+
+    const selectedCategory = categoryOptions.find(c => c.id === category);
     
-    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    setBudget(formattedValue);
+    const newTransaction: Transaction = {
+      id: uuidv4(),
+      date: format(date, "yyyy-MM-dd"),
+      type,
+      description,
+      amount: parseFloat(amount.replace(/\./g, "")),
+      category: selectedCategory ? selectedCategory.name : undefined,
+      isPaid: false, // Default to unpaid
+      budget: type === "fixed" && budget ? parseFloat(budget.replace(/\./g, "")) : undefined
+    };
+
+    onAddTransaction(newTransaction);
+    resetForm();
   };
-  
+
+  // Reset form fields
+  const resetForm = () => {
+    setDate(new Date());
+    setType("fixed");
+    setCategory("");
+    setDescription("");
+    setAmount("");
+    setBudget("");
+  };
+
+  // Handle close modal
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  // Get category name from id
+  const getCategoryNameById = (id: string): string => {
+    const found = categoryOptions.find(c => c.id === id);
+    return found ? found.name : "";
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Tambah Transaksi Baru</DialogTitle>
-            <DialogDescription>
-              Masukkan detail transaksi pengeluaran Anda.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="transaction-date">Tanggal</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="transaction-date"
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pilih tanggal</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(newDate) => newDate && setDate(newDate)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="transaction-type">Tipe Pengeluaran</Label>
-              <Select 
-                value={type}
-                onValueChange={(value) => setType(value as "fixed" | "variable")}
-              >
-                <SelectTrigger id="transaction-type">
-                  <SelectValue placeholder="Pilih tipe pengeluaran" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixed">Pengeluaran Tetap</SelectItem>
-                  <SelectItem value="variable">Pengeluaran Tidak Tetap</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {type === "fixed" && (
-              <div className="grid gap-2">
-                <Label htmlFor="transaction-category">Kategori</Label>
-                <Select 
-                  value={category}
-                  onValueChange={setCategory}
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Tambah Transaksi Baru</DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid gap-4 py-4">
+          {/* Date field */}
+          <div className="grid gap-2">
+            <Label htmlFor="date">Tanggal</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="date"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
                 >
-                  <SelectTrigger id="transaction-category">
-                    <SelectValue placeholder="Pilih kategori" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FIXED_EXPENSE_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {category === "Lainnya" && (
-                  <Input
-                    className="mt-2"
-                    placeholder="Masukkan kategori kustom"
-                    value={customCategory}
-                    onChange={(e) => setCustomCategory(e.target.value)}
-                  />
-                )}
-              </div>
-            )}
-            
-            <div className="grid gap-2">
-              <Label htmlFor="transaction-description">Keterangan</Label>
-              <Input
-                id="transaction-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Contoh: Gaji karyawan, Biaya operasional, dll."
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="transaction-amount">Jumlah (Rp)</Label>
-              <Input
-                id="transaction-amount"
-                value={amount}
-                onChange={handleAmountChange}
-                placeholder="Contoh: 500.000"
-              />
-            </div>
-            
-            {type === "fixed" && (
-              <>
-                <div className="grid gap-2">
-                  <Label htmlFor="transaction-budget">Anggaran (Rp) (Opsional)</Label>
-                  <Input
-                    id="transaction-budget"
-                    value={budget}
-                    onChange={handleBudgetChange}
-                    placeholder="Contoh: 600.000"
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox
-                    id="is-paid"
-                    checked={isPaid}
-                    onCheckedChange={(checked) => setIsPaid(checked === true)}
-                  />
-                  <Label 
-                    htmlFor="is-paid"
-                    className="text-sm font-medium leading-none cursor-pointer"
-                  >
-                    Sudah Dibayar
-                  </Label>
-                </div>
-              </>
-            )}
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pilih tanggal</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(date) => date && setDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose}
-              disabled={isLoading}
+          {/* Type field */}
+          <div className="grid gap-2">
+            <Label htmlFor="type">Jenis Pengeluaran</Label>
+            <Select
+              value={type}
+              onValueChange={(value) => setType(value as "fixed" | "variable")}
             >
-              Batal
-            </Button>
-            <Button 
-              type="submit"
-              disabled={isLoading}
-              className="bg-wedding-primary hover:bg-wedding-accent"
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih jenis pengeluaran" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fixed">Pengeluaran Tetap</SelectItem>
+                <SelectItem value="variable">Pengeluaran Tidak Tetap</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Category field */}
+          <div className="grid gap-2">
+            <Label htmlFor="category">Kategori</Label>
+            <Select
+              value={category}
+              onValueChange={setCategory}
             >
-              {isLoading ? "Menambahkan..." : "Tambah Transaksi"}
-            </Button>
-          </DialogFooter>
-        </form>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.length > 0 ? (
+                  categoryOptions.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem disabled value="no-categories">
+                    Tidak ada kategori tersedia
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Description field */}
+          <div className="grid gap-2">
+            <Label htmlFor="description">Keterangan</Label>
+            <Input
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Masukkan keterangan transaksi"
+            />
+          </div>
+          
+          {/* Budget field for fixed expenses */}
+          {type === "fixed" && (
+            <div className="grid gap-2">
+              <Label htmlFor="budget">Anggaran (Budget)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  Rp
+                </span>
+                <Input
+                  id="budget"
+                  className="pl-9"
+                  value={budget}
+                  onChange={handleBudgetChange}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Amount field */}
+          <div className="grid gap-2">
+            <Label htmlFor="amount">Jumlah</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                Rp
+              </span>
+              <Input
+                id="amount"
+                className="pl-9"
+                value={amount}
+                onChange={handleAmountChange}
+                placeholder="0"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose}>
+            Batal
+          </Button>
+          <Button onClick={handleSubmit}>
+            Simpan
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

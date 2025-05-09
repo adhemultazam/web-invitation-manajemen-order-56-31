@@ -1,3 +1,4 @@
+
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -130,4 +131,14 @@ export interface Transaction {
   category?: string;  // Added for custom categories
   isPaid?: boolean;   // Added for payment status
   budget?: number;    // Added for budget tracking
+}
+
+// TransactionCategory type for managing expense categories
+export interface TransactionCategory {
+  id: string;
+  name: string;
+  type: "fixed" | "variable";
+  defaultBudget?: number;
+  description?: string;
+  isActive: boolean;
 }

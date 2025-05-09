@@ -5,6 +5,7 @@ import { AccountSettings } from "@/components/settings/AccountSettings";
 import { InvoiceSettings } from "@/components/settings/InvoiceSettings";
 import { OrderResourcesSettings } from "@/components/settings/OrderResourcesSettings";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
+import { TransactionCategoriesSettings } from "@/components/settings/TransactionCategoriesSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("general");
@@ -37,6 +38,7 @@ export default function Settings() {
           <TabsTrigger value="general">Umum</TabsTrigger>
           <TabsTrigger value="invoice">Invoice</TabsTrigger>
           <TabsTrigger value="resources">Data Master</TabsTrigger>
+          <TabsTrigger value="transactions">Transaksi</TabsTrigger>
         </TabsList>
         <TabsContent value="general" className="space-y-4">
           <GeneralSettings />
@@ -46,6 +48,9 @@ export default function Settings() {
         </TabsContent>
         <TabsContent value="resources" className="space-y-4">
           <OrderResourcesSettings />
+        </TabsContent>
+        <TabsContent value="transactions" className="space-y-4">
+          <TransactionCategoriesSettings />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,10 +1,11 @@
 
 import { useState, useEffect, useMemo } from "react";
-import { Transaction } from "@/types/types";
+import { Transaction, TransactionCategory } from "@/types/types";
 import { v4 as uuidv4 } from "uuid";
 
 export function useTransactionsData(year: string, month: string) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<TransactionCategory[]>([]);
   
   // Get the storage key based on year and month
   const getStorageKey = (): string => {
@@ -30,6 +31,12 @@ export function useTransactionsData(year: string, month: string) {
         setTransactions(JSON.parse(storedTransactions));
       } else {
         setTransactions([]);
+      }
+
+      // Load categories
+      const storedCategories = localStorage.getItem("transactionCategories");
+      if (storedCategories) {
+        setCategories(JSON.parse(storedCategories));
       }
     } catch (error) {
       console.error("Error loading transactions:", error);
@@ -134,6 +141,21 @@ export function useTransactionsData(year: string, month: string) {
       difference: totalBudget - totalActual
     };
   }, [transactions]);
+
+  // Get active categories
+  const activeCategories = useMemo(() => {
+    return categories.filter(c => c.isActive);
+  }, [categories]);
+
+  // Get fixed expense categories
+  const fixedCategories = useMemo(() => {
+    return categories.filter(c => c.type === "fixed" && c.isActive);
+  }, [categories]);
+
+  // Get variable expense categories  
+  const variableCategories = useMemo(() => {
+    return categories.filter(c => c.type === "variable" && c.isActive);
+  }, [categories]);
   
   return {
     transactions,
@@ -143,6 +165,9 @@ export function useTransactionsData(year: string, month: string) {
     togglePaymentStatus,
     totalFixedExpenses,
     totalVariableExpenses,
-    budgetVsActual
+    budgetVsActual,
+    activeCategories,
+    fixedCategories,
+    variableCategories
   };
 }

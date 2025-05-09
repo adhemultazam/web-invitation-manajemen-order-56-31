@@ -128,11 +128,10 @@ export function OrderForm({
     // Remove non-numeric characters except decimal point
     const numericValue = value.replace(/[^0-9.]/g, '');
     
-    // Format as currency
+    // Format as currency with thousands separator
     if (numericValue) {
       return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
+        style: 'decimal',
         minimumFractionDigits: 0,
       }).format(Number(numericValue));
     }
@@ -155,6 +154,11 @@ export function OrderForm({
     
     // Store formatted value in state
     setPaymentAmount(formatCurrency(numericValue));
+  };
+
+  // Handle focus on payment amount input (select all text)
+  const handlePaymentFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   return (
@@ -272,9 +276,10 @@ export function OrderForm({
           <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
           <Input
             id="paymentAmount"
-            placeholder="Rp 0"
+            placeholder="0"
             value={paymentAmount}
             onChange={handlePaymentAmountChange}
+            onFocus={handlePaymentFocus}
           />
         </div>
 
@@ -331,4 +336,3 @@ export function OrderForm({
     </form>
   );
 }
-

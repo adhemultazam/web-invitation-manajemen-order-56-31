@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -145,10 +144,6 @@ export function EditOrderDialog({
     }
   };
 
-  const handleCheckboxChange = (checked: boolean, name: string) => {
-    setFormData(prevState => ({ ...prevState, [name]: checked }));
-  };
-
   const handleAddonToggle = (addonName: string, checked: boolean) => {
     setFormData(prevState => {
       const currentAddons = prevState.addons || [];
@@ -179,12 +174,59 @@ export function EditOrderDialog({
     return vendor ? vendor.color : '#6E6E6E';
   };
 
+  // Format payment amount with thousands separators
+  const formatPaymentAmount = (value: string | number) => {
+    if (typeof value === 'string') {
+      // Remove non-numeric characters
+      const numericValue = value.replace(/[^0-9.]/g, '');
+      if (!numericValue) return '';
+      
+      // Format with thousands separator
+      return new Intl.NumberFormat('id-ID', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+      }).format(Number(numericValue));
+    } else if (typeof value === 'number') {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+      }).format(value);
+    }
+    
+    return '';
+  };
+
+  const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // Remove formatting and store numeric value
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    
+    // Store formatted value in state
+    setFormData(prevState => ({ 
+      ...prevState, 
+      paymentAmount: formatPaymentAmount(numericValue)
+    }));
+  };
+
+  // Handle focus on payment amount input (select all)
+  const handlePaymentFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!order) return;
     
+    // Prepare payment amount - remove formatting for submission
+    let paymentAmount = formData.paymentAmount;
+    if (typeof paymentAmount === 'string') {
+      paymentAmount = paymentAmount.replace(/[^0-9.]/g, '');
+    }
+    
     const updatedData: Partial<Order> = {
       ...formData,
+      paymentAmount,
       orderDate: typeof formData.orderDate === 'object' 
         ? format(formData.orderDate as Date, 'yyyy-MM-dd')
         : typeof formData.orderDate === 'string'
@@ -203,19 +245,8 @@ export function EditOrderDialog({
 
   if (!order) return null;
 
-  // Function to safely format currency values
-  const formatCurrency = (value: number | string) => {
-    // Convert to number if it's a string
-    const numericValue = typeof value === 'string' ? parseFloat(value) : value;
-    // Check if it's a valid number
-    if (isNaN(numericValue)) return '';
-    
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency", 
-      currency: "IDR", 
-      minimumFractionDigits: 0
-    }).format(numericValue);
-  };
+  // Prepare formatted payment amount for display
+  const displayPaymentAmount = formatPaymentAmount(formData.paymentAmount);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -430,15 +461,14 @@ export function EditOrderDialog({
                 </RadioGroup>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="paymentAmount">Jumlah Pembayaran (Rp)</Label>
+                <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
                 <Input
                   id="paymentAmount"
                   name="paymentAmount"
-                  type="number"
-                  value={formData.paymentAmount}
-                  onChange={handleInputChange}
+                  value={displayPaymentAmount}
+                  onChange={handlePaymentAmountChange}
+                  onFocus={handlePaymentFocus}
                   placeholder="0"
-                  min="0"
                 />
               </div>
             </div>
@@ -479,19 +509,6 @@ export function EditOrderDialog({
                 onChange={handleInputChange}
                 placeholder="https://undangandigital.com/nama-mempelai"
               />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="postPermission"
-                  checked={formData.postPermission}
-                  onCheckedChange={(checked) =>
-                    handleCheckboxChange(!!checked, "postPermission")
-                  }
-                />
-                <Label htmlFor="postPermission">Izin posting sebagai portfolio</Label>
-              </div>
             </div>
             
             <div className="space-y-2">

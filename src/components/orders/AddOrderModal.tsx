@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,7 +56,6 @@ export function AddOrderModal({
     paymentStatus: "Pending" as "Lunas" | "Pending",
     paymentAmount: 0,
     workStatus: workStatuses[0] || "",
-    postPermission: false,
     notes: "",
   });
 
@@ -186,6 +184,40 @@ export function AddOrderModal({
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Format payment amount with thousands separators
+  const formatAmount = (value: string | number) => {
+    if (value === '') return '';
+    
+    // Convert to string and remove non-numeric characters
+    const numStr = String(value).replace(/[^0-9.]/g, '');
+    if (!numStr) return '';
+    
+    // Format with thousands separator
+    return new Intl.NumberFormat('id-ID', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+    }).format(Number(numStr));
+  };
+
+  const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    if (!value) {
+      handleInputChange('paymentAmount', 0);
+      return;
+    }
+    
+    // Store numeric value in state but display formatted
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    handleInputChange('paymentAmount', numericValue);
+    e.target.value = formatAmount(numericValue);
+  };
+
+  // Handle focus on payment amount input (select all)
+  const handlePaymentFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   const handleAddonToggle = (addonName: string) => {
@@ -424,8 +456,12 @@ export function AddOrderModal({
                   <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
                   <Input
                     id="paymentAmount"
-                    value={formData.paymentAmount}
-                    onChange={(e) => handleInputChange('paymentAmount', e.target.value)}
+                    value={typeof formData.paymentAmount === 'number' ? 
+                      formatAmount(formData.paymentAmount) : 
+                      formData.paymentAmount}
+                    onChange={handlePaymentAmountChange}
+                    onFocus={handlePaymentFocus}
+                    placeholder="0"
                   />
                 </div>
                 
@@ -454,17 +490,6 @@ export function AddOrderModal({
                       )}
                     </SelectContent>
                   </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="postPermission"
-                    checked={formData.postPermission}
-                    onCheckedChange={(checked) => handleInputChange('postPermission', checked)}
-                  />
-                  <Label htmlFor="postPermission" className="text-sm">
-                    Izin posting portfolio
-                  </Label>
                 </div>
               </div>
             </div>

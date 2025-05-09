@@ -160,6 +160,32 @@ export function EditOrderModal({
     handleInputChange('addons', currentAddons);
   };
 
+  // Format payment amount with thousands separators
+  const formatAmount = (value: string | number) => {
+    if (value === '') return '';
+    
+    // Convert to string and remove non-numeric characters
+    const numStr = String(value).replace(/[^0-9.]/g, '');
+    if (!numStr) return '';
+    
+    // Format with thousands separator
+    return new Intl.NumberFormat('id-ID', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+    }).format(Number(numStr));
+  };
+
+  const handlePaymentAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Store formatted value in state
+    handleInputChange('paymentAmount', formatAmount(value));
+  };
+
+  // Handle focus on payment amount input (select all)
+  const handlePaymentFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
+
   const handleSubmit = () => {
     // Calculate countdown days based on current date and event date
     const today = new Date();
@@ -169,9 +195,16 @@ export function EditOrderModal({
       : formData.eventDate as Date;
     const countdown = differenceInDays(eventDate, today);
     
+    // Clean up payment amount value (remove formatting)
+    let paymentAmount = formData.paymentAmount;
+    if (typeof paymentAmount === 'string') {
+      paymentAmount = paymentAmount.replace(/[^0-9.]/g, '');
+    }
+    
     // Ensure dates are properly formatted as strings
     const updatedOrder = {
       ...formData,
+      paymentAmount,
       orderDate: typeof formData.orderDate === 'object' 
         ? format(formData.orderDate as Date, 'yyyy-MM-dd')
         : formData.orderDate,
@@ -424,8 +457,11 @@ export function EditOrderModal({
                   <Label htmlFor="paymentAmount">Jumlah Pembayaran</Label>
                   <Input
                     id="paymentAmount"
-                    value={formData.paymentAmount}
-                    onChange={(e) => handleInputChange('paymentAmount', e.target.value)}
+                    value={typeof formData.paymentAmount === "number" 
+                      ? formatAmount(formData.paymentAmount) 
+                      : formData.paymentAmount}
+                    onChange={handlePaymentAmountChange}
+                    onFocus={handlePaymentFocus}
                   />
                 </div>
                 
@@ -454,17 +490,6 @@ export function EditOrderModal({
                       )}
                     </SelectContent>
                   </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="postPermission"
-                    checked={formData.postPermission}
-                    onCheckedChange={(checked) => handleInputChange('postPermission', checked)}
-                  />
-                  <Label htmlFor="postPermission" className="text-sm">
-                    Izin posting portfolio
-                  </Label>
                 </div>
               </div>
             </div>

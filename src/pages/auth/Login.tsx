@@ -99,26 +99,41 @@ export default function Login() {
             
             <form onSubmit={handleSubmit(onSubmit)}>
               <TabsContent value="login" className="space-y-4 mt-4">
-  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-    <div>
-      <Label htmlFor="email">Email</Label>
-      <Input id="email" type="email" placeholder="nama@example.com" {...register("email", { required: "Email harus diisi" })} />
-      {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-    </div>
-
-    <div>
-      <Label htmlFor="password">Password</Label>
-      <Input id="password" type="password" {...register("password", { required: "Password harus diisi" })} />
-      {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
-    </div>
-
-    {authError && <Alert><AlertDescription>{authError}</AlertDescription></Alert>}
-
-    <Button type="submit" className="w-full" disabled={loading}>
-      {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...</> : "Masuk"}
-    </Button>
-  </form>
-</TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="nama@example.com" 
+                    {...register("email", { required: "Email harus diisi" })}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                  </div>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    {...register("password", { required: "Password harus diisi" })}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500">{errors.password.message}</p>
+                  )}
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...
+                    </>
+                  ) : (
+                    "Masuk"
+                  )}
+                </Button>
+              </TabsContent>
 
               
               <TabsContent value="register" className="space-y-4 mt-4">

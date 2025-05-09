@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Select, 
@@ -29,18 +29,36 @@ export function MonthYearSelector({
     // Always update the selected month state first
     onMonthChange(month);
     
-    // Only navigate if we're on a orders route
+    // Only navigate if we're on an orders route
     if (location.pathname.includes('/pesanan')) {
-      if (month === "Semua Data") {
-        // Navigate to all orders page
-        navigate("/pesanan");
-      } else {
-        // Convert month name to URL parameter format
-        const monthParam = month.toLowerCase();
-        navigate(`/pesanan/${monthParam}`);
-      }
+      setTimeout(() => {
+        if (month === "Semua Data") {
+          // Navigate to all orders page
+          navigate("/pesanan");
+        } else {
+          // Convert month name to URL parameter format
+          const monthParam = month.toLowerCase();
+          navigate(`/pesanan/${monthParam}`);
+        }
+      }, 0); // Use setTimeout to ensure state update before navigation
     }
   };
+  
+  // Sync the URL with the selected month
+  useEffect(() => {
+    // Only sync if we're on an orders route
+    if (location.pathname.includes('/pesanan')) {
+      const pathParts = location.pathname.split('/');
+      const monthParam = pathParts[pathParts.length - 1];
+      
+      // If we're on /pesanan route without month param, set selectedMonth to "Semua Data"
+      if (pathParts[1] === "pesanan" && !pathParts[2]) {
+        if (selectedMonth !== "Semua Data") {
+          onMonthChange("Semua Data");
+        }
+      }
+    }
+  }, [location.pathname, selectedMonth, onMonthChange]);
   
   const generateYearOptions = (previousYears: number = 5): string[] => {
     const currentYear = new Date().getFullYear();
@@ -69,7 +87,7 @@ export function MonthYearSelector({
         <SelectTrigger className="w-[120px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
           <SelectValue placeholder="Pilih Tahun" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="z-50 bg-white dark:bg-gray-800">
           {yearOptions.map(year => (
             <SelectItem key={year} value={year}>
               {year === "Semua Data" ? "Semua Tahun" : year}
@@ -85,7 +103,7 @@ export function MonthYearSelector({
         <SelectTrigger className="w-[140px] h-9 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
           <SelectValue placeholder="Pilih Bulan" />
         </SelectTrigger>
-        <SelectContent className="bg-white dark:bg-gray-800">
+        <SelectContent className="z-50 bg-white dark:bg-gray-800">
           <SelectItem value="Semua Data">Semua Bulan</SelectItem>
           <SelectItem value="Januari">Januari</SelectItem>
           <SelectItem value="Februari">Februari</SelectItem>

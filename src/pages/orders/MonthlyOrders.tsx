@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -21,12 +20,24 @@ import { useOrderModals } from "@/hooks/useOrderModals";
 import { useOrderUpdates } from "@/hooks/useOrderUpdates";
 import { useOrderFilters } from "@/hooks/useOrderFilters";
 import { MonthlyOrdersHeader } from "@/components/orders/MonthlyOrdersHeader";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 export default function MonthlyOrders() {
   const { month } = useParams<{ month: string }>();
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-  const [selectedMonth, setSelectedMonth] = useState<string>(month ? getMonthTranslation(month) : "");
+  // Initialize selectedMonth based on the URL parameter
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    month ? getMonthTranslation(month) : "Semua Data"
+  );
+  
+  // Sync selectedMonth with URL parameter when URL changes
+  useEffect(() => {
+    if (month) {
+      setSelectedMonth(getMonthTranslation(month));
+    } else {
+      setSelectedMonth("Semua Data");
+    }
+  }, [month]);
   
   // Fetching data
   const { orders, isLoading, addOrder, editOrder, deleteOrder } = useOrdersData(

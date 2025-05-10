@@ -19,8 +19,8 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     await signOut();
-    setSession(null);  // Paksa kosongkan session di client state
-    navigate("/login", { replace: true });
+    setSession(null);  // Paksa kosongkan session
+    navigate("/login", { replace: true });  // Arahkan ke halaman login
   };
 
   const displayName = profile?.name || supabaseUser?.email || "Pengguna";

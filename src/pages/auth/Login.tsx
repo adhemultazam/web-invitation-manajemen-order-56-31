@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/auth";
 import { BrandLogo } from "@/components/auth/BrandLogo";
@@ -19,21 +20,31 @@ interface AuthFormData {
   email: string;
   password: string;
   name?: string;
+  remember?: boolean;
 }
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const { signIn, signUp, migrateData } = useSupabaseAuth();
+  const { signIn, signUp, migrateData, rememberSession, setRememberSession } = useSupabaseAuth();
   const navigate = useNavigate();
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>({
+  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm<AuthFormData>({
     defaultValues: {
       email: "",
       password: "",
-      name: ""
+      name: "",
+      remember: rememberSession
     }
+  });
+  
+  // Watch the remember field to update rememberSession state
+  const rememberValue = watch("remember", rememberSession);
+  
+  // Update the form when rememberSession changes
+  useState(() => {
+    setValue("remember", rememberSession);
   });
   
   const onSubmit = async (data: AuthFormData) => {
@@ -44,12 +55,15 @@ export default function Login() {
     try {
       if (activeTab === "login") {
         console.log("Attempting login with:", data.email);
-        // Login logic
-        const { error } = await signIn(data.email, data.password);
+        // Login logic with remember option
+        const { error } = await signIn(data.email, data.password, !!data.remember);
         if (error) {
           console.error("Login error:", error);
           throw error;
         }
+        
+        // Update the rememberSession state
+        setRememberSession(!!data.remember);
         
         // Migrate data from localStorage if needed
         const migrationResult = await migrateData();
@@ -153,6 +167,18 @@ export default function Login() {
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password.message}</p>
                   )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="remember" 
+                    {...register("remember")}
+                  />
+                  <label 
+                    htmlFor="remember" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Ingat saya
+                  </label>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (

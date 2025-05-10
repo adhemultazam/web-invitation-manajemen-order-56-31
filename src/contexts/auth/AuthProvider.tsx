@@ -16,9 +16,20 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [rememberSession, setRememberSession] = useState<boolean>(() => {
+    return localStorage.getItem('rememberSession') === 'true';
+  });
 
   useEffect(() => {
     console.log("Setting up Supabase Auth provider");
+    
+    const storage = rememberSession ? localStorage : sessionStorage;
+    
+    // Configure Supabase auth storage
+    supabase.auth.setSession({
+      access_token: storage.getItem('sb-access-token') || '',
+      refresh_token: storage.getItem('sb-refresh-token') || '',
+    });
     
     // Set up auth state listener FIRST to prevent missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -26,6 +37,17 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         console.log('Auth state changed:', event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+        
+        // Store tokens in appropriate storage
+        if (currentSession) {
+          if (rememberSession) {
+            localStorage.setItem('sb-access-token', currentSession.access_token);
+            localStorage.setItem('sb-refresh-token', currentSession.refresh_token);
+          } else {
+            sessionStorage.setItem('sb-access-token', currentSession.access_token);
+            sessionStorage.setItem('sb-refresh-token', currentSession.refresh_token);
+          }
+        }
         
         // Fetch profile using setTimeout to prevent Supabase auth lock issues
         if (currentSession?.user) {
@@ -66,7 +88,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
-  }, []);
+  }, [rememberSession]);
 
   const handleFetchProfile = async (userId: string) => {
     const profileData = await fetchProfile(userId);
@@ -82,11 +104,23 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     setProfile(updatedProfile);
   };
 
-  const handleMigrateData = async () => {
+  const handleMigrateData = async (clearLocalStorage: boolean = false) => {
     if (!user) {
       return { success: false, error: "User not authenticated" };
     }
-    return await migrateDataAction(user.id);
+    return await migrateDataAction(clearLocalStorage);
+  };
+
+  const handleSignIn = async (email: string, password: string, remember: boolean) => {
+    setRememberSession(remember);
+    localStorage.setItem('rememberSession', remember ? 'true' : 'false');
+    
+    const result = await signIn(email, password);
+    if (!result.error && session?.user) {
+      // Refresh profile after successful login
+      await handleFetchProfile(session.user.id);
+    }
+    return result;
   };
 
   const value: SupabaseAuthContextType = {
@@ -94,14 +128,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     session,
     profile,
     isLoading,
-    signIn: async (email, password) => {
-      const result = await signIn(email, password);
-      if (!result.error && session?.user) {
-        // Refresh profile after successful login
-        await handleFetchProfile(session.user.id);
-      }
-      return result;
-    },
+    signIn: handleSignIn,
     signUp,
     signOut: async () => {
       const result = await signOut();
@@ -109,6 +136,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         setUser(null);
         setSession(null);
         setProfile(null);
+        // Clear stored tokens
+        localStorage.removeItem('sb-access-token');
+        localStorage.removeItem('sb-refresh-token');
+        sessionStorage.removeItem('sb-access-token');
+        sessionStorage.removeItem('sb-refresh-token');
       }
     },
     updateProfile: handleUpdateProfile,
@@ -116,6 +148,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     resetPassword,
     fetchProfile: handleFetchProfile,
     migrateData: handleMigrateData,
+    rememberSession,
+    setRememberSession,
   };
 
   return (

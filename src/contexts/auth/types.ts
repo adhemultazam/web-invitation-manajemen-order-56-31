@@ -7,12 +7,14 @@ export interface SupabaseAuthContextType {
   session: Session | null;
   profile: ProfileType | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, remember?: boolean) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData?: object) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<ProfileType>) => Promise<void>;
   updatePassword: (password: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   fetchProfile: (userId: string) => Promise<ProfileType | null>;
-  migrateData: () => Promise<{ success: boolean; error?: any }>;
+  migrateData: (clearLocalStorage?: boolean) => Promise<{ success: boolean; error?: any; message?: string }>;
+  rememberSession: boolean;
+  setRememberSession: (value: boolean) => void;
 }

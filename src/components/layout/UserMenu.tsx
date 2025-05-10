@@ -18,7 +18,9 @@ export function UserMenu() {
   const { profile, user: supabaseUser, signOut, setSession } = useSupabaseAuth();
 
   const handleLogout = async () => {
+    console.log(">> Tombol logout diklik");
     await signOut();
+    console.log(">> Sesi setelah signOut:", session);
     setSession(null);  // Paksa kosongkan session
     navigate("/login", { replace: true });  // Arahkan ke halaman login
   };

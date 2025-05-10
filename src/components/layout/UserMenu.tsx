@@ -19,7 +19,7 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     await signOut();
-    setSession(null); // Paksa kosongkan session setelah logout
+    setSession(null);  // Paksa kosongkan session di client state
     navigate("/login", { replace: true });
   };
 

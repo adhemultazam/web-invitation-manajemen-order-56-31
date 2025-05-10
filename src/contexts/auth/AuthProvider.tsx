@@ -15,30 +15,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [rememberSession, setRememberSession] = useState<boolean>(() => {
-    return localStorage.getItem('rememberSession') === 'true';
-  });
 
   useEffect(() => {
-    const storage = rememberSession ? localStorage : sessionStorage;
-    supabase.auth.setSession({
-      access_token: storage.getItem('sb-access-token') || '',
-      refresh_token: storage.getItem('sb-refresh-token') || '',
-    });
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-
-      if (currentSession) {
-        if (rememberSession) {
-          localStorage.setItem('sb-access-token', currentSession.access_token);
-          localStorage.setItem('sb-refresh-token', currentSession.refresh_token);
-        } else {
-          sessionStorage.setItem('sb-access-token', currentSession.access_token);
-          sessionStorage.setItem('sb-refresh-token', currentSession.refresh_token);
-        }
-      }
 
       if (currentSession?.user) {
         setTimeout(() => {
@@ -63,7 +44,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     return () => {
       subscription.unsubscribe();
     };
-  }, [rememberSession]);
+  }, []);
 
   const handleFetchProfile = async (userId: string) => {
     const profileData = await fetchProfile(userId);
@@ -83,9 +64,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     return await migrateDataAction(clearLocalStorage);
   };
 
-  const handleSignIn = async (email: string, password: string, remember: boolean) => {
-    setRememberSession(remember);
-    localStorage.setItem('rememberSession', remember ? 'true' : 'false');
+  const handleSignIn = async (email: string, password: string) => {
     const result = await signIn(email, password);
     if (!result.error && session?.user) {
       await handleFetchProfile(session.user.id);
@@ -106,10 +85,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         setUser(null);
         setSession(null);
         setProfile(null);
-        localStorage.removeItem('sb-access-token');
-        localStorage.removeItem('sb-refresh-token');
-        sessionStorage.removeItem('sb-access-token');
-        sessionStorage.removeItem('sb-refresh-token');
       }
     },
     updateProfile: handleUpdateProfile,
@@ -117,9 +92,9 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     resetPassword,
     fetchProfile: handleFetchProfile,
     migrateData: handleMigrateData,
-    rememberSession,
-    setRememberSession,
-    setSession, // Tambahkan setter di sini
+    rememberSession: true, // Default true karena Supabase yang atur
+    setRememberSession: () => {}, // Tidak digunakan lagi
+    setSession, // Tetap disediakan untuk kontrol manual
   };
 
   return (

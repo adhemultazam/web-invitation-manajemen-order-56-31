@@ -35,13 +35,14 @@ const initializeLocalStorage = () => {
   
   keys.forEach(key => {
     if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, JSON.stringify([]));
       initialized = true;
     }
   });
   
   if (initialized) {
-    toast.success("Data berhasil diinisialisasi ke local storage", {
-      description: "Semua data akan disimpan secara otomatis di browser Anda"
+    toast.success("Data berhasil diinisialisasi", {
+      description: "Data disimpan secara otomatis di browser dan akan dimigrasikan ke Supabase setelah login"
     });
   }
 };

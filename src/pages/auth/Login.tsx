@@ -13,6 +13,8 @@ import { BrandLogo } from "@/components/auth/BrandLogo";
 import { Loader2 } from "lucide-react";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PasswordInput } from "@/components/auth/PasswordInput";
+import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 
 interface AuthFormData {
   email: string;
@@ -24,7 +26,7 @@ export default function Login() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const { signIn, signUp } = useSupabaseAuth();
+  const { signIn, signUp, migrateData } = useSupabaseAuth();
   const navigate = useNavigate();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AuthFormData>({
@@ -45,6 +47,14 @@ export default function Login() {
         const { error } = await signIn(data.email, data.password);
         if (error) throw error;
         
+        // Migrate data from localStorage if needed
+        const migrationResult = await migrateData();
+        if (migrationResult.success) {
+          console.log("Data migration successful or not needed");
+        } else {
+          console.warn("Data migration issue:", migrationResult.error);
+        }
+        
         const lastVisitedPath = sessionStorage.getItem("lastVisitedPath") || "/";
         navigate(lastVisitedPath, { replace: true });
       } else {
@@ -61,10 +71,23 @@ export default function Login() {
         reset();
       }
     } catch (error: any) {
-      setAuthError(error.message);
+      console.error("Authentication error:", error);
+      
+      // Improved error messages
+      let errorMessage = error.message;
+      
+      if (error.message?.includes("credentials")) {
+        errorMessage = "Email atau password salah";
+      } else if (error.message?.includes("Email not confirmed")) {
+        errorMessage = "Email belum diverifikasi. Silahkan cek inbox email Anda";
+      } else if (error.message?.includes("already registered")) {
+        errorMessage = "Email sudah terdaftar";
+      }
+      
+      setAuthError(errorMessage);
       toast.error(
         activeTab === "login" ? "Login gagal" : "Registrasi gagal", 
-        { description: error.message }
+        { description: errorMessage }
       );
     } finally {
       setLoading(false);
@@ -114,11 +137,14 @@ export default function Login() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
+                    <ForgotPasswordDialog />
                   </div>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    {...register("password", { required: "Password harus diisi" })}
+                  <PasswordInput
+                    id="password"
+                    value={undefined}
+                    onChange={(e) => register("password").onChange(e)}
+                    required={true}
+                    placeholder="Masukkan password Anda"
                   />
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password.message}</p>
@@ -162,16 +188,18 @@ export default function Login() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="registerPassword">Password</Label>
-                  <Input 
-                    id="registerPassword" 
-                    type="password" 
-                    {...register("password", { 
+                  <PasswordInput
+                    id="registerPassword"
+                    value={undefined}
+                    onChange={(e) => register("password", { 
                       required: "Password harus diisi",
                       minLength: {
                         value: 6,
                         message: "Password minimal 6 karakter"
                       }
-                    })}
+                    }).onChange(e)}
+                    required={true}
+                    placeholder="Minimal 6 karakter"
                   />
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password.message}</p>

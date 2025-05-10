@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Database, Loader2 } from "lucide-react";
+import { AlertCircle, Database, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -60,7 +60,8 @@ export function DataMigrationTool() {
         </Alert>
         
         {migrationDone ? (
-          <Alert variant="success">
+          <Alert variant="default" className="border-green-500 bg-green-50 text-green-900 dark:bg-green-900/20 dark:text-green-300">
+            <CheckCircle className="h-4 w-4" />
             <AlertTitle>Sukses!</AlertTitle>
             <AlertDescription>
               Data telah berhasil dimigrasikan ke Supabase. Sekarang data Anda akan disimpan di database cloud.

@@ -1,3 +1,4 @@
+
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
@@ -19,8 +20,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [location.pathname, isAuthenticated, session]);
 
-  // Redirect if not authenticated by both systems
-  if (!isAuthenticated && !session) {
+  // Redirect if not authenticated by Supabase
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
 

@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupabaseProfileSettings } from "./SupabaseProfileSettings";
 import { SupabasePasswordSettings } from "./SupabasePasswordSettings";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 
 export function AccountSettings() {
   const { user } = useSupabaseAuth();

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 

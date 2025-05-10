@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 import { User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "react-router-dom";

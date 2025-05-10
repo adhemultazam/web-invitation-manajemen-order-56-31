@@ -15,16 +15,17 @@ import { Link, useNavigate } from "react-router-dom";
 
 export function UserMenu() {
   const navigate = useNavigate();
-  const { profile, user: supabaseUser, signOut } = useSupabaseAuth();
+  const { profile, user: supabaseUser, signOut, setSession } = useSupabaseAuth();
 
   const handleLogout = async () => {
     await signOut();
+    setSession(null); // Paksa kosongkan session setelah logout
     navigate("/login", { replace: true });
   };
 
-  const displayName = profile?.name || supabaseUser?.email;
-  const displayEmail = supabaseUser?.email;
-  const displayImage = profile?.profile_image;
+  const displayName = profile?.name || supabaseUser?.email || "Pengguna";
+  const displayEmail = supabaseUser?.email || "-";
+  const displayImage = profile?.profile_image || undefined;
 
   return (
     <div className="flex items-center gap-2">
@@ -33,7 +34,7 @@ export function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full p-0 overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={displayImage} alt={displayName || ""} className="h-full w-full object-cover" />
+              <AvatarImage src={displayImage} alt={displayName} className="h-full w-full object-cover" />
               <AvatarFallback className="bg-wedding-primary text-white">
                 <User className="h-5 w-5" />
               </AvatarFallback>

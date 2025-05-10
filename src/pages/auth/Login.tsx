@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/auth";
@@ -18,22 +17,19 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 interface AuthFormData {
   email: string;
   password: string;
-  name?: string;
   remember?: boolean;
 }
 
 export default function Login() {
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const { signIn, signUp, migrateData, rememberSession, setRememberSession } = useSupabaseAuth();
+  const { signIn, migrateData, rememberSession, setRememberSession } = useSupabaseAuth();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, reset, formState: { errors }, watch, setValue } = useForm<AuthFormData>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<AuthFormData>({
     defaultValues: {
       email: "",
       password: "",
-      name: "",
       remember: rememberSession
     }
   });
@@ -43,7 +39,6 @@ export default function Login() {
     setValue("remember", rememberSession);
   });
 
-  // Login Submission Handler
   const onLoginSubmit = async (data: AuthFormData) => {
     setLoading(true);
     setAuthError(null);
@@ -56,23 +51,6 @@ export default function Login() {
       navigate(lastVisitedPath, { replace: true });
     } catch (error: any) {
       setAuthError(error.message || "Login gagal");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Register Submission Handler
-  const onRegisterSubmit = async (data: AuthFormData) => {
-    setLoading(true);
-    setAuthError(null);
-    try {
-      const { error } = await signUp(data.email, data.password, { name: data.name || "" });
-      if (error) throw error;
-      toast.success("Registrasi berhasil", { description: "Silahkan cek email Anda untuk verifikasi." });
-      setActiveTab("login");
-      reset();
-    } catch (error: any) {
-      setAuthError(error.message || "Registrasi gagal");
     } finally {
       setLoading(false);
     }
@@ -95,58 +73,28 @@ export default function Login() {
               <AlertDescription>{authError}</AlertDescription>
             </Alert>
           )}
-
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Masuk</TabsTrigger>
-              <TabsTrigger value="register">Daftar</TabsTrigger>
-            </TabsList>
-
-            {/* LOGIN FORM */}
-            <TabsContent value="login" className="space-y-4 mt-4">
-              <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="nama@example.com" {...register("email", { required: "Email harus diisi" })} />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <ForgotPasswordDialog />
-                  </div>
-                  <PasswordInput id="password" placeholder="Masukkan password Anda" {...register("password", { required: "Password harus diisi" })} />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" {...register("remember")} />
-                  <label htmlFor="remember" className="text-sm font-medium leading-none">Ingat saya</label>
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...</> : "Masuk"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            {/* REGISTER FORM */}
-            <TabsContent value="register" className="space-y-4 mt-4">
-              <form onSubmit={handleSubmit(onRegisterSubmit)} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nama</Label>
-                  <Input id="name" placeholder="Nama lengkap" {...register("name", { required: "Nama harus diisi" })} />
-                </div>
-                <div>
-                  <Label htmlFor="registerEmail">Email</Label>
-                  <Input id="registerEmail" type="email" placeholder="nama@example.com" {...register("email", { required: "Email harus diisi" })} />
-                </div>
-                <div>
-                  <Label htmlFor="registerPassword">Password</Label>
-                  <PasswordInput id="registerPassword" placeholder="Minimal 6 karakter" {...register("password", { required: "Password harus diisi", minLength: { value: 6, message: "Password minimal 6 karakter" } })} />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Mendaftar...</> : "Daftar"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" placeholder="nama@example.com" {...register("email", { required: "Email harus diisi" })} />
+              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <ForgotPasswordDialog />
+              </div>
+              <PasswordInput id="password" placeholder="Masukkan password Anda" {...register("password", { required: "Password harus diisi" })} />
+              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="remember" {...register("remember")} />
+              <label htmlFor="remember" className="text-sm font-medium leading-none">Ingat saya</label>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...</> : "Masuk"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

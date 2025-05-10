@@ -8,10 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 import { BrandLogo } from "@/components/auth/BrandLogo";
-import { Loader2 } from "lucide-react";
-import { AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
@@ -38,29 +37,36 @@ export default function Login() {
   });
   
   const onSubmit = async (data: AuthFormData) => {
+    console.log("Form submitted with data:", data);
     setLoading(true);
     setAuthError(null);
     
     try {
       if (activeTab === "login") {
+        console.log("Attempting login with:", data.email);
         // Login logic
         const { error } = await signIn(data.email, data.password);
-        if (error) throw error;
+        if (error) {
+          console.error("Login error:", error);
+          throw error;
+        }
         
         // Migrate data from localStorage if needed
         const migrationResult = await migrateData();
-        if (migrationResult.success) {
-          console.log("Data migration successful or not needed");
-        } else {
-          console.warn("Data migration issue:", migrationResult.error);
-        }
+        console.log("Migration result:", migrationResult);
         
+        // Navigate to last visited or home page
         const lastVisitedPath = sessionStorage.getItem("lastVisitedPath") || "/";
+        console.log("Navigating to:", lastVisitedPath);
         navigate(lastVisitedPath, { replace: true });
       } else {
+        console.log("Attempting registration with:", data.email);
         // Register logic
         const { error } = await signUp(data.email, data.password, { name: data.name || "" });
-        if (error) throw error;
+        if (error) {
+          console.error("Registration error:", error);
+          throw error;
+        }
         
         toast.success("Registrasi berhasil", {
           description: "Silahkan cek email Anda untuk verifikasi, atau langsung login jika verifikasi email dinonaktifkan"
@@ -74,13 +80,13 @@ export default function Login() {
       console.error("Authentication error:", error);
       
       // Improved error messages
-      let errorMessage = error.message;
+      let errorMessage = error.message || "An unknown error occurred";
       
-      if (error.message?.includes("credentials")) {
+      if (errorMessage?.includes("credentials")) {
         errorMessage = "Email atau password salah";
-      } else if (error.message?.includes("Email not confirmed")) {
+      } else if (errorMessage?.includes("Email not confirmed")) {
         errorMessage = "Email belum diverifikasi. Silahkan cek inbox email Anda";
-      } else if (error.message?.includes("already registered")) {
+      } else if (errorMessage?.includes("already registered")) {
         errorMessage = "Email sudah terdaftar";
       }
       
@@ -141,10 +147,8 @@ export default function Login() {
                   </div>
                   <PasswordInput
                     id="password"
-                    value={undefined}
-                    onChange={(e) => register("password").onChange(e)}
-                    required={true}
                     placeholder="Masukkan password Anda"
+                    {...register("password", { required: "Password harus diisi" })}
                   />
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password.message}</p>
@@ -160,7 +164,6 @@ export default function Login() {
                   )}
                 </Button>
               </TabsContent>
-
               
               <TabsContent value="register" className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -190,16 +193,14 @@ export default function Login() {
                   <Label htmlFor="registerPassword">Password</Label>
                   <PasswordInput
                     id="registerPassword"
-                    value={undefined}
-                    onChange={(e) => register("password", { 
+                    placeholder="Minimal 6 karakter"
+                    {...register("password", { 
                       required: "Password harus diisi",
                       minLength: {
                         value: 6,
                         message: "Password minimal 6 karakter"
                       }
-                    }).onChange(e)}
-                    required={true}
-                    placeholder="Minimal 6 karakter"
+                    })}
                   />
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password.message}</p>

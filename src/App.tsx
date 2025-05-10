@@ -18,7 +18,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { migrateVendorData } from "./lib/utils";
-import { SupabaseAuthProvider } from "./contexts/SupabaseAuthContext";
+import { SupabaseAuthProvider } from "./contexts/auth";
 
 // Initialize data storage if it doesn't exist
 const initializeLocalStorage = () => {

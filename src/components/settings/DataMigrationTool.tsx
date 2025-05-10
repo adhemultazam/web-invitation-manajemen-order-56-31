@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, Database, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function DataMigrationTool() {
@@ -21,6 +21,8 @@ export function DataMigrationTool() {
     setIsMigrating(true);
     try {
       const result = await migrateData();
+      console.log("Migration result:", result);
+      
       if (result.success) {
         toast.success("Data berhasil dimigrasikan ke Supabase");
         setMigrationDone(true);
@@ -30,6 +32,7 @@ export function DataMigrationTool() {
         });
       }
     } catch (error: any) {
+      console.error("Migration error:", error);
       toast.error("Gagal migrasi data", {
         description: error.message
       });

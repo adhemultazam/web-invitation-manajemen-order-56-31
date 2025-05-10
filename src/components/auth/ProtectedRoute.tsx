@@ -1,7 +1,7 @@
 
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useSupabaseAuth } from "@/contexts/auth";
 import { useEffect } from "react";
 
 interface ProtectedRouteProps {
@@ -22,6 +22,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Redirect if not authenticated by Supabase
   if (!session) {
+    console.log("No Supabase session, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 

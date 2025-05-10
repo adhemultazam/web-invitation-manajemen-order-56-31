@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,26 +8,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { useSupabaseAuth } from "@/contexts/auth";
 import { User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export function UserMenu() {
-  const { user: localUser, logout } = useAuth(); // Keep for backward compatibility
+  const navigate = useNavigate();
   const { profile, user: supabaseUser, signOut } = useSupabaseAuth();
-  
+
   const handleLogout = async () => {
-    // Call both logout methods for a smooth transition
     await signOut();
-    logout();
+    navigate("/login", { replace: true });
   };
-  
-  const displayName = profile?.name || localUser?.name || supabaseUser?.email;
-  const displayEmail = profile?.email || supabaseUser?.email || localUser?.email;
-  const displayImage = profile?.profile_image || localUser?.profileImage;
-  
+
+  const displayName = profile?.name || supabaseUser?.email;
+  const displayEmail = supabaseUser?.email;
+  const displayImage = profile?.profile_image;
+
   return (
     <div className="flex items-center gap-2">
       <ThemeToggle />
@@ -36,11 +33,7 @@ export function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="icon" className="h-9 w-9 rounded-full p-0 overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-sm">
             <Avatar className="h-9 w-9">
-              <AvatarImage 
-                src={displayImage} 
-                alt={displayName || ""} 
-                className="h-full w-full object-cover"
-              />
+              <AvatarImage src={displayImage} alt={displayName || ""} className="h-full w-full object-cover" />
               <AvatarFallback className="bg-wedding-primary text-white">
                 <User className="h-5 w-5" />
               </AvatarFallback>
@@ -56,14 +49,10 @@ export function UserMenu() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <Link to="/pengaturan">
-            <DropdownMenuItem>
-              Pengaturan
-            </DropdownMenuItem>
+            <DropdownMenuItem>Pengaturan</DropdownMenuItem>
           </Link>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            Keluar
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>Keluar</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

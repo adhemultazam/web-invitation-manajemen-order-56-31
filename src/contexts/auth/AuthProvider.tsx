@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,71 +20,47 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   });
 
   useEffect(() => {
-    console.log("Setting up Supabase Auth provider");
-    
     const storage = rememberSession ? localStorage : sessionStorage;
-    
-    // Configure Supabase auth storage
     supabase.auth.setSession({
       access_token: storage.getItem('sb-access-token') || '',
       refresh_token: storage.getItem('sb-refresh-token') || '',
     });
-    
-    // Set up auth state listener FIRST to prevent missing auth events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        console.log('Auth state changed:', event);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // Store tokens in appropriate storage
-        if (currentSession) {
-          if (rememberSession) {
-            localStorage.setItem('sb-access-token', currentSession.access_token);
-            localStorage.setItem('sb-refresh-token', currentSession.refresh_token);
-          } else {
-            sessionStorage.setItem('sb-access-token', currentSession.access_token);
-            sessionStorage.setItem('sb-refresh-token', currentSession.refresh_token);
-          }
-        }
-        
-        // Fetch profile using setTimeout to prevent Supabase auth lock issues
-        if (currentSession?.user) {
-          console.log("Auth state changed with user, fetching profile");
-          setTimeout(() => {
-            fetchProfile(currentSession.user.id).then(profileData => {
-              setProfile(profileData);
-            });
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log("Got existing session:", currentSession?.user?.id || "none");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-      
-      // Fetch profile if we have a user
-      if (currentSession?.user) {
-        fetchProfile(currentSession.user.id).then(profileData => {
-          setProfile(profileData);
-        });
+
+      if (currentSession) {
+        if (rememberSession) {
+          localStorage.setItem('sb-access-token', currentSession.access_token);
+          localStorage.setItem('sb-refresh-token', currentSession.refresh_token);
+        } else {
+          sessionStorage.setItem('sb-access-token', currentSession.access_token);
+          sessionStorage.setItem('sb-refresh-token', currentSession.refresh_token);
+        }
       }
-      
+
+      if (currentSession?.user) {
+        setTimeout(() => {
+          fetchProfile(currentSession.user.id).then(setProfile);
+        }, 0);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
+        fetchProfile(currentSession.user.id).then(setProfile);
+      }
       setIsLoading(false);
     });
 
-    // Setup database triggers if needed
-    setupDatabaseTriggers().catch(error => {
-      console.error("Error setting up triggers:", error);
-    });
+    setupDatabaseTriggers().catch(console.error);
 
     return () => {
-      console.log("Cleaning up auth subscription");
       subscription.unsubscribe();
     };
   }, [rememberSession]);
@@ -99,25 +74,20 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const handleUpdateProfile = async (updates: Partial<ProfileType>) => {
     if (!user) throw new Error("No user logged in");
     await updateProfileAction(user.id, updates);
-    // Refresh profile data
     const updatedProfile = { ...profile, ...updates } as ProfileType;
     setProfile(updatedProfile);
   };
 
   const handleMigrateData = async (clearLocalStorage: boolean = false) => {
-    if (!user) {
-      return { success: false, error: "User not authenticated" };
-    }
+    if (!user) return { success: false, error: "User not authenticated" };
     return await migrateDataAction(clearLocalStorage);
   };
 
   const handleSignIn = async (email: string, password: string, remember: boolean) => {
     setRememberSession(remember);
     localStorage.setItem('rememberSession', remember ? 'true' : 'false');
-    
     const result = await signIn(email, password);
     if (!result.error && session?.user) {
-      // Refresh profile after successful login
       await handleFetchProfile(session.user.id);
     }
     return result;
@@ -136,7 +106,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         setUser(null);
         setSession(null);
         setProfile(null);
-        // Clear stored tokens
         localStorage.removeItem('sb-access-token');
         localStorage.removeItem('sb-refresh-token');
         sessionStorage.removeItem('sb-access-token');
@@ -150,6 +119,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     migrateData: handleMigrateData,
     rememberSession,
     setRememberSession,
+    setSession, // Tambahkan setter di sini
   };
 
   return (
@@ -161,7 +131,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
 export function useSupabaseAuth() {
   const context = useContext(SupabaseAuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useSupabaseAuth must be used within a SupabaseAuthProvider");
   }
   return context;

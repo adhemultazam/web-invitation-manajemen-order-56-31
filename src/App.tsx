@@ -13,7 +13,7 @@ import MonthlyOrders from "./pages/orders/MonthlyOrders";
 import NotFound from "./pages/NotFound";
 import Invoices from "./pages/invoices/Invoices";
 import Transactions from "./pages/transactions/Transactions";
-import Login from "./pages/auth/Login";
+import { Login } from "./pages/auth/Login"; // Fix: use named import instead of default
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { toast } from "sonner";

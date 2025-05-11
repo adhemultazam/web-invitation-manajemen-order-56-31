@@ -15,13 +15,11 @@ import { Link, useNavigate } from "react-router-dom";
 
 export function UserMenu() {
   const navigate = useNavigate();
-  const { profile, user: supabaseUser, signOut, setSession } = useSupabaseAuth();
+  const { profile, user: supabaseUser, signOut } = useSupabaseAuth();
 
   const handleLogout = async () => {
     console.log(">> Tombol logout diklik");
     await signOut();
-    console.log(">> Sesi setelah signOut:", session);
-    setSession(null);  // Paksa kosongkan session
     navigate("/login", { replace: true });  // Arahkan ke halaman login
   };
 

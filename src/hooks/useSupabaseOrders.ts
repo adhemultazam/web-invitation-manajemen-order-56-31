@@ -92,14 +92,17 @@ export function useSupabaseOrders(selectedYear?: string, selectedMonth?: string)
         countdownDays = differenceInDays(eventDate, today);
       }
       
-      // Insert the order into Supabase
+      // Insert the order into Supabase with explicit month property
+      const orderWithMonth = {
+        ...orderData,
+        month: orderMonth,
+        countdownDays
+      };
+      
+      // Insert the order with the month property
       const { data, error } = await supabase
         .from('orders')
-        .insert({
-          ...orderData,
-          month: orderMonth,
-          countdownDays
-        })
+        .insert(orderWithMonth)
         .select();
 
       if (error) throw error;

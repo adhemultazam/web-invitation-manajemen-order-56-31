@@ -98,6 +98,17 @@ export interface Invoice {
   status: "Paid" | "Unpaid";
 }
 
+// Add InvoiceItem type definition
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  orderId?: string;
+  description: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+}
+
 // Bank account type for invoice settings
 export type BankAccount = {
   id: string;

@@ -118,3 +118,5 @@ export function Login() {
     </div>
   );
 }
+
+export default Login; // Add default export to fix the import error

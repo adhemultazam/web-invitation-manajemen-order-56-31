@@ -16,5 +16,5 @@ export interface SupabaseAuthContextType {
   fetchProfile: (userId: string) => Promise<ProfileType | null>;
   migrateData: (clearLocalStorage?: boolean) => Promise<{ success: boolean; error?: any; message?: string }>;
   rememberSession: boolean;
-  setRememberSession: (value: boolean) => void;
+  // Remove setRememberSession and setSession
 }

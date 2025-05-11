@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fetchProfile } from "./profileActions";
@@ -11,8 +10,7 @@ export const signIn = async (email: string, password: string, rememberMe: boolea
       email, 
       password,
       options: {
-        // Configure session persistence based on rememberMe
-        persistSession: rememberMe
+        // Fix: remove persistSession from options
       }
     });
 

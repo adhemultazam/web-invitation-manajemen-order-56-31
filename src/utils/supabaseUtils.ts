@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Order, Addon, Vendor, Theme, Package, 
@@ -24,7 +23,7 @@ export const fetchUserData = async <T>(
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as T[];
   } catch (error) {
     handleSupabaseError(error, `fetch ${table}`);
     return [];
@@ -37,10 +36,13 @@ export const insertData = async <T>(
   data: Partial<T>
 ): Promise<T | null> => {
   try {
+    // Get current user
+    const { data: userData } = await supabase.auth.getUser();
+    
     // Ensure user_id is set
     const dataWithUserId = {
       ...data,
-      user_id: supabase.auth.getUser().then(({ data }) => data?.user?.id)
+      user_id: userData?.user?.id
     };
     
     const { data: result, error } = await supabase
@@ -50,7 +52,7 @@ export const insertData = async <T>(
       .single();
     
     if (error) throw error;
-    return result;
+    return result as T;
   } catch (error) {
     handleSupabaseError(error, `insert ${table}`);
     return null;
@@ -72,7 +74,7 @@ export const updateData = async <T>(
       .single();
     
     if (error) throw error;
-    return result;
+    return result as T;
   } catch (error) {
     handleSupabaseError(error, `update ${table}`);
     return null;
@@ -156,14 +158,20 @@ export const ordersApi = {
   },
   createOrder: async (order: Partial<Order>) => {
     try {
-      const { user } = await supabase.auth.getUser();
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
       
-      if (!user) throw new Error("User not authenticated");
+      if (!userData?.user) throw new Error("User not authenticated");
+      
+      // Explicitly add the month field
+      const orderMonth = order.orderDate 
+        ? new Date(order.orderDate).toLocaleString('id-ID', { month: 'long' }).toLowerCase()
+        : new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
       
       const orderData = {
         ...order,
-        user_id: user.id,
-        month: new Date(order.orderDate || Date.now()).toLocaleString('id-ID', { month: 'long' }).toLowerCase()
+        user_id: userData.user.id,
+        month: orderMonth
       };
       
       const { data, error } = await supabase
@@ -230,13 +238,14 @@ export const transactionsApi = {
   },
   createTransaction: async (transaction: Partial<Transaction>) => {
     try {
-      const { user } = await supabase.auth.getUser();
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
       
-      if (!user) throw new Error("User not authenticated");
+      if (!userData?.user) throw new Error("User not authenticated");
       
       const transactionData = {
         ...transaction,
-        user_id: user.id,
+        user_id: userData.user.id,
       };
       
       const { data, error } = await supabase
@@ -266,9 +275,10 @@ export const invoicesApi = {
 
 // Function to migrate data from localStorage to Supabase
 export const migrateToSupabase = async () => {
-  const { user } = await supabase.auth.getUser();
+  // Get current user
+  const { data: userData } = await supabase.auth.getUser();
   
-  if (!user) {
+  if (!userData?.user) {
     toast.error("You must be logged in to migrate data");
     return { success: false, error: "Not authenticated" };
   }
@@ -284,7 +294,7 @@ export const migrateToSupabase = async () => {
       for (const vendor of vendors) {
         await supabase.from('vendors').insert({
           ...vendor,
-          user_id: user.id
+          user_id: userData.user.id
         });
       }
       console.log("Migrated vendors");
@@ -297,7 +307,7 @@ export const migrateToSupabase = async () => {
       for (const theme of themes) {
         await supabase.from('themes').insert({
           ...theme,
-          user_id: user.id
+          user_id: userData.user.id
         });
       }
       console.log("Migrated themes");
@@ -310,7 +320,7 @@ export const migrateToSupabase = async () => {
       for (const addon of addons) {
         await supabase.from('addons').insert({
           ...addon,
-          user_id: user.id
+          user_id: userData.user.id
         });
       }
       console.log("Migrated addons");
@@ -323,7 +333,7 @@ export const migrateToSupabase = async () => {
       for (const pkg of packages) {
         await supabase.from('packages').insert({
           ...pkg,
-          user_id: user.id
+          user_id: userData.user.id
         });
       }
       console.log("Migrated packages");
@@ -336,7 +346,7 @@ export const migrateToSupabase = async () => {
       for (const status of workStatuses) {
         await supabase.from('work_statuses').insert({
           ...status,
-          user_id: user.id
+          user_id: userData.user.id
         });
       }
       console.log("Migrated work statuses");
@@ -356,7 +366,7 @@ export const migrateToSupabase = async () => {
           await supabase.from('orders').insert({
             ...order,
             month,
-            user_id: user.id
+            user_id: userData.user.id
           });
         }
         console.log(`Migrated orders for ${month}`);
@@ -372,7 +382,7 @@ export const migrateToSupabase = async () => {
           .from('invoices')
           .insert({
             ...invoice,
-            user_id: user.id
+            user_id: userData.user.id
           })
           .select('id')
           .single()
@@ -384,7 +394,7 @@ export const migrateToSupabase = async () => {
             await supabase.from('invoice_items').insert({
               ...item,
               invoice_id: invoiceId,
-              user_id: user.id
+              user_id: userData.user.id
             });
           }
         }
@@ -405,7 +415,7 @@ export const migrateToSupabase = async () => {
               ...transaction,
               year,
               month,
-              user_id: user.id
+              user_id: userData.user.id
             });
           }
           console.log(`Migrated transactions for ${month} ${year}`);

@@ -93,8 +93,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     fetchProfile: handleFetchProfile,
     migrateData: handleMigrateData,
     rememberSession: true, // Default true karena Supabase yang atur
-    setRememberSession: () => {}, // Tidak digunakan lagi
-    setSession, // Tetap disediakan untuk kontrol manual
   };
 
   return (

@@ -8,12 +8,23 @@ import { useSupabaseAuth } from "@/contexts/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 
 export function DataMigrationTool() {
   const { user, migrateData } = useSupabaseAuth();
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationDone, setMigrationDone] = useState(false);
   const [clearLocalStorage, setClearLocalStorage] = useState(true);
+  const [migrationProgress, setMigrationProgress] = useState(0);
+  const [migrationStats, setMigrationStats] = useState<{
+    total: number;
+    completed: number;
+    failed: number;
+  }>({
+    total: 0,
+    completed: 0,
+    failed: 0
+  });
   
   const handleMigration = async () => {
     if (!user) {
@@ -22,8 +33,17 @@ export function DataMigrationTool() {
     }
     
     setIsMigrating(true);
+    setMigrationProgress(0);
     try {
-      const result = await migrateData(clearLocalStorage);
+      const result = await migrateData(clearLocalStorage, (progress) => {
+        setMigrationProgress(progress.percentage);
+        setMigrationStats({
+          total: progress.total,
+          completed: progress.completed,
+          failed: progress.failed
+        });
+      });
+      
       console.log("Migration result:", result);
       
       if (result.success) {
@@ -96,6 +116,19 @@ export function DataMigrationTool() {
             Hapus data dari localStorage setelah migrasi
           </Label>
         </div>
+        
+        {isMigrating && (
+          <div className="space-y-2">
+            <Progress value={migrationProgress} className="h-2" />
+            <div className="text-sm text-gray-500 flex justify-between">
+              <span>Progres: {migrationProgress.toFixed(0)}%</span>
+              <span>
+                {migrationStats.completed}/{migrationStats.total} item berhasil
+                {migrationStats.failed > 0 && `, ${migrationStats.failed} gagal`}
+              </span>
+            </div>
+          </div>
+        )}
         
         {migrationDone ? (
           <>

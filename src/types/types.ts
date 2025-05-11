@@ -27,6 +27,7 @@ export type Order = {
   orderId?: string; // For compatibility with invoice references
   amount?: number;  // For invoice amount calculations
   month?: string;   // For organizing orders by month
+  user_id?: string; // For identifying the user who owns this order
 };
 
 // Add OrderFormData type for use in OrderForm component
@@ -52,6 +53,7 @@ export type Vendor = {
   code: string;
   color: string;
   landingPageUrl?: string;
+  user_id?: string; // Add user_id for Supabase relationship
 };
 
 // WorkStatus type
@@ -60,6 +62,7 @@ export type WorkStatus = {
   name: string;
   color: string;
   order?: number;
+  user_id?: string; // Add user_id for Supabase relationship
 };
 
 // Package type
@@ -68,6 +71,7 @@ export type Package = {
   name: string;
   price?: number | string;
   themes?: string[];
+  user_id?: string; // Add user_id for Supabase relationship
 };
 
 // Addon type
@@ -75,6 +79,7 @@ export type Addon = {
   id: string;
   name: string;
   color: string;
+  user_id?: string; // Add user_id for Supabase relationship
 };
 
 // Theme type
@@ -83,6 +88,7 @@ export type Theme = {
   name: string;
   thumbnail?: string;
   category?: string;
+  user_id?: string; // Add user_id for Supabase relationship
 };
 
 // Invoice type
@@ -96,6 +102,7 @@ export interface Invoice {
   orders: Order[];
   totalAmount: number;
   status: "Paid" | "Unpaid";
+  user_id?: string; // Add user_id for Supabase relationship
 }
 
 // Add InvoiceItem type definition
@@ -107,6 +114,7 @@ export interface InvoiceItem {
   quantity: number;
   price: number;
   subtotal: number;
+  user_id?: string; // Add user_id for Supabase relationship
 }
 
 // Bank account type for invoice settings
@@ -142,6 +150,9 @@ export interface Transaction {
   category?: string;  // Added for custom categories
   isPaid?: boolean;   // Added for payment status
   budget?: number;    // Added for budget tracking
+  year?: string; // Added for Supabase filtering
+  month?: string; // Added for Supabase filtering
+  user_id?: string; // Add user_id for Supabase relationship
 }
 
 // TransactionCategory type for managing expense categories
@@ -152,4 +163,14 @@ export interface TransactionCategory {
   defaultBudget?: number;
   description?: string;
   isActive: boolean;
+}
+
+// UserSetting type for managing user preferences in Supabase
+export interface UserSetting {
+  id: string;
+  user_id: string;
+  key: string;
+  value: any;
+  created_at?: string;
+  updated_at?: string;
 }

@@ -17,9 +17,18 @@ export const fetchUserData = async <T>(
   select: string = '*'
 ): Promise<T[]> => {
   try {
+    // Get current user
+    const { data: userData } = await supabase.auth.getUser();
+    
+    if (!userData?.user) {
+      console.log(`User not authenticated, cannot fetch ${table}`);
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from(table)
       .select(select)
+      .eq('user_id', userData.user.id)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -39,10 +48,15 @@ export const insertData = async <T>(
     // Get current user
     const { data: userData } = await supabase.auth.getUser();
     
+    if (!userData?.user) {
+      toast.error("You must be logged in to add data");
+      return null;
+    }
+    
     // Ensure user_id is set
     const dataWithUserId = {
       ...data,
-      user_id: userData?.user?.id
+      user_id: userData.user.id
     };
     
     const { data: result, error } = await supabase
@@ -137,11 +151,20 @@ export const workStatusesApi = {
 };
 
 export const ordersApi = {
-  getOrders: (month?: string) => {
+  getOrders: async (month?: string) => {
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user) {
+        console.log("User not authenticated, cannot fetch orders");
+        return [];
+      }
+      
       let query = supabase
         .from('orders')
-        .select('*');
+        .select('*')
+        .eq('user_id', userData.user.id);
       
       if (month && month !== "Semua Data") {
         query = query.eq('month', month.toLowerCase());
@@ -216,9 +239,18 @@ export const ordersApi = {
 export const transactionsApi = {
   getTransactions: async (year: string, month: string) => {
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user) {
+        console.log("User not authenticated, cannot fetch transactions");
+        return [];
+      }
+      
       let query = supabase
         .from('transactions')
-        .select('*');
+        .select('*')
+        .eq('user_id', userData.user.id);
       
       if (year && year !== "Semua Data") {
         query = query.eq('year', year);
@@ -275,7 +307,9 @@ export const invoicesApi = {
 };
 
 // Function to migrate data from localStorage to Supabase
-export const migrateToSupabase = async () => {
+export const migrateToSupabase = async (
+  onProgress?: (progress: { percentage: number; total: number; completed: number; failed: number }) => void
+) => {
   // Get current user
   const { data: userData } = await supabase.auth.getUser();
   
@@ -288,144 +322,272 @@ export const migrateToSupabase = async () => {
     // Start migration
     toast.info("Starting data migration...");
     
-    // Migrate vendors
-    const vendorsData = localStorage.getItem('vendors');
-    if (vendorsData) {
-      const vendors = JSON.parse(vendorsData);
-      for (const vendor of vendors) {
-        await supabase.from('vendors').insert({
-          ...vendor,
-          user_id: userData.user.id
-        });
-      }
-      console.log("Migrated vendors");
-    }
-    
-    // Migrate themes
-    const themesData = localStorage.getItem('weddingThemes');
-    if (themesData) {
-      const themes = JSON.parse(themesData);
-      for (const theme of themes) {
-        await supabase.from('themes').insert({
-          ...theme,
-          user_id: userData.user.id
-        });
-      }
-      console.log("Migrated themes");
-    }
-    
-    // Migrate addons
-    const addonsData = localStorage.getItem('addons');
-    if (addonsData) {
-      const addons = JSON.parse(addonsData);
-      for (const addon of addons) {
-        await supabase.from('addons').insert({
-          ...addon,
-          user_id: userData.user.id
-        });
-      }
-      console.log("Migrated addons");
-    }
-    
-    // Migrate packages
-    const packagesData = localStorage.getItem('packages');
-    if (packagesData) {
-      const packages = JSON.parse(packagesData);
-      for (const pkg of packages) {
-        await supabase.from('packages').insert({
-          ...pkg,
-          user_id: userData.user.id
-        });
-      }
-      console.log("Migrated packages");
-    }
-    
-    // Migrate work statuses
-    const workStatusesData = localStorage.getItem('workStatuses');
-    if (workStatusesData) {
-      const workStatuses = JSON.parse(workStatusesData);
-      for (const status of workStatuses) {
-        await supabase.from('work_statuses').insert({
-          ...status,
-          user_id: userData.user.id
-        });
-      }
-      console.log("Migrated work statuses");
-    }
-    
-    // Migrate orders from all months
+    // Define all migration tasks
     const months = [
       'januari', 'februari', 'maret', 'april', 'mei', 'juni',
       'juli', 'agustus', 'september', 'oktober', 'november', 'desember'
     ];
     
+    const years = ['2023', '2024', '2025'];
+    
+    // Count total items to migrate for progress tracking
+    let totalItems = 0;
+    let completedItems = 0;
+    let failedItems = 0;
+    
+    // Count items in localStorage
+    const vendorsData = localStorage.getItem('vendors');
+    const vendors = vendorsData ? JSON.parse(vendorsData) : [];
+    totalItems += vendors.length;
+    
+    const themesData = localStorage.getItem('weddingThemes');
+    const themes = themesData ? JSON.parse(themesData) : [];
+    totalItems += themes.length;
+    
+    const addonsData = localStorage.getItem('addons');
+    const addons = addonsData ? JSON.parse(addonsData) : [];
+    totalItems += addons.length;
+    
+    const packagesData = localStorage.getItem('packages');
+    const packages = packagesData ? JSON.parse(packagesData) : [];
+    totalItems += packages.length;
+    
+    const workStatusesData = localStorage.getItem('workStatuses');
+    const workStatuses = workStatusesData ? JSON.parse(workStatusesData) : [];
+    totalItems += workStatuses.length;
+    
+    // Count orders
+    for (const month of months) {
+      const ordersData = localStorage.getItem(`orders_${month}`);
+      const orders = ordersData ? JSON.parse(ordersData) : [];
+      totalItems += orders.length;
+    }
+    
+    // Count invoices and items
+    const invoicesData = localStorage.getItem('invoices');
+    const invoices = invoicesData ? JSON.parse(invoicesData) : [];
+    totalItems += invoices.length;
+    
+    let invoiceItemCount = 0;
+    for (const invoice of invoices) {
+      if (invoice.items && Array.isArray(invoice.items)) {
+        invoiceItemCount += invoice.items.length;
+      }
+    }
+    totalItems += invoiceItemCount;
+    
+    // Count transactions
+    for (const year of years) {
+      for (const month of months) {
+        const transactionsData = localStorage.getItem(`transactions_${year}_${month}`);
+        const transactions = transactionsData ? JSON.parse(transactionsData) : [];
+        totalItems += transactions.length;
+      }
+    }
+    
+    // Count settings
+    const settingKeys = [
+      'invoiceSettings', 
+      'generalSettings', 
+      'themeSettings', 
+      'brandSettings'
+    ];
+    
+    for (const key of settingKeys) {
+      if (localStorage.getItem(key)) {
+        totalItems += 1;
+      }
+    }
+    
+    const updateProgress = () => {
+      if (onProgress) {
+        const percentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+        onProgress({
+          percentage,
+          total: totalItems,
+          completed: completedItems,
+          failed: failedItems
+        });
+      }
+    };
+    
+    // Initial progress update
+    updateProgress();
+    
+    // Helper function to track progress
+    const trackProgress = async (promise) => {
+      try {
+        await promise;
+        completedItems++;
+      } catch (error) {
+        console.error("Migration error:", error);
+        failedItems++;
+      }
+      updateProgress();
+    };
+    
+    // Migrate vendors
+    for (const vendor of vendors) {
+      await trackProgress(
+        supabase.from('vendors').insert({
+          ...vendor,
+          user_id: userData.user.id
+        })
+      );
+    }
+    console.log("Migrated vendors");
+    
+    // Migrate themes
+    for (const theme of themes) {
+      await trackProgress(
+        supabase.from('themes').insert({
+          ...theme,
+          user_id: userData.user.id
+        })
+      );
+    }
+    console.log("Migrated themes");
+    
+    // Migrate addons
+    for (const addon of addons) {
+      await trackProgress(
+        supabase.from('addons').insert({
+          ...addon,
+          user_id: userData.user.id
+        })
+      );
+    }
+    console.log("Migrated addons");
+    
+    // Migrate packages
+    for (const pkg of packages) {
+      await trackProgress(
+        supabase.from('packages').insert({
+          ...pkg,
+          user_id: userData.user.id
+        })
+      );
+    }
+    console.log("Migrated packages");
+    
+    // Migrate work statuses
+    for (const status of workStatuses) {
+      await trackProgress(
+        supabase.from('work_statuses').insert({
+          ...status,
+          user_id: userData.user.id
+        })
+      );
+    }
+    console.log("Migrated work statuses");
+    
+    // Migrate orders from all months
     for (const month of months) {
       const ordersData = localStorage.getItem(`orders_${month}`);
       if (ordersData) {
         const orders = JSON.parse(ordersData);
         for (const order of orders) {
-          await supabase.from('orders').insert({
-            ...order,
-            month,
-            user_id: userData.user.id
-          });
+          await trackProgress(
+            supabase.from('orders').insert({
+              ...order,
+              month,
+              user_id: userData.user.id
+            })
+          );
         }
         console.log(`Migrated orders for ${month}`);
       }
     }
     
     // Migrate invoices
-    const invoicesData = localStorage.getItem('invoices');
-    if (invoicesData) {
-      const invoices = JSON.parse(invoicesData);
-      for (const invoice of invoices) {
-        const { id: invoiceId } = await supabase
-          .from('invoices')
-          .insert({
-            ...invoice,
-            user_id: userData.user.id
-          })
-          .select('id')
-          .single()
-          .then(res => res.data || { id: null });
+    for (const invoice of invoices) {
+      const { data, error } = await supabase
+        .from('invoices')
+        .insert({
+          ...invoice,
+          user_id: userData.user.id
+        })
+        .select('id')
+        .single();
+      
+      if (error) {
+        failedItems++;
+      } else {
+        completedItems++;
         
         // Migrate invoice items if they exist
-        if (invoice.items && invoiceId) {
+        const invoiceId = data.id;
+        if (invoice.items && Array.isArray(invoice.items) && invoiceId) {
           for (const item of invoice.items) {
-            await supabase.from('invoice_items').insert({
-              ...item,
-              invoice_id: invoiceId,
-              user_id: userData.user.id
-            });
+            await trackProgress(
+              supabase.from('invoice_items').insert({
+                ...item,
+                invoice_id: invoiceId,
+                user_id: userData.user.id
+              })
+            );
           }
         }
       }
-      console.log("Migrated invoices and invoice items");
+      
+      updateProgress();
     }
+    console.log("Migrated invoices and invoice items");
     
     // Migrate transactions
-    // We need to check for transactions in different year/month combinations
-    const years = ['2023', '2024', '2025'];
     for (const year of years) {
       for (const month of months) {
         const transactionsData = localStorage.getItem(`transactions_${year}_${month}`);
         if (transactionsData) {
           const transactions = JSON.parse(transactionsData);
           for (const transaction of transactions) {
-            await supabase.from('transactions').insert({
-              ...transaction,
-              year,
-              month,
-              user_id: userData.user.id
-            });
+            await trackProgress(
+              supabase.from('transactions').insert({
+                ...transaction,
+                year,
+                month,
+                user_id: userData.user.id
+              })
+            );
           }
           console.log(`Migrated transactions for ${month} ${year}`);
         }
       }
     }
     
+    // Migrate user settings
+    for (const key of settingKeys) {
+      const settingData = localStorage.getItem(key);
+      if (settingData) {
+        try {
+          const value = JSON.parse(settingData);
+          await trackProgress(
+            supabase.from('user_settings').insert({
+              key,
+              value,
+              user_id: userData.user.id
+            })
+          );
+        } catch (e) {
+          console.error(`Failed to migrate setting: ${key}`, e);
+          failedItems++;
+          updateProgress();
+        }
+      }
+    }
+    
+    // Final progress update
+    updateProgress();
+    
     toast.success("Data migration completed successfully!");
-    return { success: true };
+    return { 
+      success: true,
+      stats: {
+        total: totalItems,
+        completed: completedItems,
+        failed: failedItems
+      }
+    };
   } catch (error) {
     console.error("Migration error:", error);
     toast.error("Error during migration", {
@@ -438,13 +600,43 @@ export const migrateToSupabase = async () => {
 // CRUD utility to use in hooks and components
 export const createSupabaseCrud = <T extends { id: string }>(tableName: string) => {
   return {
-    fetchAll: () => fetchUserData<T>(tableName),
+    fetchAll: async (): Promise<T[]> => {
+      try {
+        // Get current user
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData?.user) {
+          console.log(`User not authenticated, cannot fetch ${tableName}`);
+          return [];
+        }
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .eq('user_id', userData.user.id);
+          
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        handleSupabaseError(error, `fetch ${tableName}`);
+        return [];
+      }
+    },
     fetchById: async (id: string): Promise<T | null> => {
       try {
+        // Get current user
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData?.user) {
+          console.log(`User not authenticated, cannot fetch ${tableName} by id`);
+          return null;
+        }
+        
         const { data, error } = await supabase
           .from(tableName)
           .select('*')
           .eq('id', id)
+          .eq('user_id', userData.user.id)
           .single();
         
         if (error) throw error;
@@ -454,8 +646,64 @@ export const createSupabaseCrud = <T extends { id: string }>(tableName: string) 
         return null;
       }
     },
-    create: (record: Omit<T, 'id'>) => insertData<T>(tableName, record as Partial<T>),
-    update: (id: string, record: Partial<T>) => updateData<T>(tableName, id, record),
-    delete: (id: string) => deleteData(tableName, id)
+    create: async (record: Omit<T, 'id'>): Promise<T | null> => {
+      try {
+        // Get current user
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData?.user) {
+          toast.error(`You must be logged in to create ${tableName}`);
+          return null;
+        }
+        
+        // Add user_id to record
+        const recordWithUserId = {
+          ...record,
+          user_id: userData.user.id
+        };
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .insert(recordWithUserId)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        handleSupabaseError(error, `create ${tableName}`);
+        return null;
+      }
+    },
+    update: async (id: string, record: Partial<T>): Promise<T | null> => {
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .update(record)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        handleSupabaseError(error, `update ${tableName}`);
+        return null;
+      }
+    },
+    delete: async (id: string): Promise<boolean> => {
+      try {
+        const { error } = await supabase
+          .from(tableName)
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        return true;
+      } catch (error) {
+        handleSupabaseError(error, `delete ${tableName}`);
+        return false;
+      }
+    }
   };
 };

@@ -15,8 +15,19 @@ export function useSupabaseOrders(selectedYear?: string, selectedMonth?: string)
     setError(null);
 
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        console.log("User not authenticated, cannot fetch orders");
+        setOrders([]);
+        setIsLoading(false);
+        return;
+      }
+
       // Start building query
-      let query = supabase.from('orders').select('*');
+      let query = supabase.from('orders')
+        .select('*')
+        .eq('user_id', userData.user.id);
 
       // Apply month filter if specified
       if (selectedMonth && selectedMonth !== "Semua Data") {
@@ -80,6 +91,13 @@ export function useSupabaseOrders(selectedYear?: string, selectedMonth?: string)
 
   const addOrder = async (orderData: Omit<Order, "id">) => {
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        toast.error("You must be logged in to add an order");
+        return null;
+      }
+      
       // Make sure the month is set based on order date
       const orderMonth = new Date(orderData.orderDate).toLocaleString('id-ID', { month: 'long' }).toLowerCase();
       
@@ -92,12 +110,13 @@ export function useSupabaseOrders(selectedYear?: string, selectedMonth?: string)
         countdownDays = differenceInDays(eventDate, today);
       }
       
-      // Type-safe approach: create an object that explicitly includes the month field
+      // Type-safe approach: create an object that explicitly includes the month field and user_id
       const orderWithMonth = {
         ...orderData,
         month: orderMonth,
-        countdownDays
-      } as Omit<Order, "id"> & { month: string };
+        countdownDays,
+        user_id: userData.user.id
+      } as Omit<Order, "id"> & { month: string, user_id: string };
       
       // Insert the order with the month property
       const { data, error } = await supabase

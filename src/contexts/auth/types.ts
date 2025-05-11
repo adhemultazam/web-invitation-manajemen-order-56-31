@@ -2,6 +2,15 @@
 import { User, Session } from "@supabase/supabase-js";
 import { ProfileType } from "@/types/supabase-types";
 
+type MigrationProgress = {
+  percentage: number;
+  total: number;
+  completed: number;
+  failed: number;
+};
+
+type ProgressCallback = (progress: MigrationProgress) => void;
+
 export interface SupabaseAuthContextType {
   user: User | null;
   session: Session | null;
@@ -14,7 +23,6 @@ export interface SupabaseAuthContextType {
   updatePassword: (password: string) => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   fetchProfile: (userId: string) => Promise<ProfileType | null>;
-  migrateData: (clearLocalStorage?: boolean) => Promise<{ success: boolean; error?: any; message?: string }>;
+  migrateData: (clearLocalStorage?: boolean, onProgress?: ProgressCallback) => Promise<{ success: boolean; error?: any; message?: string }>;
   rememberSession: boolean;
-  // Remove setRememberSession and setSession
 }

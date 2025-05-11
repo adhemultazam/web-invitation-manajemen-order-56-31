@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,9 +60,12 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     setProfile(updatedProfile);
   };
 
-  const handleMigrateData = async (clearLocalStorage: boolean = false) => {
+  const handleMigrateData = async (
+    clearLocalStorage: boolean = false,
+    onProgress?: (progress: { percentage: number; total: number; completed: number; failed: number }) => void
+  ) => {
     if (!user) return { success: false, error: "User not authenticated" };
-    return await migrateDataAction(clearLocalStorage);
+    return await migrateDataAction(clearLocalStorage, onProgress);
   };
 
   const handleSignIn = async (email: string, password: string) => {

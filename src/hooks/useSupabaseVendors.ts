@@ -14,10 +14,20 @@ export const useSupabaseVendors = () => {
     setError(null);
 
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        console.log("User not authenticated, cannot fetch vendors");
+        setVendors([]);
+        setIsLoading(false);
+        return;
+      }
+
       // Fetch vendors from Supabase
       const { data, error } = await supabase
         .from('vendors')
         .select('*')
+        .eq('user_id', userData.user.id)
         .order('name');
 
       if (error) throw error;
@@ -37,9 +47,22 @@ export const useSupabaseVendors = () => {
 
   const addVendor = async (vendor: Omit<Vendor, "id">) => {
     try {
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        toast.error("You must be logged in to add a vendor");
+        return null;
+      }
+
+      // Add user_id to vendor data
+      const vendorWithUserId = {
+        ...vendor,
+        user_id: userData.user.id
+      };
+
       const { data, error } = await supabase
         .from('vendors')
-        .insert(vendor)
+        .insert(vendorWithUserId)
         .select();
 
       if (error) throw error;

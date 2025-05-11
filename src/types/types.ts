@@ -1,4 +1,3 @@
-
 // Extending the existing types file by adding any missing types
 
 // Order type
@@ -27,6 +26,7 @@ export type Order = {
   // Add these fields needed for invoices
   orderId?: string; // For compatibility with invoice references
   amount?: number;  // For invoice amount calculations
+  month?: string;   // For organizing orders by month
 };
 
 // Add OrderFormData type for use in OrderForm component

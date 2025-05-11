@@ -92,12 +92,12 @@ export function useSupabaseOrders(selectedYear?: string, selectedMonth?: string)
         countdownDays = differenceInDays(eventDate, today);
       }
       
-      // Insert the order into Supabase with explicit month property
+      // Type-safe approach: create an object that explicitly includes the month field
       const orderWithMonth = {
         ...orderData,
         month: orderMonth,
         countdownDays
-      };
+      } as Omit<Order, "id"> & { month: string };
       
       // Insert the order with the month property
       const { data, error } = await supabase

@@ -168,11 +168,12 @@ export const ordersApi = {
         ? new Date(order.orderDate).toLocaleString('id-ID', { month: 'long' }).toLowerCase()
         : new Date().toLocaleString('id-ID', { month: 'long' }).toLowerCase();
       
+      // Create a new object with explicit month property for TypeScript
       const orderData = {
         ...order,
         user_id: userData.user.id,
         month: orderMonth
-      };
+      } as Partial<Order> & { month: string, user_id: string };
       
       const { data, error } = await supabase
         .from('orders')
@@ -190,7 +191,7 @@ export const ordersApi = {
   updateOrder: async (id: string, order: Partial<Order>) => {
     try {
       // If order date is updated, update the month field too
-      const updateData = { ...order };
+      const updateData = { ...order } as Partial<Order> & { month?: string };
       if (order.orderDate) {
         updateData.month = new Date(order.orderDate).toLocaleString('id-ID', { month: 'long' }).toLowerCase();
       }

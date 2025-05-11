@@ -1,22 +1,41 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { migrateLocalStorageToSupabase } from "@/utils/supabaseMigration";
+import { toast } from "sonner";
+import { migrateToSupabase } from "@/utils/supabaseUtils";
 
+// Migrate data from localStorage to Supabase
 export const migrateData = async (clearLocalStorage: boolean = false) => {
   try {
-    // Get current user id
-    const { data: { user } } = await supabase.auth.getUser();
+    const result = await migrateToSupabase();
     
-    if (!user?.id) {
-      console.error("Migration error: No user ID available");
-      return { success: false, error: "User not authenticated" };
+    if (result.success && clearLocalStorage) {
+      clearLocalStorageExceptAuth();
     }
     
-    console.log("Migrating data for userId:", user.id);
-    const result = await migrateLocalStorageToSupabase(user.id, clearLocalStorage);
     return result;
   } catch (error) {
     console.error("Migration error:", error);
-    return { success: false, error };
+    return {
+      success: false,
+      error: {
+        message: error.message || "Error during migration"
+      }
+    };
   }
+};
+
+// Helper function to clear localStorage except for authentication data
+const clearLocalStorageExceptAuth = () => {
+  const authTokenKey = 'sb-grhwzhhjeiytjgtcllew-auth-token';
+  const authToken = localStorage.getItem(authTokenKey);
+  
+  // Clear all localStorage
+  localStorage.clear();
+  
+  // Restore auth token
+  if (authToken) {
+    localStorage.setItem(authTokenKey, authToken);
+  }
+  
+  toast.success("localStorage successfully cleared while preserving authentication data");
 };

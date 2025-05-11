@@ -3,10 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fetchProfile } from "./profileActions";
 
-export const signIn = async (email: string, password: string) => {
+export const signIn = async (email: string, password: string, rememberMe: boolean = true) => {
   try {
-    console.log("Signing in user with email:", email);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("Signing in user with email:", email, "with rememberMe:", rememberMe);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email, 
+      password,
+      options: {
+        // Configure session persistence based on rememberMe
+        persistSession: rememberMe
+      }
+    });
 
     console.log('Supabase SignIn Data:', data);
     console.log('Supabase SignIn Error:', error);
@@ -14,6 +22,18 @@ export const signIn = async (email: string, password: string) => {
     if (error) {
       console.error('SignIn Error:', error);
       return { error };
+    }
+
+    // Update last_login in profiles table
+    if (data.user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ last_login: new Date().toISOString() })
+          .eq('id', data.user.id);
+      } catch (profileError) {
+        console.error("Failed to update last login:", profileError);
+      }
     }
 
     toast.success("Login berhasil");

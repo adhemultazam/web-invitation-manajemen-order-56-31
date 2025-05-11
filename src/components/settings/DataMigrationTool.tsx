@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Database, Loader2, CheckCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Database, Loader2, CheckCircle, Trash2, ArrowUpFromLine } from "lucide-react";
 import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -127,7 +127,9 @@ export function DataMigrationTool() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Migrasi Data...
               </>
             ) : (
-              "Migrasi Data ke Supabase"
+              <>
+                <ArrowUpFromLine className="mr-2 h-4 w-4" /> Migrasi Data ke Supabase
+              </>
             )}
           </Button>
         )}

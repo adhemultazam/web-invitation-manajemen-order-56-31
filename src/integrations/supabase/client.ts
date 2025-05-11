@@ -11,5 +11,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    storage: localStorage
   }
 });
+
+// Helper methods for debugging
+export const checkSession = async () => {
+  const { data } = await supabase.auth.getSession();
+  console.log("Current session:", data.session);
+  return data.session;
+};
+
+export const checkUser = async () => {
+  const { data } = await supabase.auth.getUser();
+  console.log("Current user:", data.user);
+  return data.user;
+};

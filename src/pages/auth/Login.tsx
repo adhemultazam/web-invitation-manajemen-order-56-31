@@ -1,101 +1,119 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { useSupabaseAuth } from "@/contexts/auth";
-import { BrandLogo } from "@/components/auth/BrandLogo";
-import { Loader2, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PasswordInput } from "@/components/auth/PasswordInput";
-import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
-interface AuthFormData {
-  email: string;
-  password: string;
-  remember?: boolean;
-}
-
-export default function Login() {
-  const [loading, setLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const { signIn, migrateData, rememberSession, setRememberSession } = useSupabaseAuth();
+export function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true); // Default to true
+  const { signIn, session } = useSupabaseAuth();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<AuthFormData>({
-    defaultValues: {
-      email: "",
-      password: "",
-      remember: rememberSession
+  useEffect(() => {
+    // If user is already logged in, redirect to dashboard
+    if (session) {
+      navigate("/", { replace: true });
     }
-  });
+  }, [session, navigate]);
 
-  const rememberValue = watch("remember", rememberSession);
-  useState(() => {
-    setValue("remember", rememberSession);
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  const onLoginSubmit = async (data: AuthFormData) => {
-    setLoading(true);
-    setAuthError(null);
     try {
-      const { error } = await signIn(data.email, data.password, !!data.remember);
-      if (error) throw error;
-      setRememberSession(!!data.remember);
-      await migrateData();
-      const lastVisitedPath = sessionStorage.getItem("lastVisitedPath") || "/";
-      navigate(lastVisitedPath, { replace: true });
-    } catch (error: any) {
-      setAuthError(error.message || "Login gagal");
+      const result = await signIn(email, password, rememberMe);
+      
+      if (result.error) {
+        toast.error("Login failed", {
+          description: result.error.message
+        });
+      } else {
+        toast.success("Login successful");
+        navigate("/", { replace: true });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("Unexpected error", {
+        description: "Please try again"
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <Card className="max-w-md w-full">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
-            <BrandLogo name="App" size={48} />
-          </div>
-          <CardTitle className="text-2xl">Welcome</CardTitle>
-          <CardDescription>Masuk ke akun Anda untuk melanjutkan</CardDescription>
+    <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            Login to your account to continue
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          {authError && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{authError}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4">
-            <div>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="nama@example.com" {...register("email", { required: "Email harus diisi" })} />
-              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
             </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <ForgotPasswordDialog />
-              </div>
-              <PasswordInput id="password" placeholder="Masukkan password Anda" {...register("password", { required: "Password harus diisi" })} />
-              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="remember" {...register("remember")} />
-              <label htmlFor="remember" className="text-sm font-medium leading-none">Ingat saya</label>
+            <div className="flex items-center space-x-2 pt-2">
+              <Checkbox 
+                id="remember" 
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(!!checked)}
+              />
+              <Label htmlFor="remember" className="text-sm font-normal">
+                Remember me
+              </Label>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Masuk...</> : "Masuk"}
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
-          </form>
-        </CardContent>
+            <div className="text-sm text-center text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-primary hover:underline">
+                Register
+              </Link>
+            </div>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );
